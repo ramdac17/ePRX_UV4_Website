@@ -9,12 +9,13 @@ import NavbarDrawer from "@/components/NavbarDrawer";
 
 // ✅ Recharts components
 import {
-  AreaChart,
-  Area,
   XAxis,
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Line,
+  Area,
+  ComposedChart,
 } from "recharts";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -243,13 +244,17 @@ export default function Home() {
                 </span>
               </div>
             </div>
+
             <div style={styles.chartBox}>
               {user && activityData.length > 0 ? (
                 <ResponsiveContainer width="99%" height="100%">
-                  <AreaChart data={activityData}>
+                  <ComposedChart
+                    data={activityData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
                     <defs>
                       <linearGradient
-                        id="colorDist"
+                        id="glowGradient"
                         x1="0"
                         y1="0"
                         x2="0"
@@ -258,7 +263,7 @@ export default function Home() {
                         <stop
                           offset="5%"
                           stopColor="#d4ff00"
-                          stopOpacity={0.3}
+                          stopOpacity={0.2}
                         />
                         <stop
                           offset="95%"
@@ -274,27 +279,52 @@ export default function Home() {
                     />
                     <XAxis
                       dataKey="day"
-                      stroke="#444"
+                      stroke="#666"
                       fontSize={10}
                       tickLine={false}
                       axisLine={false}
+                      tick={{ dy: 10 }}
                     />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "#000",
                         border: "1px solid #d4ff00",
                         fontSize: "10px",
+                        fontFamily: "monospace",
+                        borderRadius: "4px",
                       }}
                       itemStyle={{ color: "#d4ff00" }}
+                      cursor={{ stroke: "#333", strokeWidth: 1 }}
                     />
+                    {/* 1. The "Glow" Layer (Area) */}
                     <Area
-                      type="stepAfter"
+                      type="monotone"
+                      dataKey="distance"
+                      stroke="none"
+                      fill="url(#glowGradient)"
+                      isAnimationActive={true}
+                    />
+                    {/* 2. The "Bezier" Path (Line) */}
+                    <Line
+                      type="monotone"
                       dataKey="distance"
                       stroke="#d4ff00"
-                      fill="url(#colorDist)"
-                      strokeWidth={2}
+                      strokeWidth={3}
+                      dot={{
+                        r: 3,
+                        fill: "#000",
+                        stroke: "#d4ff00",
+                        strokeWidth: 2,
+                      }}
+                      activeDot={{
+                        r: 6,
+                        fill: "#d4ff00",
+                        stroke: "#000",
+                        strokeWidth: 2,
+                      }}
+                      animationDuration={1500}
                     />
-                  </AreaChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               ) : (
                 <div style={styles.lockedChartOverlay}>
@@ -494,7 +524,7 @@ export default function Home() {
 
 const styles: { [key: string]: React.CSSProperties } = {
   pageContainer: {
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#000",
     color: "#fff",
     minHeight: "100vh",
     overflowX: "hidden",
