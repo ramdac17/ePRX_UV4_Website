@@ -27,12 +27,12 @@ export default function AboutPage() {
 
   const admins = [
     {
-      name: "Merric Evangelista",
+      name: "Merric Kyo Evangelista",
       role: "SYSTEM ARCHITECT | LEAD DEVELOPER",
       img: "/assets/images/MerricV5.jpg",
       bio: "LEAD ARCHITECT RESPONSIBLE FOR THE CORE STRUCTURE AND DATA UPLINK PROTOCOLS. SPECIALIZES IN HIGH-AVAILABILITY CLOUD INFRASTRUCTURE.",
     },
-    {
+    /*   {
       name: "Gemelyn Ong",
       role: "ANALYTICS & QUALITY CONTROL",
       img: "/assets/images/admin2.png",
@@ -44,6 +44,7 @@ export default function AboutPage() {
       img: "/assets/images/admin3.png",
       bio: "RESPONSIBLE FOR OVERALL PROJECT COORDINATION, TIMELINES, AND CROSS-FUNCTIONAL COMMUNICATION. ENSURES ALL COMPONENTS ALIGN WITH THE PROJECT OBJECTIVES.",
     },
+    */
   ];
 
   return (
