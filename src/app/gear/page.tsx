@@ -36,7 +36,7 @@ export default function GearPage() {
           setArticles(filteredGear);
         }
       } catch (error) {
-        console.error("FETCH_ERROR:", error);
+        console.error("FETCH ERROR:", error);
       } finally {
         setLoading(false);
       }
