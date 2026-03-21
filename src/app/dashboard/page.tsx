@@ -169,9 +169,9 @@ export default function Home() {
   };
 
   const pillarData = [
-    { name: "GEAR", path: "/gear", img: "/assets/images/gear.jpg" },
-    { name: "FUEL", path: "/fuel", img: "/assets/images/fuel.jpg" },
-    { name: "MIND", path: "/mind", img: "/assets/images/mind.jpg" },
+    { name: "GEAR", path: "/gear", img: "/assets/images/GearV2.png" },
+    { name: "FUEL", path: "/fuel", img: "/assets/images/FuelV2.png" },
+    { name: "MIND", path: "/mind", img: "/assets/images/MindV2.png" },
   ];
 
   const triggerGlitch = () => {
@@ -339,7 +339,9 @@ export default function Home() {
                   </p>
                   {!user && (
                     <Link href="/login" style={{ textDecoration: "none" }}>
-                      <button style={styles.miniCta}>LOGIN_TO_UPLINK</button>
+                      <button style={styles.miniCta}>
+                        LOGIN TO UPLINK DATA
+                      </button>
                     </Link>
                   )}
                 </div>
@@ -386,7 +388,7 @@ export default function Home() {
         <div className={`reveal ${isPillarVisible ? "active" : ""}`}>
           <div style={styles.titleContainer}>
             <h2 style={styles.sectionTitle}>
-              <span style={styles.sectionNum}> || THE PILLARS</span> RUNNERS{" "}
+              <span style={styles.sectionNum}> || THE PILLARS</span> ELITE'S{" "}
               <span style={{ color: "#d4ff00" }}> GUIDE</span>
             </h2>
           </div>
@@ -398,7 +400,7 @@ export default function Home() {
                     className="pillar-image"
                     style={{
                       ...styles.pillarImageOverlay,
-                      backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${item.img})`,
+                      backgroundImage: `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url(${item.img})`,
                     }}
                   />
                   <div style={styles.pillarContent}>
@@ -654,8 +656,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     backgroundSize: "cover",
     backgroundPosition: "center",
-    transition: "transform 0.6s ease, filter 0.6s ease",
-    filter: "grayscale(100%)",
+    transition: "all 0.4s ease-in-out",
+    filter: "saturate(1.2) contrast(1.1)",
   },
   pillarContent: { padding: "20px" },
   cardNum: { color: "#d4ff00", fontSize: "0.8rem", marginBottom: "10px" },
