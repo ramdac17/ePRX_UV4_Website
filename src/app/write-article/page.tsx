@@ -15,7 +15,6 @@ export default function WriteArticlePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
 
-  // AUTH GUARD
   useEffect(() => {
     if (!loading) {
       if (!user) {
@@ -30,18 +29,14 @@ export default function WriteArticlePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview immediately
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
+    reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
 
-    // Compress
     setIsCompressing(true);
     try {
       const options = {
-        maxSizeMB: 1, // Increased since we are saving to disk, not DB
+        maxSizeMB: 1,
         maxWidthOrHeight: 1200,
         useWebWorker: true,
       };
@@ -49,13 +44,13 @@ export default function WriteArticlePage() {
       setSelectedFile(compressedFile);
     } catch (error) {
       console.error("COMPRESSION_ERROR:", error);
-      alert("IMAGE_ERROR: Failed to process image.");
     } finally {
       setIsCompressing(false);
     }
   };
 
-  const handleRemoveImage = () => {
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setImagePreview(null);
     setSelectedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -63,20 +58,13 @@ export default function WriteArticlePage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isCompressing) {
-      alert("SYSTEM_BUSY: Please wait for image processing.");
-      return;
-    }
-
+    if (isCompressing) return;
     setIsSubmitting(true);
 
     const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
-
-    // 1. Correctly build the FormData object
     const formElement = e.currentTarget;
     const formData = new FormData();
 
-    // Grab values directly from the form names
     formData.append(
       "title",
       (formElement.elements.namedItem("title") as HTMLInputElement).value,
@@ -90,133 +78,131 @@ export default function WriteArticlePage() {
       (formElement.elements.namedItem("content") as HTMLTextAreaElement).value,
     );
     formData.append("authorId", user?.id || "");
-
-    // 2. Append the binary file (NOT the base64 string)
-    if (selectedFile) {
-      formData.append("file", selectedFile);
-    }
+    if (selectedFile) formData.append("file", selectedFile);
 
     try {
       const response = await fetch(`${BACKEND_URL}/article`, {
         method: "POST",
-        headers: {
-          // REMOVED "Content-Type": "application/json"
-          // The browser MUST set the Content-Type to "multipart/form-data; boundary=..." automatically
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: formData, // Send the FormData object directly
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        body: formData,
       });
-
-      const responseText = await response.text();
-      let responseData;
-
-      try {
-        responseData = JSON.parse(responseText);
-      } catch (err) {
-        console.error("NON_JSON_RESPONSE:", responseText);
-        throw new Error("SERVER_PROTOCOL_ERROR");
-      }
 
       if (response.ok) {
         router.push("/");
         router.refresh();
       } else {
-        alert(`PUBLICATION_FAILED: ${responseData.message || "Unknown Error"}`);
+        alert("PUBLICATION_FAILED");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("CONNECTION_ERROR:", error);
-      alert(`CRITICAL_ERROR: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loading || checkingAuth)
+    return (
+      <div style={styles.loadingContainer}>
+        <h2 style={styles.loadingText}>INITIALIZING EDITOR...</h2>
+      </div>
+    );
+
   return (
     <div style={styles.pageContainer}>
-      <h1 style={styles.mainTitle}>
-        WRITE <span style={{ color: "#d4ff00" }}>ARTICLE</span>
-      </h1>
+      <header style={styles.header}>
+        <h1 style={styles.mainTitle}>
+          WRITE <span style={{ color: "#d4ff00" }}>ARTICLES</span>
+        </h1>
+        <p style={styles.subtitle}>EDITORIAL || WRITE ARTICLES</p>
+      </header>
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <h3 style={styles.sectionTitle}>// ARTICLE_CORE</h3>
+      <form onSubmit={handleSubmit} style={styles.formContainer}>
+        <h3 style={styles.sectionTitle}>ARTICLE</h3>
 
-        <div style={styles.fieldRow}>
+        <div style={styles.column}>
+          {/* IMAGE UPLOAD */}
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>TITLE</label>
+            <label style={styles.label}>UPLOAD IMAGE</label>
+            <div
+              style={styles.thumbnailBox}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {imagePreview ? (
+                <>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={styles.previewImg}
+                  />
+                  <div style={styles.removeOverlay} onClick={handleRemoveImage}>
+                    REMOVE IMAGE
+                  </div>
+                  {isCompressing && (
+                    <div style={styles.compressionOverlay}>OPTIMIZING...</div>
+                  )}
+                </>
+              ) : (
+                <div style={styles.uploadPlaceholder}>
+                  <span style={{ fontSize: "2rem", color: "#d4ff00" }}>+</span>
+                  <span>UPLOAD IMAGE</span>
+                </div>
+              )}
+            </div>
+            <input
+              type="file"
+              name="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: "none" }}
+            />
+          </div>
+
+          {/* TITLE */}
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>ARTICLE TITLE</label>
             <input
               name="title"
               required
               style={styles.input}
-              placeholder="ENTRY_TITLE..."
+              placeholder="ENTER AN ARTICLE TITLE..."
             />
           </div>
+
+          {/* CLASSIFICATION */}
           <div style={styles.fieldGroup}>
-            <label style={styles.label}>CATEGORY</label>
+            <label style={styles.label}>CLASSIFICATION</label>
             <select name="category" required style={styles.select}>
               <option value="GEAR">GEAR</option>
               <option value="FUEL">FUEL</option>
               <option value="MIND">MIND</option>
+              <option value="ARTICLE">ARTICLE</option>
             </select>
           </div>
-        </div>
 
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>COVER IMAGE</label>
-          <div style={styles.uploadContainer}>
-            {!imagePreview ? (
-              <label style={styles.uploadPlaceholder}>
-                <span>+ UPLOAD_VISUAL_ASSET</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  ref={fileInputRef}
-                  style={{ display: "none" }}
-                />
-              </label>
-            ) : (
-              <div style={styles.previewWrapper}>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  style={styles.previewImage}
-                />
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  style={styles.removeImageBtn}
-                >
-                  REMOVE_ASSET
-                </button>
-                {isCompressing && (
-                  <div style={styles.compressionOverlay}>PROCESSING...</div>
-                )}
-              </div>
-            )}
+          {/* CONTENT */}
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>ARTICLE CONTENT</label>
+            <textarea
+              name="content"
+              required
+              style={styles.textarea}
+              placeholder="INPUT ARTICLE CONTENT..."
+            />
           </div>
-        </div>
 
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>CONTENT</label>
-          <textarea
-            name="content"
-            required
-            style={styles.textarea}
-            placeholder="WRITE_DATA_HERE..."
-          />
+          {/* SUBMIT */}
+          <button
+            type="submit"
+            disabled={isSubmitting || isCompressing}
+            style={{
+              ...styles.submitBtn,
+              opacity: isSubmitting || isCompressing ? 0.5 : 1,
+            }}
+          >
+            {isSubmitting ? "TRANSMITTING..." : "PUBLISH ARTICLE"}
+          </button>
         </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting || isCompressing}
-          style={{
-            ...styles.submitBtn,
-            opacity: isSubmitting || isCompressing ? 0.5 : 1,
-            cursor: isSubmitting || isCompressing ? "not-allowed" : "pointer",
-          }}
-        >
-          {isSubmitting ? "SYNCING_TO_DATABASE..." : "PUBLISH TO ARCHIVE"}
-        </button>
       </form>
     </div>
   );
@@ -226,149 +212,114 @@ const styles: { [key: string]: React.CSSProperties } = {
   pageContainer: {
     backgroundColor: "#050505",
     minHeight: "100vh",
-    padding: "40px 8%",
+    padding: "60px 5%",
     color: "#fff",
+    fontFamily: "monospace",
+  },
+  header: { textAlign: "center", marginBottom: "40px" },
+  mainTitle: { fontFamily: "var(--font-bebas)", fontSize: "4rem", margin: 0 },
+  subtitle: { color: "#444", fontSize: "0.7rem", letterSpacing: "2px" },
+  formContainer: { maxWidth: "700px", margin: "0 auto" },
+  column: { display: "flex", flexDirection: "column", gap: "25px" },
+  sectionTitle: {
+    fontSize: "0.75rem",
+    color: "#d4ff00",
+    letterSpacing: "3px",
+    borderLeft: "3px solid #d4ff00",
+    paddingLeft: "10px",
+    marginBottom: "25px",
+  },
+  fieldGroup: { display: "flex", flexDirection: "column", gap: "8px" },
+  label: { fontSize: "0.6rem", color: "#666" },
+  input: {
+    backgroundColor: "#0a0a0a",
+    border: "1px solid #222",
+    padding: "12px",
+    color: "#fff",
+    outline: "none",
+    fontSize: "0.85rem",
+  },
+  select: {
+    backgroundColor: "#0a0a0a",
+    border: "1px solid #222",
+    padding: "12px",
+    color: "#fff",
+    outline: "none",
+    fontSize: "0.85rem",
+  },
+  textarea: {
+    backgroundColor: "#0a0a0a",
+    border: "1px solid #222",
+    padding: "12px",
+    color: "#fff",
+    minHeight: "400px",
+    outline: "none",
+    fontSize: "0.9rem",
+    resize: "none",
+    lineHeight: "1.6",
+  },
+  thumbnailBox: {
+    width: "100%",
+    aspectRatio: "16/9",
+    backgroundColor: "#0a0a0a",
+    border: "1px dashed #333",
+    display: "flex",
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    overflow: "hidden",
+  },
+  previewImg: { width: "100%", height: "100%", objectFit: "cover" },
+  removeOverlay: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    backgroundColor: "rgba(255,0,0,0.8)",
+    padding: "5px 10px",
+    fontSize: "0.6rem",
+    cursor: "pointer",
+  },
+  uploadPlaceholder: {
+    textAlign: "center",
     display: "flex",
     flexDirection: "column",
+    gap: "5px",
+    color: "#444",
+    fontSize: "0.7rem",
+  },
+  compressionOverlay: {
+    position: "absolute",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    display: "flex",
+    justifyContent: "center",
     alignItems: "center",
+    color: "#d4ff00",
+    fontSize: "0.7rem",
+  },
+  submitBtn: {
+    backgroundColor: "#d4ff00",
+    color: "#000",
+    border: "none",
+    padding: "18px",
+    fontFamily: "var(--font-bebas)",
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    cursor: "pointer",
+    width: "100%",
+    marginTop: "10px",
   },
   loadingContainer: {
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#050505",
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
   },
   loadingText: {
-    fontFamily: "monospace",
     color: "#d4ff00",
-    fontSize: "1rem",
     letterSpacing: "4px",
-  },
-  mainTitle: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "3rem",
-    marginBottom: "0px",
-    textAlign: "center",
-    marginTop: "75px",
-  },
-  sectionTitle: {
-    fontSize: "0.7rem",
-    color: "#d4ff00",
-    letterSpacing: "3px",
-    borderBottom: "1px solid #222",
-    paddingBottom: "8px",
-    marginTop: "10px",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    maxWidth: "800px",
-    width: "100%",
-  },
-  fieldRow: { display: "flex", gap: "15px" },
-  fieldGroup: { display: "flex", flexDirection: "column", gap: "6px", flex: 1 },
-  label: { fontSize: "0.55rem", color: "#666", letterSpacing: "1px" },
-  input: {
-    backgroundColor: "#111",
-    border: "1px solid #333",
-    padding: "8px",
-    color: "#fff",
-    outline: "none",
-    flex: 1,
-    fontSize: "0.85rem",
-  },
-  select: {
-    backgroundColor: "#111",
-    border: "1px solid #333",
-    padding: "8px",
-    color: "#fff",
-    outline: "none",
-    fontSize: "0.85rem",
-    cursor: "pointer",
-  },
-  textarea: {
-    backgroundColor: "#111",
-    border: "1px solid #333",
-    padding: "8px",
-    color: "#fff",
-    minHeight: "200px",
-    outline: "none",
-    fontSize: "0.85rem",
-    fontFamily: "inherit",
-    resize: "vertical",
-  },
-  submitBtn: {
-    backgroundColor: "#d4ff00",
-    color: "#000",
-    border: "none",
-    padding: "12px",
-    fontFamily: "var(--font-bebas)",
-    fontSize: "1.1rem",
-    marginTop: "10px",
-    fontWeight: "bold",
-  },
-  uploadContainer: {
-    width: "100%",
-    minHeight: "120px",
-    backgroundColor: "#111",
-    border: "1px dashed #333",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    overflow: "hidden",
-  },
-  uploadPlaceholder: {
-    width: "100%",
-    height: "120px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    cursor: "pointer",
-    color: "#666",
-    fontSize: "0.7rem",
     fontFamily: "monospace",
-    letterSpacing: "2px",
-  },
-  previewWrapper: {
-    width: "100%",
-    position: "relative",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: "10px",
-  },
-  previewImage: {
-    maxWidth: "100%",
-    maxHeight: "300px",
-    objectFit: "cover",
-    border: "1px solid #333",
-  },
-  removeImageBtn: {
-    marginTop: "10px",
-    backgroundColor: "#ff3e3e",
-    color: "#fff",
-    border: "none",
-    padding: "5px 10px",
-    fontSize: "0.55rem",
-    fontFamily: "monospace",
-    cursor: "pointer",
-    letterSpacing: "1px",
-  },
-  compressionOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: "0.7rem",
-    fontFamily: "monospace",
-    color: "#d4ff00",
   },
 };

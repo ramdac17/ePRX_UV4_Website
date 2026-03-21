@@ -94,10 +94,10 @@ export default function NavbarDrawer({
                   <p style={styles.userName}>
                     {user?.firstName
                       ? `${user.firstName} ${user.lastName || ""}`
-                      : "GUEST_RUNNER"}
+                      : "GUEST RUNNER"}
                   </p>
                   <p style={styles.viewProfile}>
-                    {user ? "VIEW_PROFILE" : "IDENTITY_OFFLINE"}
+                    {user ? "VIEW PROFILE" : "IDENTITY OFFLINE"}
                   </p>
                 </div>
               </Link>
@@ -169,7 +169,7 @@ export default function NavbarDrawer({
                   <Instagram size={16} />
                 </a>
               </div>
-              <p style={styles.version}>EPRX // SYSTEM_ACTIVE</p>
+              <p style={styles.version}>PRX || SYSTEM ACTIVE</p>
             </div>
           </motion.div>
         </>

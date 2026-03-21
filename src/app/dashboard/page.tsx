@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import NavbarDrawer from "@/components/NavbarDrawer";
+import MobileEcosystem from "../mobile-ecosystem/page";
 
 // ✅ Recharts components
 import {
@@ -385,7 +386,7 @@ export default function Home() {
         <div className={`reveal ${isPillarVisible ? "active" : ""}`}>
           <div style={styles.titleContainer}>
             <h2 style={styles.sectionTitle}>
-              <span style={styles.sectionNum}> // THE PILLARS</span> RUNNERS{" "}
+              <span style={styles.sectionNum}> || THE PILLARS</span> RUNNERS{" "}
               <span style={{ color: "#d4ff00" }}> GUIDE</span>
             </h2>
           </div>
@@ -412,58 +413,18 @@ export default function Home() {
       </section>
 
       {/* 3. MOBILE ECOSYSTEM */}
-      <section style={styles.mobileSection} ref={mobileRef}>
-        <div
-          className={`reveal ${isMobileVisible ? "active" : ""}`}
-          style={styles.mobileGrid}
-        >
-          <div style={styles.mobileTextSide}>
-            <h2 style={styles.mobileTitle}>
-              MOBILE <span style={{ color: "#d4ff00" }}>ECOSYSTEM</span>
-            </h2>
-            <p style={styles.mobileDesc}>
-              The digital extension of your performance. Track real-time
-              biometrics.
-            </p>
-            <div style={styles.downloadZone}>
-              <div style={styles.inlineBadgeContainer}>
-                <span style={styles.badgeLabel}>MOBILE PLATFORMS</span>
-                <div style={styles.badgeWrapperRow}>
-                  <img
-                    src="/assets/images/app_store_badge.svg"
-                    alt="iOS"
-                    style={styles.badgeImg}
-                  />
-                  <img
-                    src="/assets/images/google_play_store_badge.svg"
-                    alt="Android"
-                    style={styles.badgeImg}
-                  />
-                </div>
-              </div>
-              <div style={styles.qrContainer}>
-                <div style={styles.qrFrame}>
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://eprx-v3.com&bgcolor=0f0f0f&color=d4ff00`}
-                    alt="Scan"
-                    style={styles.qrImage}
-                  />
-                </div>
-                <span style={styles.qrLabel}>SCAN TO DOWNLOAD</span>
-              </div>
-            </div>
-          </div>
-          <div style={styles.mobileVisualSide}>
-            <div style={styles.phoneMockup}>
-              <div style={styles.phoneScreen}>
-                <div style={styles.appMetric}>
-                  14.2 <span style={{ fontSize: "1rem" }}>KM</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <section
+        id="mobile-ecosystem"
+        style={{
+          marginTop: "60px",
+          borderTop: "1px solid #1a1a1a",
+          paddingTop: "40px",
+        }}
+      >
+        <MobileEcosystem />
       </section>
+
+      <hr style={styles.hrStyle} />
 
       {/* 4. ARCHIVE */}
       <section style={styles.archiveSection} ref={archiveRef}>
@@ -472,7 +433,7 @@ export default function Home() {
           style={styles.archiveHeader}
         >
           <h2 style={styles.archiveTitle}>
-            <span style={styles.sectionNum}> // KNOWLEDGE BASE</span> THE{" "}
+            <span style={styles.sectionNum}> || KNOWLEDGE BASE</span> THE{" "}
             <span style={{ color: "#d4ff00" }}>ARCHIVE</span>
           </h2>
         </header>
@@ -507,7 +468,7 @@ export default function Home() {
                 </div>
                 <div style={styles.articleContent}>
                   <span style={styles.volTag}>
-                    {post.category} // {new Date(post.createdAt).getFullYear()}
+                    {post.category} || {new Date(post.createdAt).getFullYear()}
                   </span>
                   <h3 style={styles.articleTitle}>
                     {post.title.toUpperCase()}
@@ -529,6 +490,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     minHeight: "100vh",
     overflowX: "hidden",
     width: "100%",
+    fontFamily: "var(--font-bebas)",
   },
   heroSplit: {
     minHeight: "100vh",
@@ -646,7 +608,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   heroSubtitleLeft: {
     color: "#ccc",
     maxWidth: "450px",
-    fontSize: "0.8rem",
+    fontSize: "1rem",
     lineHeight: "1.6",
     letterSpacing: "1px",
     marginBottom: "30px",
@@ -834,5 +796,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: "2px",
     fontWeight: "bold",
     cursor: "pointer",
+  },
+  hrStyle: {
+    border: "0",
+    height: "1px",
+    backgroundColor: "#333",
   },
 };

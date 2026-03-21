@@ -10,21 +10,21 @@ export default function Footer() {
       <div style={styles.container}>
         {/* Left: Branding */}
         <div style={styles.brandSection}>
-          <span style={styles.brand}>ePRX</span>
-          <span style={styles.copyright}>© 2026 // ALL_RIGHTS_RESERVED</span>
+          <span style={styles.brand}>PRX</span>
+          <span style={styles.copyright}>© 2026 || ALL RIGHTS RESERVED</span>
         </div>
 
         {/* Center: Navigation Links */}
         <div style={styles.linkSection}>
           <Link href="/aboutus" style={styles.link}>
-            ABOUT_US
+            ABOUT US
           </Link>
           <Link href="/contactus" style={styles.link}>
-            CONTACT_US
+            CONTACT US
           </Link>
 
           <Link href="/privacy" style={styles.link}>
-            PRIVACY_PROTOCOL
+            PRIVACY PROTOCOL
           </Link>
         </div>
 
@@ -64,7 +64,7 @@ export default function Footer() {
           </div>
           <div style={styles.statusGroup}>
             <span style={styles.statusLabel}>ENCRYPTION</span>
-            <span style={styles.statusValue}>AES_256</span>
+            <span style={styles.statusValue}>ACTIVE</span>
           </div>
         </div>
       </div>

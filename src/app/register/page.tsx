@@ -187,7 +187,7 @@ const RegisterForm = () => {
           <div style={styles.formWrapper}>
             <div style={styles.header}>
               <h1 style={styles.title}>NEW RECRUIT</h1>
-              <p style={styles.subtitle}>Join the ePRX UV1 ecosystem.</p>
+              <p style={styles.subtitle}>Join the PRX ecosystem.</p>
             </div>
             <form onSubmit={handleSubmit}>
               <div style={styles.row}>
@@ -200,6 +200,7 @@ const RegisterForm = () => {
                     value={formData.firstName}
                     onChange={handleChange}
                     required
+                    placeholder="Kyo"
                   />
                 </div>
                 <div style={styles.inputContainer}>
@@ -211,6 +212,7 @@ const RegisterForm = () => {
                     value={formData.lastName}
                     onChange={handleChange}
                     required
+                    placeholder="Evanz"
                   />
                 </div>
               </div>
@@ -224,6 +226,7 @@ const RegisterForm = () => {
                     value={formData.username}
                     onChange={handleChange}
                     required
+                    placeholder="kyo.evanz"
                   />
                 </div>
                 <div style={styles.inputContainer}>
@@ -235,6 +238,7 @@ const RegisterForm = () => {
                     value={formData.mobile}
                     onChange={handleChange}
                     required
+                    placeholder="09XX XXX XXXX"
                   />
                 </div>
               </div>
@@ -247,6 +251,7 @@ const RegisterForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  placeholder="kyo.evanz@eprx.uv1"
                 />
               </div>
               <div style={styles.inputContainer}>
@@ -258,6 +263,7 @@ const RegisterForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  placeholder="******"
                 />
               </div>
               <button
@@ -288,7 +294,7 @@ const RegisterForm = () => {
 
       <div style={styles.visualSide}>
         <div style={styles.overlay}>
-          <div style={styles.verticalText}>ePRX_UV1 CORE</div>
+          <div style={styles.verticalText}> PRX || REGISTER USER</div>
           <h2 style={styles.brandingTitle}>
             THE <br />
             <span style={{ color: "#d4ff00" }}>NEXT</span> GEN
@@ -380,12 +386,18 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.6rem",
     letterSpacing: "5px",
     color: "#ccc",
+    marginTop: "200px",
   },
-  brandingTitle: { fontSize: "4rem", lineHeight: "0.9", letterSpacing: "2px" },
+  brandingTitle: {
+    fontSize: "4rem",
+    lineHeight: "0.9",
+    letterSpacing: "2px",
+    marginBottom: "80px",
+  },
   footer: {
-    marginTop: "20px",
+    marginTop: "0px",
     borderTop: "1px solid #1a1a1a",
-    paddingTop: "20px",
+    paddingTop: "10px",
   },
   footerText: { fontSize: "0.6rem", color: "#444", marginBottom: "5px" },
   loginLink: { color: "#d4ff00", fontSize: "0.7rem", textDecoration: "none" },

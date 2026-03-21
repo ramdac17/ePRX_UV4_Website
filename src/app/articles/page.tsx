@@ -25,11 +25,16 @@ export default function ArticlesArchivePage() {
   useEffect(() => {
     async function fetchArticles() {
       try {
-        // Fetching all articles from the pluralized endpoint
         const response = await fetch(`${BACKEND_API}/article`);
         if (response.ok) {
-          const data = await response.json();
-          setArticles(data);
+          const data: Article[] = await response.json();
+
+          // ✅ FILTER LOGIC: Only allow "ARTICLE" category
+          const filteredData = data.filter(
+            (item) => item.category === "ARTICLE",
+          );
+
+          setArticles(filteredData);
         }
       } catch (error) {
         console.error("FETCH_ERROR:", error);
@@ -46,20 +51,18 @@ export default function ArticlesArchivePage() {
         <h1 style={styles.title}>
           STATION <span style={{ color: "#d4ff00" }}>ARCHIVES</span>
         </h1>
-        <p style={styles.subtitle}>
-          CENTRAL REPOSITORY FOR ALL OPERATIONAL DATA AND TRANSMISSIONS
-        </p>
+        <p style={styles.subtitle}>CENTRAL ARTICLES SECTION</p>
       </div>
 
       <div style={styles.content}>
         {loading ? (
-          <div style={styles.loadingText}>DECRYPTING_ARCHIVE_STREAM...</div>
+          <div style={styles.loadingText}>DECRYPTING ARCHIVE STREAM...</div>
         ) : articles.length > 0 ? (
           <div style={styles.grid}>
             {articles.map((item) => (
               <Link
                 key={item.id}
-                href={`/article/${item.id}`} // Aligned with your dynamic folder
+                href={`/article/${item.id}`}
                 style={styles.cardLink}
               >
                 <motion.div
@@ -70,7 +73,6 @@ export default function ArticlesArchivePage() {
                   <div style={styles.imageContainer}>
                     {item.image ? (
                       <img
-                        // ✅ HYBRID URL LOGIC
                         src={
                           item.image.startsWith("http")
                             ? item.image
@@ -94,14 +96,14 @@ export default function ArticlesArchivePage() {
                     <p style={styles.cardDesc}>
                       {item.content.substring(0, 120)}...
                     </p>
-                    <div style={styles.readMore}>ACCESS_DATA →</div>
+                    <div style={styles.readMore}>ACCESS DATA →</div>
                   </div>
                 </motion.div>
               </Link>
             ))}
           </div>
         ) : (
-          <div style={styles.noData}>NO_ARCHIVED_TRANSMISSIONS_FOUND</div>
+          <div style={styles.noData}>NO ARCHIVED TRANSMISSIONS FOUND</div>
         )}
       </div>
     </div>
@@ -113,7 +115,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#0f0f0f",
     color: "#fff",
     minHeight: "100vh",
-    padding: "100px 8% 60px", // Adjusted for fixed navbar
+    padding: "100px 8% 60px",
   },
   header: {
     marginBottom: "60px",
@@ -134,20 +136,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginTop: "15px",
     fontFamily: "monospace",
   },
-  content: {
-    display: "flex",
-    flexDirection: "column",
-  },
+  content: { display: "flex", flexDirection: "column" },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))",
     gap: "30px",
   },
-  cardLink: {
-    textDecoration: "none",
-    color: "inherit",
-    display: "block",
-  },
+  cardLink: { textDecoration: "none", color: "inherit", display: "block" },
   card: {
     backgroundColor: "#0a0a0a",
     border: "1px solid #1a1a1a",
@@ -214,11 +209,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "fit-content",
     transition: "all 0.3s",
   },
-  articleImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
+  articleImage: { width: "100%", height: "100%", objectFit: "cover" },
   loadingText: {
     fontFamily: "monospace",
     color: "#d4ff00",

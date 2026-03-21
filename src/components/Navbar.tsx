@@ -221,6 +221,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     boxSizing: "border-box",
     zIndex: 1000,
+    fontFamily: "var(--font-bebas)",
   },
   leftSection: { flex: 1, display: "flex", alignItems: "center" },
   centerSection: {

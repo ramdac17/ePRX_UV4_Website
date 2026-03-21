@@ -7,21 +7,42 @@ export default function AboutPage() {
   const sections = [
     {
       id: "01",
-      title: "THE_MISSION",
+      title: "THE MISSION",
       content:
-        "ePRX V3 IS ENGINEERED TO BRIDGE THE GAP BETWEEN ARCHAIZED DATA SYSTEMS AND THE FUTURE OF SECURE DIGITAL INTERACTION. OUR GOAL IS ABSOLUTE CONNECTIVITY WITHOUT COMPROMISE.",
+        "PRX (PINOY RUNNER EXTREME) IS ENGINEERED TO BRIDGE THE GAP BETWEEN ARCHAIZED DATA SYSTEMS AND THE FUTURE OF SECURE DIGITAL INTERACTION. OUR GOAL IS ABSOLUTE CONNECTIVITY WITHOUT COMPROMISE.",
     },
     {
       id: "02",
-      title: "THE_TECH",
+      title: "THE TECH",
       content:
         "BUILT ON A FOUNDATION OF NEXT-GEN REACT ARCHITECTURE AND POSTGRESQL CORE, OUR SYSTEM ENSURES SUB-MILLISECOND LATENCY AND ENCRYPTED PROFILE INTEGRITY.",
     },
     {
       id: "03",
-      title: "THE_VISION",
+      title: "THE VISION",
       content:
-        "WE ARE NOT JUST BUILDING A PLATFORM; WE ARE ARCHITECTING AN ECOSYSTEM FOR OPERATORS WHO DEMAND EFFICIENCY, SPEED, AND MINIMALIST PRECISION.",
+        "WE ARE NOT JUST BUILDING A PLATFORM; WE ARE ARCHITECTING AN ECOSYSTEM FOR ELITE ATHLETES WHO DEMAND EFFICIENCY, SPEED, AND MINIMALIST PRECISION.",
+    },
+  ];
+
+  const admins = [
+    {
+      name: "Merric Evangelista",
+      role: "SYSTEM ARCHITECT | LEAD DEVELOPER",
+      img: "/assets/images/MerricV5.jpg",
+      bio: "LEAD ARCHITECT RESPONSIBLE FOR THE CORE STRUCTURE AND DATA UPLINK PROTOCOLS. SPECIALIZES IN HIGH-AVAILABILITY CLOUD INFRASTRUCTURE.",
+    },
+    {
+      name: "Gemelyn Ong",
+      role: "ANALYTICS & QUALITY CONTROL",
+      img: "/assets/images/admin2.png",
+      bio: "OVERSEES FRONTEND UX/UI STRATEGY AND PERFORMANCE MONITORING. ENSURES THE TACTICAL INTERFACE MEETS OPERATIONAL STANDARDS FOR SPEED AND CLARITY.",
+    },
+    {
+      name: "Thomas Masagca Jr.",
+      role: "PROJECT MANAGER",
+      img: "/assets/images/admin3.png",
+      bio: "RESPONSIBLE FOR OVERALL PROJECT COORDINATION, TIMELINES, AND CROSS-FUNCTIONAL COMMUNICATION. ENSURES ALL COMPONENTS ALIGN WITH THE PROJECT OBJECTIVES.",
     },
   ];
 
@@ -29,7 +50,7 @@ export default function AboutPage() {
     <div style={styles.container}>
       <div style={styles.wrapper}>
         {/* Brand Logo Section */}
-        <div style={styles.logoContainer} className="logo-glow">
+        <div style={styles.logoContainer}>
           <img
             src="/assets/images/eprx-logo.png"
             alt="PRX Logo"
@@ -44,7 +65,9 @@ export default function AboutPage() {
             animate={{ opacity: 1 }}
             style={styles.version}
           >
-            CORE SYSTEM || PINOY RUNNER EXTREME || EST 2013
+            CORE SYSTEM ||{" "}
+            <span style={{ color: "#d4ff00" }}>PINOY RUNNER EXTREME</span> ||
+            EST 2013
           </motion.span>
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
@@ -55,14 +78,14 @@ export default function AboutPage() {
           </motion.h1>
         </header>
 
-        {/* Content Grid */}
+        {/* Mission/Tech/Vision Grid */}
         <div style={styles.grid}>
           {sections.map((section, i) => (
             <motion.div
               key={section.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.2 }}
+              transition={{ delay: i * 0.1 }}
               style={styles.card}
             >
               <span style={styles.cardNumber}>{section.id}</span>
@@ -72,32 +95,99 @@ export default function AboutPage() {
           ))}
         </div>
 
+        {/* Meet the Admins Section (Alternating Z-Pattern) */}
+        <div style={styles.adminSection}>
+          <h2 style={styles.adminSectionTitle}>
+            <span style={{ color: "#d4ff00" }}>|</span> OPERATOR LOGS || MEET
+            THE ADMINS
+          </h2>
+
+          <div style={styles.adminList}>
+            {admins.map((admin, i) => (
+              <motion.div
+                key={admin.name}
+                initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+                style={{
+                  ...styles.adminRow,
+                  flexDirection: i % 2 === 0 ? "row" : "row-reverse",
+                }}
+              >
+                {/* Profile Visual */}
+                <div style={styles.profileContainer}>
+                  <div style={styles.profileCircle}>
+                    <img
+                      src={admin.img}
+                      alt={admin.name}
+                      style={styles.profileImg}
+                      onError={(e) => {
+                        e.currentTarget.src = "";
+                      }}
+                    />
+                  </div>
+                  <div style={styles.scanLine} />
+                </div>
+
+                {/* Admin Briefing Text */}
+                <div
+                  style={{
+                    ...styles.adminInfo,
+                    textAlign: i % 2 === 0 ? "left" : "right",
+                    alignItems: i % 2 === 0 ? "flex-start" : "flex-end",
+                  }}
+                >
+                  <span style={styles.adminRoleLabel}>{admin.role}</span>
+                  <h3 style={styles.adminName}>{admin.name}</h3>
+                  <div
+                    style={{
+                      ...styles.bioDivider,
+                      marginLeft: i % 2 === 0 ? "0" : "auto",
+                      marginRight: i % 2 === 0 ? "auto" : "0",
+                    }}
+                  />
+                  <p style={styles.adminBio}>{admin.bio}</p>
+                  <div style={styles.adminStats}>
+                    <span style={styles.statLabel}>
+                      STATUS: <span style={{ color: "#d4ff00" }}>ACTIVE</span>
+                    </span>
+                    <span style={styles.statLabel}>
+                      CLEARANCE: <span style={{ color: "#fff" }}>ADMIN</span>
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
         {/* Tactical Specs Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
+          transition={{ delay: 1 }}
           style={styles.specBox}
         >
-          <div style={styles.specItem}>
-            <span style={styles.specLabel}>UPTIME</span>
-            <span style={styles.specValue}>99.99%</span>
-          </div>
-          <div style={styles.specItem}>
-            <span style={styles.specLabel}>PROTOCOL</span>
-            <span style={styles.specValue}>HTTPS/SECURE</span>
-          </div>
-          <div style={styles.specItem}>
-            <span style={styles.specLabel}>LOCATION</span>
-            <span style={styles.specValue}>DISTRIBUTED_NODE</span>
-          </div>
-          <div style={styles.specItem}>
-            <span style={styles.specLabel}>STATUS</span>
-            {/* I combined the styles into one object below */}
-            <span style={{ ...styles.specValue, color: "#d4ff00" }}>
-              OPERATIONAL
-            </span>
-          </div>
+          {["UPTIME", "PROTOCOL", "LOCATION", "STATUS"].map((label) => (
+            <div key={label} style={styles.specItem}>
+              <span style={styles.specLabel}>{label}</span>
+              <span
+                style={{
+                  ...styles.specValue,
+                  color: label === "STATUS" ? "#d4ff00" : "#fff",
+                }}
+              >
+                {label === "UPTIME"
+                  ? "99.99%"
+                  : label === "PROTOCOL"
+                    ? "HTTPS/SECURE"
+                    : label === "LOCATION"
+                      ? "DISTRIBUTED NODE"
+                      : "OPERATIONAL"}
+              </span>
+            </div>
+          ))}
         </motion.div>
       </div>
     </div>
@@ -106,93 +196,184 @@ export default function AboutPage() {
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "#050505",
     minHeight: "100vh",
-    padding: "40px 8%",
+    padding: "60px 8%",
     color: "#fff",
     display: "flex",
     justifyContent: "center",
+    fontFamily: "monospace",
   },
   wrapper: {
-    maxWidth: "1200px",
+    maxWidth: "1100px",
     width: "100%",
   },
   logoContainer: {
     width: "100px",
     height: "100px",
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    margin: "0 auto 40px auto",
+    margin: "0 auto 30px auto",
+    marginTop: "40px",
     border: "2px solid #d4ff00",
     overflow: "hidden",
-    marginTop: "40px",
   },
+
   brandLogo: {
-    width: "70%",
-    height: "70%",
+    width: "100%",
+    height: "100%",
     objectFit: "contain",
   },
+
   header: {
     marginBottom: "80px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     textAlign: "center",
-    borderBottom: "1px solid #1a1a1a",
-    paddingBottom: "40px",
   },
   version: {
-    fontSize: "0.7rem",
+    fontSize: "0.6rem",
     color: "#444",
-    letterSpacing: "4px",
-    display: "block",
-    marginBottom: "15px",
-    fontWeight: "bold",
+    letterSpacing: "5px",
+    marginBottom: "10px",
   },
   mainTitle: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "4.5rem",
+    fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
     margin: 0,
-    letterSpacing: "4px",
+    letterSpacing: "2px",
     textTransform: "uppercase",
-    lineHeight: "0.9",
+    fontWeight: "900",
   },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "30px",
-    marginBottom: "100px",
+    gap: "20px",
+    marginBottom: "120px",
   },
   card: {
-    backgroundColor: "#0f0f0f",
-    padding: "40px",
+    backgroundColor: "#0a0a0a",
+    padding: "40px 30px",
     border: "1px solid #1a1a1a",
     position: "relative",
-    overflow: "hidden",
   },
   cardNumber: {
-    fontSize: "0.7rem",
-    color: "#333",
-    fontWeight: "bold",
-    letterSpacing: "2px",
+    fontSize: "0.6rem",
+    color: "#d4ff00",
     position: "absolute",
-    top: "20px",
-    right: "20px",
+    top: "15px",
+    right: "15px",
+    opacity: 0.5,
   },
   cardTitle: {
     fontSize: "0.8rem",
-    letterSpacing: "4px",
-    color: "#d4ff00",
-    marginBottom: "25px",
+    letterSpacing: "3px",
+    color: "#fff",
+    marginBottom: "20px",
+    borderLeft: "2px solid #d4ff00",
+    paddingLeft: "15px",
   },
   cardText: {
+    fontSize: "0.85rem",
+    lineHeight: "1.8",
+    color: "#777",
+  },
+  adminSection: {
+    marginTop: "60px",
+    borderTop: "1px solid #1a1a1a",
+    paddingTop: "100px",
+    marginBottom: "120px",
+  },
+  adminSectionTitle: {
+    fontSize: "0.75rem",
+    letterSpacing: "5px",
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: "80px",
+  },
+  adminList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "120px",
+  },
+  adminRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "80px",
+    width: "100%",
+    flexWrap: "wrap",
+  },
+  profileContainer: {
+    position: "relative",
+  },
+  profileCircle: {
+    width: "240px",
+    height: "240px",
+    borderRadius: "50%",
+    border: "1px solid #222",
+    padding: "10px",
+    backgroundColor: "#000",
+    overflow: "hidden",
+  },
+  profileImg: {
+    width: "100%",
+    height: "100%",
+    borderRadius: "50%",
+    objectFit: "cover",
+  },
+  scanLine: {
+    position: "absolute",
+    top: "10%",
+    left: "-15px",
+    width: "2px",
+    height: "80%",
+    backgroundColor: "#d4ff00",
+    opacity: 0.4,
+  },
+  adminInfo: {
+    flex: 1,
+    maxWidth: "500px",
+    display: "flex",
+    flexDirection: "column",
+  },
+  adminName: {
+    fontSize: "2.5rem",
+    letterSpacing: "1px",
+    color: "#fff",
+    margin: "5px 0 20px 0",
+    fontWeight: "800",
+  },
+  adminRoleLabel: {
+    fontSize: "0.7rem",
+    color: "#d4ff00",
+    letterSpacing: "4px",
+    fontWeight: "bold",
+  },
+  bioDivider: {
+    width: "60px",
+    height: "1px",
+    backgroundColor: "#d4ff00",
+    marginBottom: "25px",
+  },
+  adminBio: {
     fontSize: "0.9rem",
     lineHeight: "1.8",
     color: "#888",
-    letterSpacing: "1px",
+    letterSpacing: "0.5px",
+  },
+  adminStats: {
+    marginTop: "30px",
+    display: "flex",
+    gap: "30px",
+  },
+  statLabel: {
+    fontSize: "0.6rem",
+    letterSpacing: "2px",
+    color: "#444",
   },
   specBox: {
     display: "flex",
@@ -202,19 +383,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexWrap: "wrap",
     gap: "20px",
   },
-  specItem: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "5px",
-  },
-  specLabel: {
-    fontSize: "0.5rem",
-    color: "#444",
-    letterSpacing: "3px",
-  },
-  specValue: {
-    fontSize: "0.75rem",
-    letterSpacing: "2px",
-    fontWeight: "bold",
-  },
+  specItem: { display: "flex", flexDirection: "column", gap: "5px" },
+  specLabel: { fontSize: "0.55rem", color: "#444", letterSpacing: "3px" },
+  specValue: { fontSize: "0.75rem", letterSpacing: "2px", fontWeight: "bold" },
 };

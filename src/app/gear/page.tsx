@@ -14,16 +14,26 @@ interface Article {
 }
 
 export default function GearPage() {
-  const [article, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Connection Constants
+  const BACKEND_API =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+  const STATIC_URL = BACKEND_API.replace("/api", "");
 
   useEffect(() => {
     async function fetchArticles() {
       try {
-        const response = await fetch("/api/article?category=GEAR");
+        // Fetching from the base endpoint
+        const response = await fetch(`${BACKEND_API}/article`);
         if (response.ok) {
-          const data = await response.json();
-          setArticles(data);
+          const data: Article[] = await response.json();
+
+          // ✅ FILTER LOGIC: Only allow "GEAR" category
+          const filteredGear = data.filter((item) => item.category === "GEAR");
+
+          setArticles(filteredGear);
         }
       } catch (error) {
         console.error("FETCH_ERROR:", error);
@@ -32,7 +42,7 @@ export default function GearPage() {
       }
     }
     fetchArticles();
-  }, []);
+  }, [BACKEND_API]);
 
   return (
     <div style={styles.pageContainer}>
@@ -40,48 +50,50 @@ export default function GearPage() {
         <h1 style={styles.title}>
           GEAR <span style={{ color: "#d4ff00" }}>ESSENTIALS</span>
         </h1>
-        <p style={styles.subtitle}>CURATED EQUIPMENT FOR THE MODERN RUNNER</p>
+        <p style={styles.subtitle}>CURATED EQUIPMENT FOR THE MODERN ATHLETE</p>
       </div>
 
       <div style={styles.content}>
         {loading ? (
-          <div style={styles.loadingText}>LOADING_DATA_STREAM...</div>
-        ) : article.length > 0 ? (
+          <div style={styles.loadingText}>LOADING DATA STREAM...</div>
+        ) : articles.length > 0 ? (
           <div style={styles.grid}>
-            {article.map((article) => (
+            {articles.map((item) => (
               <Link
-                key={article.id}
-                href={`/article/${article.id}`}
+                key={item.id}
+                href={`/article/${item.id}`}
                 style={styles.cardLink}
               >
                 <motion.div
                   style={styles.card}
-                  whileHover={{ y: -5 }}
+                  whileHover={{ y: -5, borderColor: "#d4ff00" }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div style={styles.imageContainer}>
-                    {article.image ? (
+                    {item.image ? (
                       <img
-                        src={article.image}
-                        alt={article.title}
+                        src={
+                          item.image.startsWith("http")
+                            ? item.image
+                            : `${STATIC_URL}/uploads/${item.image}`
+                        }
+                        alt={item.title}
                         style={styles.articleImage}
                       />
                     ) : (
                       <div style={styles.placeholderImage}>
-                        <span style={styles.imageLabel}>NO_VISUAL</span>
+                        <span style={styles.imageLabel}>NO VISUAL</span>
                       </div>
                     )}
                   </div>
                   <div style={styles.cardContent}>
                     <span style={styles.tag}>
-                      {article.category} //{" "}
-                      {new Date(article.createdAt).getFullYear()}
+                      {item.category} ||{" "}
+                      {new Date(item.createdAt).getFullYear()}
                     </span>
-                    <h2 style={styles.cardTitle}>
-                      {article.title.toUpperCase()}
-                    </h2>
+                    <h2 style={styles.cardTitle}>{item.title.toUpperCase()}</h2>
                     <p style={styles.cardDesc}>
-                      {article.content.substring(0, 100)}...
+                      {item.content.substring(0, 100)}...
                     </p>
                     <div style={styles.readMore}>READ ANALYSIS →</div>
                   </div>
@@ -90,7 +102,7 @@ export default function GearPage() {
             ))}
           </div>
         ) : (
-          <div style={styles.noData}>NO_EQUIPMENT_DATA_FOUND</div>
+          <div style={styles.noData}>NO EQUIPMENT DATA FOUND</div>
         )}
       </div>
     </div>
@@ -106,7 +118,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   header: {
     marginBottom: "60px",
-
     borderBottom: "1px solid #333",
     paddingBottom: "40px",
   },
@@ -143,6 +154,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     flexDirection: "column",
     height: "100%",
+    transition: "border-color 0.3s ease",
   },
   imageContainer: {
     height: "250px",
@@ -157,7 +169,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#111",
-    backgroundImage: "radial-gradient(#222 1px, transparent 1px)", // grid pattern effect
+    backgroundImage: "radial-gradient(#222 1px, transparent 1px)",
     backgroundSize: "20px 20px",
   },
   imageLabel: {
@@ -197,7 +209,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.75rem",
     letterSpacing: "2px",
     fontWeight: "bold",
-    marginTop: "auto", // pushes to bottom
+    marginTop: "auto",
   },
   articleImage: {
     width: "100%",

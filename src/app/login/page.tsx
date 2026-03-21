@@ -120,17 +120,17 @@ const LoginForm = () => {
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {loading ? "VERIFYING..." : "SIGN IN →"}
+              {loading ? "VERIFYING..." : "SIGN IN"}
             </button>
           </form>
 
           <div style={styles.authExtras}>
             <label style={styles.checkboxLabel}>
               <input type="checkbox" style={styles.checkbox} />
-              <span style={styles.checkboxText}>REMEMBER_SESSION</span>
+              <span style={styles.checkboxText}>REMEMBER ME</span>
             </label>
             <Link href="/forgot-password" style={styles.forgotLink}>
-              RECOVERY_PROTOCOL?
+              RECOVER ACCOUNT?
             </Link>
           </div>
 
@@ -145,7 +145,7 @@ const LoginForm = () => {
 
       <div style={styles.visualSide}>
         <div style={styles.overlay}>
-          <div style={styles.verticalText}>ePRX SECURITY</div>
+          <div style={styles.verticalText}>PRX || LOGIN SECURITY</div>
           <h2 style={styles.brandingTitle}>
             THE <br /> <span style={{ color: "#d4ff00" }}>INNER</span> CIRCLE
           </h2>
@@ -239,7 +239,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.7rem",
     letterSpacing: "5px",
     color: "#ccc",
-    marginTop: "100px",
+    marginTop: "300px",
   },
   brandingTitle: {
     fontSize: "4.5rem",

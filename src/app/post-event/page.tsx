@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
@@ -10,8 +10,9 @@ export default function PostEventPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ePRX UV1: Dedicated Backend Port
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -25,24 +26,30 @@ export default function PostEventPage() {
     }
   }, [user, loading, router]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // MAINTAIN STRUCTURE: Capture data via FormData
-    const formElement = e.currentTarget;
-    const formData = new FormData(formElement);
-
-    // ✅ DEBUG: Ensure 'file' is being sent if that's what the backend expects
-    // If your backend EventsController uses FileInterceptor('image'), leave it as 'image'.
-    // If we aligned it to 'file' like the UserController, change it below:
+    const formData = new FormData(e.currentTarget);
 
     try {
-      // ✅ SYNC: Ensure this matches your @Controller('event') or @Controller('events')
       const response = await fetch(`${BACKEND_API}/event`, {
         method: "POST",
         body: formData,
-        // Headers: None needed, browser handles multipart boundary
       });
 
       if (response.ok) {
@@ -50,13 +57,10 @@ export default function PostEventPage() {
         router.refresh();
       } else {
         const errorData = await response.json();
-        alert(
-          `BROADCAST_FAILED: ${errorData.message || "Invalid Mission Data"}`,
-        );
+        alert(`BROADCAST_FAILED: ${errorData.message}`);
       }
     } catch (error) {
-      console.error("CONNECTION_ERROR:", error);
-      alert("CRITICAL_ERROR: Uplink to Command Center failed.");
+      alert("CRITICAL ERROR: Uplink failed.");
     } finally {
       setIsSubmitting(false);
     }
@@ -65,154 +69,265 @@ export default function PostEventPage() {
   if (loading || checkingAuth) {
     return (
       <div style={styles.loadingContainer}>
-        <h2 style={styles.loadingText}>INITIALIZING_SECURE_SESSION...</h2>
+        <h2 style={styles.loadingText}>INITIALIZING EVENT SESSION...</h2>
       </div>
     );
   }
 
   return (
     <div style={styles.pageContainer}>
-      <h1 style={styles.mainTitle}>
-        POST <span style={{ color: "#d4ff00" }}>EVENT</span>
-      </h1>
+      <header style={styles.header}>
+        <h1 style={styles.mainTitle}>
+          POST <span style={{ color: "#d4ff00" }}>EVENT</span>
+        </h1>
+        <p style={styles.subtitle}>PRX CONTROL || POST EVENT</p>
+      </header>
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <h3 style={styles.sectionTitle}>|| EVENT SPECS</h3>
+      <form onSubmit={handleSubmit} style={styles.formContainer}>
+        <div style={styles.gridMain}>
+          {/* LEFT COLUMN: VISUALS & BRIEFING */}
+          <div style={styles.column}>
+            <h3 style={styles.sectionTitle}>EVENT DETAILS</h3>
 
-        {/* MATCH CONDITION: Added field for the Controller's FileInterceptor('image') */}
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>MISSION_VISUAL (OPTIONAL)</label>
-          <input
-            type="file"
-            name="file" // ✅ ALIGNMENT: Changed from 'image' to 'file' to match the new standard
-            accept="image/*"
-            style={styles.input}
-          />
+            <div style={styles.imageSection}>
+              <label style={styles.label}>UPLOAD EVENT BANNER</label>
+              <div
+                style={styles.thumbnailBox}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {imagePreview ? (
+                  <>
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      style={styles.previewImg}
+                    />
+                    <div style={styles.removeOverlay} onClick={removeImage}>
+                      REMOVE IMAGE
+                    </div>
+                  </>
+                ) : (
+                  <div style={styles.uploadPlaceholder}>
+                    <span style={{ fontSize: "2rem", color: "#d4ff00" }}>
+                      +
+                    </span>
+                    <span>UPLOAD IMAGE</span>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                name="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
+            </div>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>EVENT BRIEFING (DESCRIPTION)</label>
+              <textarea
+                name="description"
+                required
+                style={styles.textarea}
+                placeholder="INPUT EVENT DETAILS..."
+              />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: DATA & INTEL */}
+          <div style={styles.column}>
+            <h3 style={styles.sectionTitle}>CORE DATA</h3>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>EVENT TITLE</label>
+              <input
+                name="title"
+                required
+                style={styles.input}
+                placeholder="EVENT TITLE"
+              />
+            </div>
+
+            <div style={styles.fieldRow}>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>DATE</label>
+                <input
+                  name="date"
+                  type="datetime-local"
+                  required
+                  style={styles.input}
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>EVENT URL</label>
+                <input
+                  name="link"
+                  type="url"
+                  style={styles.input}
+                  placeholder="EVENT URL"
+                />
+              </div>
+            </div>
+
+            <div style={styles.fieldRow}>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>LOCATION</label>
+                <input
+                  name="location"
+                  required
+                  style={styles.input}
+                  placeholder="COORDINATES"
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>ORGANIZER</label>
+                <input
+                  name="organizer"
+                  required
+                  style={styles.input}
+                  placeholder="ORGANIZER"
+                />
+              </div>
+            </div>
+
+            <h3 style={{ ...styles.sectionTitle, marginTop: "20px" }}>
+              CONTACT DETAILS
+            </h3>
+            <div style={styles.fieldRow}>
+              <input
+                name="firstName"
+                required
+                style={styles.input}
+                placeholder="FIRST NAME"
+              />
+              <input
+                name="lastName"
+                required
+                style={styles.input}
+                placeholder="LAST NAME"
+              />
+            </div>
+            <div style={styles.fieldRow}>
+              <input
+                name="email"
+                type="email"
+                required
+                style={styles.input}
+                placeholder="EMAIL ADDR"
+              />
+              <input
+                name="mobile"
+                type="tel"
+                required
+                style={styles.input}
+                placeholder="SECURE LINE"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                ...styles.submitBtn,
+                opacity: isSubmitting ? 0.5 : 1,
+              }}
+            >
+              {isSubmitting ? "TRANSMITTING..." : "AUTHORIZE BROADCAST"}
+            </button>
+          </div>
         </div>
-
-        <div style={styles.fieldRow}>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>EVENT TITLE - Required</label>
-            <input
-              name="title"
-              required
-              style={styles.input}
-              placeholder="EVENT TITLE"
-            />
-          </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>DATE & TIME</label>
-            <input
-              name="date"
-              type="datetime-local"
-              required
-              style={styles.input}
-            />
-          </div>
-        </div>
-
-        <div style={styles.fieldRow}>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>LOCATION - Required</label>
-            <input
-              name="location"
-              required
-              style={styles.input}
-              placeholder="LOCATION"
-            />
-          </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>ORGANIZER - Required</label>
-            <input
-              name="organizer"
-              required
-              style={styles.input}
-              placeholder="ORGANIZER"
-            />
-          </div>
-        </div>
-
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>DESCRIPTION - Required</label>
-          <textarea
-            name="description"
-            required
-            style={styles.textarea}
-            placeholder="MISSION BRIEFING..."
-          />
-        </div>
-
-        <h3 style={styles.sectionTitle}>|| CONTACT INTEL</h3>
-        <div style={styles.fieldRow}>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>FIRST NAME - Required</label>
-            <input
-              name="firstName"
-              required
-              style={styles.input}
-              placeholder="FIRST NAME"
-            />
-          </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>LAST NAME - Required</label>
-            <input
-              name="lastName"
-              required
-              style={styles.input}
-              placeholder="LAST NAME"
-            />
-          </div>
-        </div>
-        <div style={styles.fieldRow}>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>EMAIL - Required</label>
-            <input
-              name="email"
-              type="email"
-              required
-              style={styles.input}
-              placeholder="EMAIL"
-            />
-          </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>MOBILE - Required</label>
-            <input
-              name="mobile"
-              type="tel"
-              required
-              style={styles.input}
-              placeholder="MOBILE"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          style={{
-            ...styles.submitBtn,
-            opacity: isSubmitting ? 0.5 : 1,
-            cursor: isSubmitting ? "not-allowed" : "pointer",
-          }}
-        >
-          {isSubmitting ? "TRANSMITTING..." : "BROADCAST TO MISSION BOARD"}
-        </button>
       </form>
     </div>
   );
 }
 
-// ... styles remain identical to your original provided CSS ...
-
 const styles: { [key: string]: React.CSSProperties } = {
   pageContainer: {
     backgroundColor: "#050505",
     minHeight: "100vh",
-    padding: "40px 8%",
+    padding: "60px 5%",
     color: "#fff",
+    fontFamily: "monospace",
+  },
+  header: { textAlign: "center", marginBottom: "40px" },
+  mainTitle: { fontFamily: "var(--font-bebas)", fontSize: "4rem", margin: 0 },
+  subtitle: { color: "#444", fontSize: "0.7rem", letterSpacing: "2px" },
+  formContainer: { maxWidth: "1100px", margin: "0 auto" },
+  gridMain: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+    gap: "40px",
+  },
+  column: { display: "flex", flexDirection: "column", gap: "20px" },
+  sectionTitle: {
+    fontSize: "0.75rem",
+    color: "#d4ff00",
+    letterSpacing: "3px",
+    borderLeft: "3px solid #d4ff00",
+    paddingLeft: "10px",
+    margin: "0 0 10px 0",
+  },
+  fieldRow: { display: "flex", gap: "10px" },
+  fieldGroup: { display: "flex", flexDirection: "column", gap: "8px", flex: 1 },
+  label: { fontSize: "0.6rem", color: "#666", textTransform: "uppercase" },
+  input: {
+    backgroundColor: "#0a0a0a",
+    border: "1px solid #222",
+    padding: "12px",
+    color: "#fff",
+    outline: "none",
+    fontSize: "0.8rem",
+    width: "100%",
+  },
+  textarea: {
+    backgroundColor: "#0a0a0a",
+    border: "1px solid #222",
+    padding: "12px",
+    color: "#fff",
+    minHeight: "220px",
+    outline: "none",
+    fontSize: "0.8rem",
+    resize: "none",
+  },
+  thumbnailBox: {
+    width: "100%",
+    aspectRatio: "16/9",
+    backgroundColor: "#0a0a0a",
+    border: "1px dashed #333",
+    display: "flex",
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "0.3s",
+  },
+  previewImg: { width: "100%", height: "100%", objectFit: "cover" },
+  removeOverlay: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    backgroundColor: "rgba(255,0,0,0.7)",
+    padding: "5px 10px",
+    fontSize: "0.6rem",
+    borderRadius: "2px",
+  },
+  uploadPlaceholder: {
+    textAlign: "center",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
+    gap: "5px",
+  },
+  submitBtn: {
+    backgroundColor: "#d4ff00",
+    color: "#000",
+    border: "none",
+    padding: "16px",
+    fontFamily: "var(--font-bebas)",
+    fontSize: "1.4rem",
+    fontWeight: "bold",
+    cursor: "pointer",
+    marginTop: "auto",
   },
   loadingContainer: {
     backgroundColor: "#050505",
@@ -221,63 +336,5 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "center",
     alignItems: "center",
   },
-  loadingText: {
-    fontFamily: "monospace",
-    color: "#d4ff00",
-    fontSize: "1rem",
-    letterSpacing: "4px",
-  },
-  mainTitle: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "3rem",
-    marginBottom: "0px",
-    textAlign: "center",
-    marginTop: "75px",
-  },
-  sectionTitle: {
-    fontSize: "0.7rem",
-    color: "#d4ff00",
-    letterSpacing: "3px",
-    borderBottom: "1px solid #222",
-    paddingBottom: "8px",
-    marginTop: "10px",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    maxWidth: "800px",
-    width: "100%",
-  },
-  fieldRow: { display: "flex", gap: "15px" },
-  fieldGroup: { display: "flex", flexDirection: "column", gap: "6px", flex: 1 },
-  label: { fontSize: "0.55rem", color: "#666", letterSpacing: "1px" },
-  input: {
-    backgroundColor: "#111",
-    border: "1px solid #333",
-    padding: "8px",
-    color: "#fff",
-    outline: "none",
-    flex: 1,
-    fontSize: "0.85rem",
-  },
-  textarea: {
-    backgroundColor: "#111",
-    border: "1px solid #333",
-    padding: "8px",
-    color: "#fff",
-    minHeight: "120px",
-    outline: "none",
-    fontSize: "0.85rem",
-  },
-  submitBtn: {
-    backgroundColor: "#d4ff00",
-    color: "#000",
-    border: "none",
-    padding: "12px",
-    fontFamily: "var(--font-bebas)",
-    fontSize: "1.1rem",
-    marginTop: "10px",
-    fontWeight: "bold",
-  },
+  loadingText: { color: "#d4ff00", letterSpacing: "4px" },
 };

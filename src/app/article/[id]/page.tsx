@@ -62,7 +62,7 @@ export default function ArticleDetailPage() {
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
-        <h2 style={styles.loadingText}>DECRYPTING_DATA_STREAM...</h2>
+        <h2 style={styles.loadingText}>DECRYPTING DATA STREAM...</h2>
       </div>
     );
   }
@@ -71,10 +71,10 @@ export default function ArticleDetailPage() {
     return (
       <div style={styles.errorContainer}>
         <h2 style={styles.errorText}>
-          // ERROR: {error || "RESOURCE_NOT_FOUND"}
+          || ERROR: {error || "RESOURCE_NOT_FOUND"}
         </h2>
         <Link href="/" style={styles.backLink}>
-          RETURN_TO_BASE
+          RETURN TO DASHBOARD
         </Link>
       </div>
     );
@@ -96,7 +96,7 @@ export default function ArticleDetailPage() {
         <header style={styles.header}>
           <div style={styles.meta}>
             <span style={styles.category}>{article.category}</span>
-            <span style={styles.divider}>//</span>
+            <span style={styles.divider}> || </span>
             <span style={styles.date}>
               {new Date(article.createdAt)
                 .toLocaleDateString("en-US", {
@@ -141,7 +141,7 @@ export default function ArticleDetailPage() {
         <footer style={styles.footer}>
           <div style={styles.footerLine}></div>
           <p style={styles.footerText}>
-            END_OF_TRANSMISSION // ePRX_UV1_PROTOCOL
+            END OF TRANSMISSION || PRX ARCHIVES || ALL RIGHTS RESERVED 2026
           </p>
         </footer>
       </motion.div>

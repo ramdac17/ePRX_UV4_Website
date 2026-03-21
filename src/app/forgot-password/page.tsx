@@ -30,16 +30,16 @@ const ForgotPasswordForm = () => {
         },
       );
 
-      if (!response.ok) throw new Error("RECOVERY_REQUEST_FAILED");
+      if (!response.ok) throw new Error("RECOVERY REQUEST FAILED");
 
-      setToastMsg("RECOVERY_SIGNAL_SENT: CHECK YOUR INBOX");
+      setToastMsg("RECOVERY SIGNAL SENT: CHECK YOUR INBOX");
       setToastType("success");
       setShowToast(true);
 
       // Optional: auto-redirect after success
       setTimeout(() => router.push("/login"), 3000);
     } catch (err: any) {
-      setToastMsg("TRANSMISSION_FAILED: UNABLE TO REACH CORE");
+      setToastMsg("TRANSMISSION FAILED: UNABLE TO SEND RECOVERY LINK");
       setToastType("error");
       setShowToast(true);
     } finally {
@@ -52,10 +52,8 @@ const ForgotPasswordForm = () => {
       <div style={styles.formSide}>
         <div style={styles.formWrapper}>
           <div style={styles.header}>
-            <h1 style={styles.title}>RECOVERY_MODE</h1>
-            <p style={styles.subtitle}>
-              INITIATING SECURE HANDSHAKE TO RESTORE RUNNER ACCESS.
-            </p>
+            <h1 style={styles.title}>RECOVERY MODE</h1>
+            <p style={styles.subtitle}>RESTORE RUNNER ACCESS.</p>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -84,14 +82,14 @@ const ForgotPasswordForm = () => {
                 opacity: loading ? 0.5 : 1,
               }}
             >
-              {loading ? "TRANSMITTING..." : "SEND_RECOVERY_LINK →"}
+              {loading ? "SENDING..." : "SEND RECOVERY LINK"}
             </button>
           </form>
 
           <div style={styles.footer}>
-            <p style={styles.footerText}>REMEMBERED YOUR KEY?</p>
+            <p style={styles.footerText}>REMEMBERED YOUR ACCOUNT?</p>
             <Link href="/login" style={styles.loginLink}>
-              RETURN_TO_LOGIN
+              RETURN TO LOGIN
             </Link>
           </div>
         </div>
@@ -99,7 +97,7 @@ const ForgotPasswordForm = () => {
 
       <div style={styles.visualSide}>
         <div style={styles.overlay}>
-          <div style={styles.verticalText}>SIGNAL TRACE</div>
+          <div style={styles.verticalText}>PRX || RECOVER ACCOUNT</div>
           <h2 style={styles.brandingTitle}>
             LOST <br />
             <span style={{ color: "#d4ff00" }}>IDENTITY</span>
@@ -178,8 +176,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   visualSide: {
     flex: "1.15",
-    backgroundImage:
-      'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072")',
+    backgroundImage: 'url("./assets/images/recoverAccount.jpg")',
     backgroundSize: "cover",
     backgroundPosition: "center",
     position: "relative",
@@ -200,7 +197,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.7rem",
     letterSpacing: "5px",
     color: "#ccc",
-    marginTop: "100px",
+    marginTop: "300px",
   },
   brandingTitle: {
     fontSize: "4.5rem",
