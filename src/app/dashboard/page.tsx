@@ -209,7 +209,9 @@ export default function Home() {
               style={styles.heroTitleLeft}
               className={isGlitching ? "glitch-active" : ""}
             >
-              PINOY RUNNER <span style={{ color: "#d4ff00" }}>EXTREME</span>
+              <span style={{ color: "#d4ff00" }}>P</span>INOY
+              <span style={{ color: "#d4ff00" }}> R</span>UNNER E
+              <span style={{ color: "#d4ff00" }}>X</span>TREME
             </h1>
             <h2 style={styles.heroTagline}>
               BEYOND THE <span style={{ color: "#d4ff00" }}>MILE</span>
@@ -221,7 +223,7 @@ export default function Home() {
             <div style={styles.heroActionContainerLeft}>
               <Link href={user ? "/dashboard" : "/login"}>
                 <button style={styles.ctaBtn}>
-                  {user ? "ENTER_COMMAND_CENTER" : "INITIALIZE_SESSION"}
+                  {user ? "REFRESH ACTIVITY CHART" : "INITIALIZE SESSION"}
                 </button>
               </Link>
             </div>
@@ -330,12 +332,12 @@ export default function Home() {
               ) : (
                 <div style={styles.lockedChartOverlay}>
                   <span style={styles.lockedText}>
-                    {user ? "NO_DATA_SYNC" : "ACCESS_DENIED"}
+                    {user ? "NO DATA SYNC" : "ACCESS DENIED"}
                   </span>
                   <p style={styles.lockedSubText}>
                     {user
-                      ? "COMPLETE_SESSION_TO_LOG"
-                      : "INITIALIZE_SESSION_TO_VIEW"}
+                      ? "COMPLETE SESSION TO LOG"
+                      : "INITIALIZE SESSION TO VIEW"}
                   </p>
                   {!user && (
                     <Link href="/login" style={{ textDecoration: "none" }}>

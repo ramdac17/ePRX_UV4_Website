@@ -38,14 +38,14 @@ const VerifyOTP = ({
       // Endpoint updated to match our logic
       await axios.post(`${API_URL}/auth/verify-otp`, { email, otp });
 
-      setToastMsg("IDENTITY_VERIFIED: UPLINK STABLE.");
+      setToastMsg("IDENTITY VERIFIED: UPLINK STABLE.");
       setToastType("success");
       setShowToast(true);
 
       // Give the user time to read success before redirecting to login
       setTimeout(onVerified, 2000);
     } catch (error: any) {
-      const msg = error.response?.data?.message || "INVALID_CODE";
+      const msg = error.response?.data?.message || "INVALID CODE";
       setToastMsg(
         Array.isArray(msg) ? msg[0].toUpperCase() : msg.toUpperCase(),
       );
@@ -66,7 +66,7 @@ const VerifyOTP = ({
       </div>
       <form onSubmit={handleVerify}>
         <div style={styles.inputContainer}>
-          <label style={styles.label}>OTP_CODE</label>
+          <label style={styles.label}>OTP CODE</label>
           <input
             type="text"
             placeholder="XXXXXX"
@@ -146,7 +146,7 @@ const RegisterForm = () => {
         sanitizedData,
       );
 
-      setToastMsg("RECRUIT_SYNC: SUCCESS. OTP DISPATCHED.");
+      setToastMsg("RECRUIT SYNC: SUCCESS. OTP DISPATCHED.");
       setToastType("success");
       setShowToast(true);
 
@@ -157,10 +157,10 @@ const RegisterForm = () => {
        * If the backend returns a 400, the details are in error.response.data
        */
       const backendError = error.response?.data;
-      console.error("[ePRX_UV1] REGISTRATION_FAILURE_DETAIL:", backendError);
+      console.error("REGISTRATION FAILURE DETAIL:", backendError);
 
       // Handle NestJS ValidationPipe array messages
-      const rawMsg = backendError?.message || "REGISTRATION_FAILED";
+      const rawMsg = backendError?.message || "REGISTRATION FAILED";
       const displayMsg = Array.isArray(rawMsg) ? rawMsg[0] : rawMsg;
 
       setToastMsg(displayMsg.toUpperCase());

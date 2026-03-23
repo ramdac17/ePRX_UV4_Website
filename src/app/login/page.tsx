@@ -33,11 +33,11 @@ const LoginForm = () => {
       const user = data.user || data;
       const token = data.accessToken || data.token;
 
-      if (!token) throw new Error("TOKEN_MISSING_FROM_RESPONSE");
+      if (!token) throw new Error("TOKEN MISSING FROM RESPONSE");
 
       // Optional: Check email verification
       if (user.emailVerified === false) {
-        setToastMsg("IDENTITY_LOCKED: PLEASE VERIFY YOUR EMAIL.");
+        setToastMsg("IDENTITY LOCKED: PLEASE VERIFY YOUR EMAIL.");
         setToastType("error");
         setShowToast(true);
         setLoading(false);
@@ -47,7 +47,7 @@ const LoginForm = () => {
       // ✅ Store session in AuthContext only
       login(user, token);
 
-      setToastMsg("ACCESS_GRANTED: INITIALIZING...");
+      setToastMsg("ACCESS GRANTED: INITIALIZING...");
       setToastType("success");
       setShowToast(true);
 
@@ -56,7 +56,7 @@ const LoginForm = () => {
         router.refresh();
       }, 1200);
     } catch (err: any) {
-      const rawMessage = err.response?.data?.message || "TRANSMISSION_ERROR";
+      const rawMessage = err.response?.data?.message || "TRANSMISSION ERROR";
       const message = Array.isArray(rawMessage) ? rawMessage[0] : rawMessage;
 
       setToastMsg(message.toUpperCase());
@@ -218,7 +218,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   visualSide: {
     flex: 1.15,
-    backgroundImage: `url("/assets/images/register.jpg")`,
+    backgroundImage: `url("/assets/images/LoginV1Web.jpg")`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     position: "relative",

@@ -95,7 +95,7 @@ export default function GearPage() {
                     <p style={styles.cardDesc}>
                       {item.content.substring(0, 100)}...
                     </p>
-                    <div style={styles.readMore}>READ ANALYSIS →</div>
+                    <div style={styles.readMore}>READ ARTICLE</div>
                   </div>
                 </motion.div>
               </Link>

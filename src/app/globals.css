@@ -1,3 +1,10 @@
+@media (max-width: 768px) {
+  h1 {
+    word-break: break-word;
+    hyphens: auto;
+  }
+}
+
 @theme {
   --color-eprx-lime: #d4ff00;
   --color-eprx-dark: #0f0f0f;
@@ -23,10 +30,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-html,
-body {
-  max-width: 100%;
+html, body {
   overflow-x: hidden;
+  width: 100%;
+  position: relative;
 }
 
 /* Scroll Reveal Animations */
@@ -85,4 +92,9 @@ body {
 .pillar-card:hover .pillar-image {
   filter: grayscale(0%) !important;
   transform: scale(1.05);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }

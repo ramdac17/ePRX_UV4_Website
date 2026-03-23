@@ -90,17 +90,17 @@ export default function ProfilePage() {
 
         if (profile.image) setPreviewUrl(profile.image);
       } catch (err: any) {
-        console.error("FETCH_PROFILE_ERROR:", err);
+        console.error("FETCH PROFILE ERROR:", err);
 
         // Handle 401 explicitly
         if (err.response?.status === 401) {
-          setToastMsg("SESSION_EXPIRED. PLEASE LOGIN AGAIN.");
+          setToastMsg("SESSION EXPIRED. PLEASE LOGIN AGAIN.");
           setToastType("error");
           setShowToast(true);
           logout();
           router.push("/login?redirect=/profile");
         } else {
-          setToastMsg("FAILED_TO_FETCH_PROFILE");
+          setToastMsg("FAILED TO FETCH PROFILE");
           setToastType("error");
           setShowToast(true);
         }
@@ -127,7 +127,7 @@ export default function ProfilePage() {
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    setToastMsg("DATA_PORTABILITY_EXPORTED");
+    setToastMsg("DATA PORTABILITY EXPORTED");
     setToastType("success");
     setShowToast(true);
   };
@@ -144,13 +144,13 @@ export default function ProfilePage() {
     if (!confirmed) return;
 
     try {
-      if (!token) throw new Error("SESSION_EXPIRED");
+      if (!token) throw new Error("SESSION EXPIRED");
 
       await axios.delete(`${API_URL}/user/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setToastMsg("ACCOUNT_PURGED_SUCCESSFULLY");
+      setToastMsg("DELETE ACCOUNT SUCCESSFULLY");
       setToastType("success");
       setShowToast(true);
 
@@ -159,7 +159,7 @@ export default function ProfilePage() {
         router.push("/");
       }, 2000);
     } catch (err: any) {
-      setToastMsg(err.response?.data?.message || "PURGE_PROTOCOL_FAILED");
+      setToastMsg(err.response?.data?.message || "DELETE ACCOUNT FAILED");
       setToastType("error");
       setShowToast(true);
     }
@@ -176,11 +176,11 @@ export default function ProfilePage() {
       await axios.post(`${API_URL}/auth/forgot-password`, {
         email: user.email,
       });
-      setToastMsg("RECOVERY_LINK_TRANSMITTED");
+      setToastMsg("RECOVERY LINK TRANSMITTED");
       setToastType("success");
       setShowToast(true);
     } catch {
-      setToastMsg("TRANSMISSION_ERROR");
+      setToastMsg("TRANSMISSION ERROR");
       setToastType("error");
       setShowToast(true);
     }
@@ -207,7 +207,7 @@ export default function ProfilePage() {
       setSelectedFile(compressed as File);
       setPreviewUrl(URL.createObjectURL(compressed));
     } catch {
-      setToastMsg("IMAGE_OPTIMIZATION_FAILED");
+      setToastMsg("IMAGE OPTIMIZATION FAILED");
       setToastType("error");
       setShowToast(true);
     }
@@ -221,7 +221,7 @@ export default function ProfilePage() {
   const handleUpdate = async () => {
     setSaving(true);
     try {
-      if (!token) throw new Error("SESSION_EXPIRED");
+      if (!token) throw new Error("SESSION EXPIRED");
 
       const formData = new FormData();
       formData.append("firstName", user.firstName);
@@ -249,11 +249,11 @@ export default function ProfilePage() {
       };
       login(updatedUser, token);
 
-      setToastMsg("PROFILE_SYNC_SUCCESSFUL");
+      setToastMsg("PROFILE UPDATE SUCCESSFUL");
       setToastType("success");
       setShowToast(true);
     } catch (err: any) {
-      const message = err.response?.data?.message || "SYNC_FAILED";
+      const message = err.response?.data?.message || "UPDATE FAILED";
       setToastMsg(
         Array.isArray(message)
           ? message[0].toUpperCase()
@@ -272,7 +272,7 @@ export default function ProfilePage() {
   ==================================
   */
   if (loading || authLoading)
-    return <div style={styles.loader}>LOADING_PROFILE...</div>;
+    return <div style={styles.loader}>LOADING PROFILE...</div>;
 
   return (
     <AuthGuard>
@@ -283,7 +283,7 @@ export default function ProfilePage() {
             USER <span style={{ color: "#d4ff00" }}>PROFILE</span>
           </h1>
           <p style={styles.subtitle}>
-            MANAGE YOUR RUNNER CREDENTIALS & PRIVACY
+            MANAGE YOUR PROFILE CREDENTIALS & PRIVACY
           </p>
         </div>
 
@@ -301,7 +301,7 @@ export default function ProfilePage() {
               )}
             </div>
             <label style={styles.uploadBtn}>
-              {selectedFile ? "IMAGE_READY" : "CHANGE_IMAGE"}
+              {selectedFile ? "IMAGE_READY" : "CHANGE IMAGE"}
               <input
                 type="file"
                 hidden
@@ -364,32 +364,32 @@ export default function ProfilePage() {
 
           {/* GDPR / Security */}
           <div style={styles.gdprSection}>
-            <h3 style={styles.gdprTitle}>|| SYSTEM_SECURITY_PROTOCOLS</h3>
+            <h3 style={styles.gdprTitle}>|| SYSTEM SECURITY PROTOCOLS</h3>
 
             <div style={styles.protocolBox}>
               <div style={styles.protocolInfo}>
-                <p style={styles.protocolLabel}>CREDENTIAL_RECOVERY</p>
+                <p style={styles.protocolLabel}>CREDENTIAL RECOVERY</p>
                 <p style={styles.protocolDesc}>
                   Trigger a secure password reset handshake via email.
                 </p>
               </div>
               <button onClick={handleRequestReset} style={styles.protocolBtn}>
-                REQUEST_LINK
+                RECOVER
               </button>
             </div>
 
             <div style={styles.gdprGrid}>
               <button onClick={handleExportData} style={styles.gdprBtn}>
-                EXPORT_DATA_JSON
+                EXPORT PROFILE DATA
               </button>
               <button onClick={handleDeleteAccount} style={styles.deleteBtn}>
-                PURGE_ACCOUNT
+                DELETE ACCOUNT
               </button>
             </div>
           </div>
 
           <button onClick={() => router.push("/")} style={styles.backBtn}>
-            BACK_TO_DASHBOARD
+            BACK TO DASHBOARD
           </button>
         </div>
 

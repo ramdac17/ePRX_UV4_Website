@@ -32,19 +32,6 @@ export default function AboutPage() {
       img: "/assets/images/MerricV5.jpg",
       bio: "LEAD ARCHITECT RESPONSIBLE FOR THE CORE STRUCTURE AND DATA UPLINK PROTOCOLS. SPECIALIZES IN HIGH-AVAILABILITY CLOUD INFRASTRUCTURE.",
     },
-    /*   {
-      name: "Gemelyn Ong",
-      role: "ANALYTICS & QUALITY CONTROL",
-      img: "/assets/images/admin2.png",
-      bio: "OVERSEES FRONTEND UX/UI STRATEGY AND PERFORMANCE MONITORING. ENSURES THE TACTICAL INTERFACE MEETS OPERATIONAL STANDARDS FOR SPEED AND CLARITY.",
-    },
-    {
-      name: "Thomas Masagca Jr.",
-      role: "PROJECT MANAGER",
-      img: "/assets/images/admin3.png",
-      bio: "RESPONSIBLE FOR OVERALL PROJECT COORDINATION, TIMELINES, AND CROSS-FUNCTIONAL COMMUNICATION. ENSURES ALL COMPONENTS ALIGN WITH THE PROJECT OBJECTIVES.",
-    },
-    */
   ];
 
   return (
@@ -77,6 +64,32 @@ export default function AboutPage() {
           >
             ABOUT <span style={{ color: "#d4ff00" }}>PRX</span>
           </motion.h1>
+
+          {/* ⚡ NEW: Hero Image & Mock Description */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            style={styles.heroContainer}
+          >
+            <div style={styles.imageFrame}>
+              <img
+                src="/assets/images/prx-pastel.png" // Ensure this path is correct
+                alt="PRX Operational Interface"
+                style={styles.heroImage}
+                onError={(e) => {
+                  e.currentTarget.src = "";
+                }}
+              />
+              <div style={styles.imageOverlay} />
+            </div>
+            <p style={styles.heroDescription}>
+              <span style={{ color: "#d4ff00" }}>PINOY RUNNER EXTREME</span>{" "}
+              REPRESENTS THE APEX OF DURABILITY AND DIGITAL SYNERGY. THE
+              INTERFACE ABOVE DEPICTS OUR GLOBAL NODE NETWORK, FACILITATING
+              REAL-TIME DATA TRANSMISSION FOR THE MODERN ENDURANCE ATHLETE.
+            </p>
+          </motion.div>
         </header>
 
         {/* Mission/Tech/Vision Grid */}
@@ -96,7 +109,7 @@ export default function AboutPage() {
           ))}
         </div>
 
-        {/* Meet the Admins Section (Alternating Z-Pattern) */}
+        {/* Meet the Admins Section */}
         <div style={styles.adminSection}>
           <h2 style={styles.adminSectionTitle}>
             <span style={{ color: "#d4ff00" }}>|</span> OPERATOR LOGS || MEET
@@ -116,22 +129,17 @@ export default function AboutPage() {
                   flexDirection: i % 2 === 0 ? "row" : "row-reverse",
                 }}
               >
-                {/* Profile Visual */}
                 <div style={styles.profileContainer}>
                   <div style={styles.profileCircle}>
                     <img
                       src={admin.img}
                       alt={admin.name}
                       style={styles.profileImg}
-                      onError={(e) => {
-                        e.currentTarget.src = "";
-                      }}
                     />
                   </div>
                   <div style={styles.scanLine} />
                 </div>
 
-                {/* Admin Briefing Text */}
                 <div
                   style={{
                     ...styles.adminInfo,
@@ -196,6 +204,7 @@ export default function AboutPage() {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
+  // ... (All previous styles remain intact)
   container: {
     backgroundColor: "#050505",
     minHeight: "100vh",
@@ -205,10 +214,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "center",
     fontFamily: "monospace",
   },
-  wrapper: {
-    maxWidth: "1100px",
-    width: "100%",
-  },
+  wrapper: { maxWidth: "1100px", width: "100%" },
   logoContainer: {
     width: "100px",
     height: "100px",
@@ -222,15 +228,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "2px solid #d4ff00",
     overflow: "hidden",
   },
-
-  brandLogo: {
-    width: "100%",
-    height: "100%",
-    objectFit: "contain",
-  },
-
+  brandLogo: { width: "100%", height: "100%", objectFit: "contain" },
   header: {
-    marginBottom: "80px",
+    marginBottom: "50px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -244,11 +244,51 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   mainTitle: {
     fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
-    margin: 0,
+    margin: "0 0 40px 0",
     letterSpacing: "2px",
     textTransform: "uppercase",
     fontWeight: "900",
   },
+
+  // ⚡ NEW STYLES
+  heroContainer: {
+    width: "100%",
+    maxWidth: "900px",
+    marginTop: "20px",
+  },
+  imageFrame: {
+    position: "relative",
+    border: "1px solid #1a1a1a",
+    padding: "10px",
+    backgroundColor: "#080808",
+  },
+  heroImage: {
+    width: "100%",
+    height: "auto",
+    maxHeight: "450px",
+    objectFit: "cover",
+    // filter: "grayscale(100%) contrast(1.1)",
+    display: "block",
+  },
+  imageOverlay: {
+    position: "absolute",
+    inset: 0,
+    background: "linear-gradient(to bottom, transparent 70%, #050505)",
+    pointerEvents: "none",
+  },
+  heroDescription: {
+    fontSize: "0.75rem",
+    lineHeight: "1.6",
+    color: "#666",
+    marginTop: "20px",
+    textAlign: "left",
+    letterSpacing: "1px",
+    borderLeft: "2px solid #d4ff00",
+    paddingLeft: "20px",
+    fontFamily: "monospace",
+  },
+
+  // ... (Rest of styles)
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
@@ -277,11 +317,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderLeft: "2px solid #d4ff00",
     paddingLeft: "15px",
   },
-  cardText: {
-    fontSize: "0.85rem",
-    lineHeight: "1.8",
-    color: "#777",
-  },
+  cardText: { fontSize: "0.85rem", lineHeight: "1.8", color: "#777" },
   adminSection: {
     marginTop: "60px",
     borderTop: "1px solid #1a1a1a",
@@ -295,11 +331,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: "center",
     marginBottom: "80px",
   },
-  adminList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "120px",
-  },
+  adminList: { display: "flex", flexDirection: "column", gap: "120px" },
   adminRow: {
     display: "flex",
     alignItems: "center",
@@ -308,9 +340,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     flexWrap: "wrap",
   },
-  profileContainer: {
-    position: "relative",
-  },
+  profileContainer: { position: "relative" },
   profileCircle: {
     width: "240px",
     height: "240px",
@@ -366,16 +396,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#888",
     letterSpacing: "0.5px",
   },
-  adminStats: {
-    marginTop: "30px",
-    display: "flex",
-    gap: "30px",
-  },
-  statLabel: {
-    fontSize: "0.6rem",
-    letterSpacing: "2px",
-    color: "#444",
-  },
+  adminStats: { marginTop: "30px", display: "flex", gap: "30px" },
+  statLabel: { fontSize: "0.6rem", letterSpacing: "2px", color: "#444" },
   specBox: {
     display: "flex",
     justifyContent: "space-between",

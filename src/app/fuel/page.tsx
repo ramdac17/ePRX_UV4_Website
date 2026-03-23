@@ -54,7 +54,6 @@ export default function FuelPage() {
     // Construct the full URL of the article
     const articleUrl = `${window.location.origin}/article/${articleId}`;
     const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}&t=${encodeURIComponent(title)}`;
-
     window.open(fbShareUrl, "_blank", "width=600,height=400");
   };
 
@@ -113,7 +112,7 @@ export default function FuelPage() {
                     </p>
                     <div style={styles.readMore}>READ ARTICLE</div>
 
-                    <button
+                    {/*  <button
                       onClick={(e) => shareToFacebook(e, item.id, item.title)}
                       style={styles.fbButton}
                       title="Share to Facebook"
@@ -127,7 +126,7 @@ export default function FuelPage() {
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                       </svg>
                       <span>SHARE</span>
-                    </button>
+                    </button> */}
                   </div>
                 </motion.div>
               </Link>

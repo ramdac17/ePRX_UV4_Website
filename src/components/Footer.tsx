@@ -3,68 +3,118 @@
 import React from "react";
 import Link from "next/link";
 import { Facebook, Twitter, Instagram } from "lucide-react";
+import { useIsMobile } from "../../hooks/useMediaQuery";
 
 export default function Footer() {
+  const { isMobile } = useIsMobile();
+  // 🛰️ Share Protocol: Targets the root domain of the site
+  const shareEntireSiteToFacebook = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const siteUrl = window.location.origin;
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}`;
+    window.open(fbUrl, "_blank", "width=600,height=400");
+  };
+
+  const dynamicContainer = {
+    ...styles.container,
+    flexDirection: isMobile ? "column" : "row",
+    alignItems: isMobile ? "flex-start" : "center",
+    gap: isMobile ? "40px" : "30px",
+  };
+
   return (
-    <footer style={styles.footer}>
+    <footer
+      style={{
+        ...styles.footer,
+        padding: isMobile ? "40px 20px" : "40px 60px",
+      }}
+    >
       <div style={styles.container}>
         {/* Left: Branding */}
-        <div style={styles.brandSection}>
-          <span style={styles.brand}>PRX</span>
-          <span style={styles.copyright}>© 2026 || ALL RIGHTS RESERVED</span>
-        </div>
-
-        {/* Center: Navigation Links */}
-        <div style={styles.linkSection}>
-          <Link href="/aboutus" style={styles.link}>
-            ABOUT US
-          </Link>
-          <Link href="/contactus" style={styles.link}>
-            CONTACT US
-          </Link>
-
-          <Link href="/privacy" style={styles.link}>
-            PRIVACY PROTOCOL
-          </Link>
-        </div>
-
-        {/* Social Media Icons */}
-        <div style={styles.socialSection}>
-          <a
-            href="https://facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.socialLink}
-          >
-            <Facebook size={18} />
-          </a>
-          <a
-            href="https://twitter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.socialLink}
-          >
-            <Twitter size={18} />
-          </a>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.socialLink}
-          >
-            <Instagram size={18} />
-          </a>
-        </div>
-
-        {/* Right: System Status */}
-        <div style={styles.statusSection}>
-          <div style={styles.statusGroup}>
-            <span style={styles.statusLabel}>LATENCY</span>
-            <span style={styles.statusValue}>12MS</span>
+        <div style={dynamicContainer as any}>
+          <div style={styles.brandSection}>
+            <span style={styles.brand}>PRX</span>
+            <span style={styles.copyright}>© 2026 || ALL RIGHTS RESERVED</span>
           </div>
-          <div style={styles.statusGroup}>
-            <span style={styles.statusLabel}>ENCRYPTION</span>
-            <span style={styles.statusValue}>ACTIVE</span>
+
+          {/* Center: Navigation Links */}
+          <div style={styles.linkSection}>
+            <Link
+              href="/aboutus"
+              style={styles.link}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+            >
+              ABOUT US
+            </Link>
+            <Link
+              href="/contactus"
+              style={styles.link}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+            >
+              CONTACT US
+            </Link>
+            <Link
+              href="/privacy"
+              style={styles.link}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+            >
+              PRIVACY PROTOCOL
+            </Link>
+          </div>
+
+          {/* Social Media Icons */}
+          <div style={styles.socialSection}>
+            {/* ⚡ FB Icon now triggers the site-wide share protocol */}
+            <button
+              onClick={shareEntireSiteToFacebook}
+              style={{
+                ...styles.socialLink,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+            >
+              <Facebook size={18} />
+            </button>
+
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.socialLink}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+            >
+              <Twitter size={18} />
+            </a>
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.socialLink}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
+            >
+              <Instagram size={18} />
+            </a>
+          </div>
+
+          {/* Right: System Status */}
+          <div style={styles.statusSection}>
+            <div style={styles.statusGroup}>
+              <span style={styles.statusLabel}>LATENCY</span>
+              <span style={styles.statusValue}>12MS</span>
+            </div>
+            <div style={styles.statusGroup}>
+              <span style={styles.statusLabel}>ENCRYPTION</span>
+              <span style={styles.statusValue}>ACTIVE</span>
+            </div>
           </div>
         </div>
       </div>
@@ -78,7 +128,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#050505",
     borderTop: "1px solid #1a1a1a",
     padding: "40px 60px",
-    marginTop: "auto", // Pushes footer to bottom in flex containers
+    marginTop: "auto",
   },
   container: {
     maxWidth: "1400px",
@@ -99,11 +149,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.8rem",
     letterSpacing: "4px",
     fontWeight: "bold",
+    fontFamily: "monospace",
   },
   copyright: {
     color: "#444",
     fontSize: "0.5rem",
     letterSpacing: "2px",
+    fontFamily: "monospace",
   },
   linkSection: {
     display: "flex",
@@ -114,6 +166,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textDecoration: "none",
     fontSize: "0.65rem",
     letterSpacing: "2px",
+    fontFamily: "monospace",
     transition: "color 0.2s ease",
   },
   socialSection: {
@@ -141,10 +194,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.45rem",
     color: "#333",
     letterSpacing: "2px",
+    fontFamily: "monospace",
   },
   statusValue: {
     fontSize: "0.6rem",
     color: "#666",
     letterSpacing: "1px",
+    fontFamily: "monospace",
   },
 };

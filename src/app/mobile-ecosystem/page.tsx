@@ -5,9 +5,17 @@ import React, { useRef, useEffect, useState } from "react";
 const MobileEcosystem = () => {
   const mobileRef = useRef<HTMLElement>(null);
   const [isMobileVisible, setIsMobileVisible] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
-  const mobileScreens = [1, 2, 3, 4];
+  // 🛰️ Operational Screen Filenames
+  const mobileScreens = [
+    "LoginScreen.jpg",
+    "Dashboard.jpg",
+    "Profile.jpg",
+    "Timer.jpg",
+    "History.jpg",
+    "GeoMap.jpg",
+  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -44,32 +52,46 @@ const MobileEcosystem = () => {
           </p>
         </div>
 
-        {/* 2. CARD GRID */}
+        {/* 2. CARD GRID (6 Cards, 2 Rows) */}
         <div style={styles.cardGrid}>
-          {mobileScreens.map((screen) => (
+          {mobileScreens.map((fileName, i) => (
             <div
-              key={screen}
+              key={fileName}
               style={{
                 ...styles.mobileCard,
-                transform: hoveredCard === screen ? "scale(1.03)" : "scale(1)",
-                borderColor: hoveredCard === screen ? "#d4ff00" : "#1a1a1a",
+                transform:
+                  hoveredCard === fileName
+                    ? "translateY(-8px)"
+                    : "translateY(0)",
+                borderColor: hoveredCard === fileName ? "#d4ff00" : "#1a1a1a",
+                boxShadow:
+                  hoveredCard === fileName
+                    ? "0 15px 40px rgba(212, 255, 0, 0.15)"
+                    : "none",
               }}
-              onMouseEnter={() => setHoveredCard(screen)}
+              onMouseEnter={() => setHoveredCard(fileName)}
               onMouseLeave={() => setHoveredCard(null)}
             >
               <div style={styles.cardInternal}>
                 <img
-                  src="./assets/images/comingSoon.jpg"
-                  alt={`App Screen ${screen}`}
+                  // Updated path to point to public/assets/images/
+                  src={`/assets/images/${fileName}`}
+                  alt={fileName.replace(".jpg", "")}
                   style={styles.mockImg}
+                  onError={(e) => {
+                    e.currentTarget.src = "/assets/images/comingSoon.jpg";
+                  }}
                 />
                 <div style={styles.imgOverlay}>
-                  <div style={styles.placeholderTag}>PRX_UNIT_0{screen}</div>
+                  <div style={styles.placeholderTag}>
+                    PRX_MODULE_0{i + 1} ||{" "}
+                    {fileName.split(".")[0].toUpperCase()}
+                  </div>
                 </div>
                 <div
                   style={{
                     ...styles.glowEffect,
-                    opacity: hoveredCard === screen ? 0.1 : 0.03,
+                    opacity: hoveredCard === fileName ? 0.2 : 0.03,
                   }}
                 />
               </div>
@@ -77,10 +99,13 @@ const MobileEcosystem = () => {
           ))}
         </div>
 
-        {/* 3. DOWNLOAD ZONE (Vertical line removed) */}
+        {/* 3. DOWNLOAD ZONE */}
         <div style={styles.footerDownload}>
           <div style={styles.inlineBadgeContainer}>
-            <span style={styles.badgeLabel}>AVAILABLE ON</span>
+            <span style={styles.badgeLabel}>
+              AVAILABLE <span style={{ color: "#d4ff00" }}> SOON </span>
+              ON
+            </span>
             <div style={styles.badgeWrapperRow}>
               <img
                 src="/assets/images/app_store_badge.svg"
@@ -98,7 +123,7 @@ const MobileEcosystem = () => {
           <div style={styles.qrContainer}>
             <div style={styles.qrFrame}>
               <img
-                src={`/assets/images/prxQRCode.png`}
+                src="/assets/images/prxQRCode.png"
                 alt="Scan"
                 style={styles.qrImage}
               />
@@ -115,8 +140,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   mobileSection: {
     padding: "100px 20px",
     backgroundColor: "transparent",
-    fontFamily: "var(--font-bebas)",
-    maxWidth: "1100px",
+    maxWidth: "1200px",
     margin: "0 auto",
   },
   headerStack: {
@@ -127,34 +151,40 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: "center",
   },
   mobileTitle: {
-    fontSize: "3.5rem",
     letterSpacing: "2px",
     fontWeight: "900",
     margin: "0 0 15px 0",
+    textTransform: "uppercase",
+    fontFamily: "var(--font-bebas)",
+    fontSize: "3rem",
   },
   mobileDesc: {
-    fontSize: "1rem",
+    fontSize: "0.85rem",
     color: "#666",
-    lineHeight: "1.6",
-    maxWidth: "500px",
-    fontFamily: "var(--font-bebas)",
-    letterSpacing: "1px",
+    lineHeight: "1.8",
+    maxWidth: "550px",
+    letterSpacing: "1.5px",
+    textTransform: "uppercase",
   },
   cardGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "25px",
-    marginBottom: "80px",
+    // Creates 3 columns for desktop, wraps for mobile
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: "30px",
+    marginBottom: "100px",
+    padding: "0 20px",
   },
   mobileCard: {
     aspectRatio: "9/16",
-    backgroundColor: "#0a0a0a",
-    borderRadius: "16px",
+    backgroundColor: "#080808",
+    borderRadius: "14px",
     border: "1px solid #1a1a1a",
     overflow: "hidden",
     position: "relative",
-    transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+    transition: "all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)",
     cursor: "pointer",
+    maxWidth: "320px",
+    margin: "0 auto",
   },
   cardInternal: {
     width: "100%",
@@ -165,60 +195,63 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    filter: "brightness(0.6) contrast(1.2)",
+    filter: "brightness(0.8) contrast(1.1)",
+    transition: "all 0.5s ease",
   },
   imgOverlay: {
     position: "absolute",
     inset: 0,
     background:
-      "linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%)",
+      "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.9) 100%)",
     display: "flex",
     alignItems: "flex-end",
     padding: "20px",
     justifyContent: "center",
   },
   placeholderTag: {
-    fontSize: "0.6rem",
-    color: "#fff",
+    fontSize: "0.55rem",
+    color: "#d4ff00",
     letterSpacing: "3px",
     zIndex: 2,
-    opacity: 0.7,
+    fontFamily: "monospace",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    padding: "4px 8px",
+    borderRadius: "2px",
   },
   footerDownload: {
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
-    gap: "60px",
-    paddingTop: "20px", // Reduced since border is gone
-    borderTop: "none", // Line removed here
+    gap: "80px",
+    opacity: 0.8,
   },
   inlineBadgeContainer: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "12px",
+    gap: "15px",
   },
   badgeLabel: {
-    fontSize: "0.65rem",
-    letterSpacing: "2px",
+    fontSize: "0.6rem",
+    letterSpacing: "4px",
     color: "#444",
   },
   badgeWrapperRow: {
     display: "flex",
-    gap: "15px",
+    gap: "20px",
   },
   badgeImg: {
-    height: "38px",
+    height: "34px",
     cursor: "pointer",
-    filter: "grayscale(1) brightness(0.7)",
+    filter: "grayscale(1) brightness(0.6)",
     transition: "0.3s",
   },
   qrContainer: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "10px",
+    gap: "12px",
   },
   qrFrame: {
     padding: "8px",
@@ -226,12 +259,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "6px",
   },
   qrImage: {
-    width: "80px",
-    height: "80px",
+    width: "75px",
+    height: "75px",
   },
   qrLabel: {
     fontSize: "0.55rem",
-    letterSpacing: "1px",
+    letterSpacing: "3px",
     color: "#444",
   },
   glowEffect: {
@@ -240,17 +273,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     height: "30%",
     backgroundColor: "#d4ff00",
-    filter: "blur(40px)",
-    transition: "opacity 0.3s ease",
+    filter: "blur(45px)",
+    transition: "opacity 0.4s ease",
     zIndex: 1,
   },
   sectionNum: {
-    color: "#444",
-    fontSize: "0.7rem",
-    letterSpacing: "3px",
+    color: "#333",
+    fontSize: "0.6rem",
+    letterSpacing: "5px",
     display: "block",
     textAlign: "center",
-    marginBottom: "5px",
+    marginBottom: "8px",
   },
 };
 

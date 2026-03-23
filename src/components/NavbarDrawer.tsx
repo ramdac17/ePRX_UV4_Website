@@ -23,6 +23,14 @@ export default function NavbarDrawer({
   const { user } = useAuth();
   const pathname = usePathname();
 
+  // 🛰️ Share Protocol: Consistent with Footer logic
+  const shareToFacebook = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const siteUrl = window.location.origin;
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}`;
+    window.open(fbUrl, "_blank", "width=600,height=400");
+  };
+
   const guestItems = [
     { name: "LIVE EVENTS", path: "/events" },
     { name: "ARTICLES", path: "/articles" },
@@ -37,7 +45,7 @@ export default function NavbarDrawer({
     { name: "POST EVENT", path: "/post-event" },
     { name: "WRITE ARTICLE", path: "/write-article" },
     { name: "ABOUT US", path: "/aboutus" },
-    { name: "CONTACT US", path: "/contacttus" },
+    { name: "CONTACT US", path: "/contactus" },
   ];
 
   const menuItems = user ? authItems : guestItems;
@@ -75,11 +83,10 @@ export default function NavbarDrawer({
                 <div style={styles.avatarCircle}>
                   {user?.image ? (
                     <img
-                      // ✅ FIX: Cloudinary full URL detection
                       src={
                         user.image.startsWith("http")
                           ? user.image
-                          : `${STATIC_URL}/${user.image}?t=${Date.now()}`
+                          : `${STATIC_URL}/${user.image}`
                       }
                       alt="User"
                       style={styles.avatarImg}
@@ -106,8 +113,6 @@ export default function NavbarDrawer({
             <nav style={styles.navLinks}>
               {menuItems.map((item, index) => {
                 const isActive = pathname === item.path;
-
-                // ✅ LOGIC: Add dividers before specific sections
                 const showDivider =
                   (item.name === "POST EVENT" && user) ||
                   item.name === "ABOUT US";
@@ -159,13 +164,38 @@ export default function NavbarDrawer({
 
             <div style={styles.footer}>
               <div style={styles.socialIcons}>
-                <a href="#" style={styles.socialLink}>
+                {/* ⚡ FB Icon triggers site share */}
+                <button
+                  onClick={shareToFacebook}
+                  style={styles.socialBtn}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "#d4ff00")
+                  }
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                >
                   <Facebook size={16} />
-                </a>
-                <a href="#" style={styles.socialLink}>
+                </button>
+
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  style={styles.socialLink}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "#d4ff00")
+                  }
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                >
                   <Twitter size={16} />
                 </a>
-                <a href="#" style={styles.socialLink}>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  style={styles.socialLink}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "#d4ff00")
+                  }
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                >
                   <Instagram size={16} />
                 </a>
               </div>
@@ -179,6 +209,7 @@ export default function NavbarDrawer({
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
+  // ... (Existing styles remain the same)
   backdrop: {
     position: "fixed",
     inset: 0,
@@ -220,10 +251,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#111",
-    boxShadow: "0 0 15px rgba(212, 255, 0, 0.2)",
   },
   avatarImg: { width: "100%", height: "100%", objectFit: "cover" },
-  avatarInitial: { color: "#d4ff00", fontWeight: "bold", fontSize: "1.2rem" },
+  avatarInitial: {
+    color: "#d4ff00",
+    fontWeight: "bold",
+    fontSize: "1.2rem",
+    fontFamily: "monospace",
+  },
   userInfo: { display: "flex", flexDirection: "column" },
   userName: {
     color: "#fff",
@@ -232,12 +267,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: 0,
     fontWeight: "bold",
     textTransform: "uppercase",
+    fontFamily: "monospace",
   },
   viewProfile: {
     color: "#d4ff00",
     fontSize: "0.6rem",
     letterSpacing: "2px",
     marginTop: "4px",
+    fontFamily: "monospace",
   },
   navLinks: { display: "flex", flexDirection: "column", gap: "25px" },
   link: {
@@ -246,10 +283,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.75rem",
     letterSpacing: "4px",
     display: "block",
+    fontFamily: "monospace",
   },
   activeDot: { fontSize: "1.2rem", verticalAlign: "middle" },
-
-  // ✅ NEW: Styled Divider
   divider: {
     border: "none",
     height: "1px",
@@ -257,7 +293,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: "5px 0",
     width: "100%",
   },
-
   footer: {
     marginTop: "auto",
     display: "flex",
@@ -265,6 +300,25 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: "20px",
   },
   socialIcons: { display: "flex", gap: "20px" },
-  socialLink: { color: "#666", transition: "color 0.2s" },
-  version: { color: "#333", fontSize: "0.5rem", letterSpacing: "3px" },
+  socialLink: {
+    color: "#666",
+    transition: "all 0.2s ease",
+    textDecoration: "none",
+  },
+  socialBtn: {
+    background: "none",
+    border: "none",
+    padding: 0,
+    color: "#666",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    display: "flex",
+    alignItems: "center",
+  },
+  version: {
+    color: "#333",
+    fontSize: "0.5rem",
+    letterSpacing: "3px",
+    fontFamily: "monospace",
+  },
 };
