@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import NavbarDrawer from "@/components/NavbarDrawer";
@@ -27,6 +27,7 @@ export default function Home() {
   const [scrollY, setScrollY] = useState(0);
   const [hoveredArticle, setHoveredArticle] = useState<string | null>(null);
   const [isGlitching, setIsGlitching] = useState(false);
+  const [isChartGlitching, setIsChartGlitching] = useState(false);
   const [isDataHovered, setIsDataHovered] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -36,7 +37,6 @@ export default function Home() {
   const [articles, setArticles] = useState<any[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
 
-  // Intersection Observer Refs
   const pillarRef = useRef(null);
   const mobileRef = useRef(null);
   const archiveRef = useRef(null);
@@ -44,7 +44,6 @@ export default function Home() {
   const [isMobileVisible, setMobileVisible] = useState(false);
   const [isArchiveVisible, setArchiveVisible] = useState(false);
 
-  // ✅ Tactical Timestamp
   const lastUpdated = useMemo(() => {
     return new Date()
       .toLocaleDateString("en-US", {
@@ -55,33 +54,22 @@ export default function Home() {
       .toUpperCase();
   }, []);
 
-  /**
-   * 🛰️ DATA_UPLINK_PROTOCOL
-   */
   useEffect(() => {
     async function fetchDashboardMetrics() {
       if (!user) return;
 
       try {
-        // ✅ get token from AuthContext, not localStorage directly
-        const { token } = JSON.parse(
-          localStorage.getItem("eprx_session") || "{}",
-        );
+        const storedSession = localStorage.getItem("eprx_session");
+        const { token } = storedSession ? JSON.parse(storedSession) : {};
         if (!token) return;
 
         const response = await fetch(`${API_URL}/activities/stats`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        console.log("STATUS:", response.status);
 
         if (!response.ok) throw new Error("FETCH_FAILED");
 
         const data = await response.json();
-        console.log("Raw API Data:", data);
-
         const { recent, summary } = data;
 
         if (recent && Array.isArray(recent) && recent.length > 0) {
@@ -95,8 +83,9 @@ export default function Home() {
               distance: Number(act.distance) || 0,
             }));
 
-          console.log("Formatted Chart Data:", formatted);
           setActivityData(formatted);
+          setIsChartGlitching(true);
+          setTimeout(() => setIsChartGlitching(false), 600);
         }
 
         setStats({
@@ -105,22 +94,18 @@ export default function Home() {
         });
       } catch (error) {
         console.error("METRIC_SYNC_FAILURE:", error);
-        setActivityData([]);
-        setStats({ avgPace: "0.00", totalKm: "0.0" });
       }
     }
 
     fetchDashboardMetrics();
   }, [user]);
 
-  // Fetch Latest Articles
   useEffect(() => {
     async function fetchLatestArticles() {
       try {
         const response = await fetch(`${API_URL}/article`);
         if (response.ok) {
           const data = await response.json();
-          console.log("Raw API Data:", data);
           setArticles(data.slice(0, 3));
         }
       } catch (error) {
@@ -132,7 +117,6 @@ export default function Home() {
     fetchLatestArticles();
   }, []);
 
-  // Scroll & Intersection Observers
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
@@ -169,8 +153,8 @@ export default function Home() {
   };
 
   const pillarData = [
-    { name: "GEAR", path: "/gear", img: "/assets/images/GearV2.png" },
     { name: "FUEL", path: "/fuel", img: "/assets/images/FuelV2.png" },
+    { name: "GEAR", path: "/gear", img: "/assets/images/GearV2.png" },
     { name: "MIND", path: "/mind", img: "/assets/images/MindV2.png" },
   ];
 
@@ -248,7 +232,24 @@ export default function Home() {
               </div>
             </div>
 
-            <div style={styles.chartBox}>
+            {/* ✅ UPDATED RECHART SECTION (CURVY) */}
+            <motion.div
+              style={styles.chartBox}
+              animate={
+                isChartGlitching
+                  ? {
+                      opacity: [1, 0.4, 1, 0.2, 1],
+                      x: [0, -2, 2, -1, 0],
+                      filter: [
+                        "hue-rotate(0deg)",
+                        "hue-rotate(90deg) brightness(1.5)",
+                        "hue-rotate(0deg)",
+                      ],
+                    }
+                  : { opacity: 1, x: 0, filter: "hue-rotate(0deg)" }
+              }
+              transition={{ duration: 0.5 }}
+            >
               {user && activityData.length > 0 ? (
                 <ResponsiveContainer width="99%" height="100%">
                   <ComposedChart
@@ -266,7 +267,7 @@ export default function Home() {
                         <stop
                           offset="5%"
                           stopColor="#d4ff00"
-                          stopOpacity={0.2}
+                          stopOpacity={0.3}
                         />
                         <stop
                           offset="95%"
@@ -277,12 +278,12 @@ export default function Home() {
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="#222"
+                      stroke="#1a1a1a"
                       vertical={false}
                     />
                     <XAxis
                       dataKey="day"
-                      stroke="#666"
+                      stroke="#444"
                       fontSize={10}
                       tickLine={false}
                       axisLine={false}
@@ -299,26 +300,19 @@ export default function Home() {
                       itemStyle={{ color: "#d4ff00" }}
                       cursor={{ stroke: "#333", strokeWidth: 1 }}
                     />
-                    {/* 1. The "Glow" Layer (Area) */}
                     <Area
-                      type="monotone"
+                      type="basis" // ✅ Curvy Logic
                       dataKey="distance"
                       stroke="none"
                       fill="url(#glowGradient)"
                       isAnimationActive={true}
                     />
-                    {/* 2. The "Bezier" Path (Line) */}
                     <Line
-                      type="monotone"
+                      type="basis" // ✅ Curvy Logic
                       dataKey="distance"
                       stroke="#d4ff00"
                       strokeWidth={3}
-                      dot={{
-                        r: 3,
-                        fill: "#000",
-                        stroke: "#d4ff00",
-                        strokeWidth: 2,
-                      }}
+                      dot={false} // Clean mobile look (dots usually clutter curvy lines)
                       activeDot={{
                         r: 6,
                         fill: "#d4ff00",
@@ -348,7 +342,8 @@ export default function Home() {
                   )}
                 </div>
               )}
-            </div>
+            </motion.div>
+
             <div style={styles.metricRow}>
               <div style={styles.metricItem}>
                 <span style={styles.metricLabel}>AVG_PACE</span>
@@ -417,14 +412,7 @@ export default function Home() {
       </section>
 
       {/* 3. MOBILE ECOSYSTEM */}
-      <section
-        id="mobile-ecosystem"
-        style={{
-          marginTop: "60px",
-          borderTop: "1px solid #1a1a1a",
-          paddingTop: "40px",
-        }}
-      >
+      <section id="mobile-ecosystem" style={styles.mobileEcosystemDivider}>
         <MobileEcosystem />
       </section>
 
@@ -552,7 +540,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: "0 0 8px #d4ff00",
   },
   dataStatus: { fontSize: "0.55rem", color: "#d4ff00", letterSpacing: "1px" },
-  chartBox: { height: "180px", width: "100%", marginBottom: "25px" },
+  chartBox: {
+    height: "180px",
+    width: "100%",
+    marginBottom: "25px",
+    position: "relative",
+  },
   metricRow: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr 1.2fr",
@@ -663,74 +656,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   pillarContent: { padding: "20px" },
   cardNum: { color: "#d4ff00", fontSize: "0.8rem", marginBottom: "10px" },
   cardTitle: { fontFamily: "var(--font-bebas)", fontSize: "2.5rem", margin: 0 },
-  mobileSection: { padding: "100px 8%", backgroundColor: "#0a0a0a" },
-  mobileGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "60px",
-    alignItems: "start",
-  },
-  mobileTitle: { fontFamily: "var(--font-bebas)", fontSize: "3rem" },
-  mobileDesc: { color: "#666", marginTop: "20px", fontSize: "0.9rem" },
-  downloadZone: {
-    display: "flex",
-    alignItems: "flex-end",
-    gap: "30px",
-    marginTop: "50px",
-  },
-  inlineBadgeContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
-  badgeWrapperRow: { display: "flex", flexDirection: "column", gap: "10px" },
-  badgeLabel: {
-    fontSize: "0.55rem",
-    letterSpacing: "4px",
-    color: "#666",
-    fontWeight: "700",
-  },
-  badgeImg: { width: "130px", height: "auto" },
-  qrContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "10px",
-  },
-  qrFrame: {
-    padding: "8px",
-    border: "1px solid #d4ff00",
-    borderRadius: "4px",
-    backgroundColor: "#000",
-  },
-  qrImage: { width: "80px", height: "80px" },
-  qrLabel: {
-    fontSize: "0.5rem",
-    letterSpacing: "2px",
-    color: "#d4ff00",
-    fontWeight: "bold",
-  },
-  phoneMockup: {
-    width: "260px",
-    height: "520px",
-    border: "8px solid #1a1a1a",
-    borderRadius: "40px",
-    backgroundColor: "#000",
-    padding: "10px",
-  },
-  phoneScreen: {
-    height: "100%",
-    backgroundColor: "#0f0f0f",
-    borderRadius: "30px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  appMetric: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "4rem",
-    color: "#d4ff00",
-  },
   archiveSection: { padding: "120px 8%" },
   archiveHeader: { textAlign: "center", marginBottom: "40px" },
   sectionNum: {
@@ -804,5 +729,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "0",
     height: "1px",
     backgroundColor: "#333",
+  },
+  mobileEcosystemDivider: {
+    marginTop: "60px",
+    borderTop: "1px solid #1a1a1a",
+    paddingTop: "40px",
   },
 };

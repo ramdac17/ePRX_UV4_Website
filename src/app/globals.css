@@ -1,3 +1,44 @@
+.glitch-active {
+  /* Use a slightly faster duration for a "snappy" tactical feel */
+  animation: tactical-glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+  color: #fff;
+  position: relative;
+}
+
+@keyframes tactical-glitch {
+  0%, 100% { 
+    transform: translate(0); 
+    text-shadow: 2px 0 var(--accent), -2px 0 #00e5ff; 
+  }
+  20% { 
+    transform: translate(-2px, 2px); 
+    text-shadow: -3px 0 var(--accent), 3px 0 #00e5ff; 
+  }
+  40% { 
+    transform: translate(-2px, -2px); 
+    text-shadow: 2px 0 var(--accent), -2px 0 #00e5ff; 
+  }
+  60% { 
+    transform: translate(2px, 2px); 
+    text-shadow: -2px 0 var(--accent), 2px 0 #00e5ff; 
+  }
+  80% { 
+    transform: translate(2px, -2px); 
+    text-shadow: 3px 0 var(--accent), -3px 0 #00e5ff; 
+  }
+}
+
+/* Optional: Flicker effect for the whole section */
+.section-glitch {
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.98; filter: brightness(1); }
+  50% { opacity: 1; filter: brightness(1.05); }
+  100% { opacity: 0.95; filter: brightness(0.98); }
+}
+
 @media (max-width: 768px) {
   h1 {
     word-break: break-word;
@@ -97,4 +138,11 @@ html, body {
 img {
   max-width: 100%;
   height: auto;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px); /* Reduced for a tighter feel */
+  transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+  will-change: transform, opacity;
 }

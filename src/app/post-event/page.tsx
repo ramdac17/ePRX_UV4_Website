@@ -214,14 +214,14 @@ export default function PostEventPage() {
                 type="email"
                 required
                 style={styles.input}
-                placeholder="EMAIL ADDR"
+                placeholder="EMAIL ADDRESS"
               />
               <input
                 name="mobile"
                 type="tel"
                 required
                 style={styles.input}
-                placeholder="SECURE LINE"
+                placeholder="MOBILE NUMBER"
               />
             </div>
 
@@ -233,7 +233,7 @@ export default function PostEventPage() {
                 opacity: isSubmitting ? 0.5 : 1,
               }}
             >
-              {isSubmitting ? "TRANSMITTING..." : "AUTHORIZE BROADCAST"}
+              {isSubmitting ? "TRANSMITTING..." : "PUBLISH EVENT"}
             </button>
           </div>
         </div>

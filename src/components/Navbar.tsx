@@ -50,8 +50,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           ],
         },
         { name: "LIVE EVENTS", path: "/events" },
-        { name: "CONTACT", path: "/contactus" },
-        { name: "ABOUT US", path: "/aboutus" },
+        { name: "CONTACT PRX", path: "/contactus" },
+        { name: "ABOUT PRX", path: "/aboutus" },
       ]
     : [
         { name: "DASHBOARD", path: "/dashboard" },

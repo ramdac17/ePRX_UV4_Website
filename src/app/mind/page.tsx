@@ -89,14 +89,14 @@ export default function MindPage() {
                   </div>
                   <div style={styles.cardContent}>
                     <span style={styles.tag}>
-                      {item.category} //{" "}
+                      {item.category} ||{" "}
                       {new Date(item.createdAt).getFullYear()}
                     </span>
                     <h2 style={styles.cardTitle}>{item.title.toUpperCase()}</h2>
                     <p style={styles.cardDesc}>
                       {item.content.substring(0, 100)}...
                     </p>
-                    <div style={styles.readMore}>READ ANALYSIS →</div>
+                    <div style={styles.readMore}>READ ARTICLE</div>
                   </div>
                 </motion.div>
               </Link>

@@ -28,9 +28,9 @@ export default function AboutPage() {
   const admins = [
     {
       name: "Merric Kyo Evangelista",
-      role: "SYSTEM ARCHITECT | LEAD DEVELOPER",
+      role: "SOFTWARE ENGINEER | LEAD DEVELOPER",
       img: "/assets/images/MerricV5.jpg",
-      bio: "LEAD ARCHITECT RESPONSIBLE FOR THE CORE STRUCTURE AND DATA UPLINK PROTOCOLS. SPECIALIZES IN HIGH-AVAILABILITY CLOUD INFRASTRUCTURE.",
+      bio: "RESPONSIBLE FOR THE CORE STRUCTURE AND DATA UPLINK PROTOCOLS. SPECIALIZES IN HIGH-AVAILABILITY CLOUD INFRASTRUCTURE. A DEDICATED RUNNER, A LOVING FATHER AND A GAMER AT HEART.",
     },
   ];
 
@@ -84,10 +84,12 @@ export default function AboutPage() {
               <div style={styles.imageOverlay} />
             </div>
             <p style={styles.heroDescription}>
-              <span style={{ color: "#d4ff00" }}>PINOY RUNNER EXTREME</span>{" "}
-              REPRESENTS THE APEX OF DURABILITY AND DIGITAL SYNERGY. THE
-              INTERFACE ABOVE DEPICTS OUR GLOBAL NODE NETWORK, FACILITATING
-              REAL-TIME DATA TRANSMISSION FOR THE MODERN ENDURANCE ATHLETE.
+              <span style={{ color: "#d4ff00" }}>PINOY RUNNER EXTREME </span>- A
+              proactive community of runners dedicated on promoting a healthy
+              lifestyle through the power of running. By fostering consistency,
+              discipline, and support, we inspire individuals to stay active,
+              build resilience, and embrace wellness. Keep running, stay strong!
+              || PRX CORE SYSTEM || 2013
             </p>
           </motion.div>
         </header>

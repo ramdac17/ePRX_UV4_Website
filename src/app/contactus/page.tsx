@@ -84,11 +84,11 @@ export default function ContactPage() {
           </div>
           <div style={styles.details}>
             <div style={styles.detailItem}>
-              <span style={styles.label}>ENCRYPTED EMAIL</span>
+              <span style={styles.label}>EMAIL ADDRESS</span>
               <span style={styles.value}>pinoyrunnerextreme@gmail.com</span>
             </div>
             <div style={styles.detailItem}>
-              <span style={styles.label}>SECURE LINE</span>
+              <span style={styles.label}>MOBILE NUMBER</span>
               <span style={styles.value}>+63 (999) 4706868</span>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function ContactPage() {
                 backgroundColor:
                   status === "IDLE"
                     ? "#d4ff00"
-                    : status === "LINK_ESTABLISHED"
+                    : status === "LINK ESTABLISHED"
                       ? "#fff"
                       : "#ff3e3e",
               }}
@@ -125,7 +125,7 @@ export default function ContactPage() {
                 value={formData.name}
                 onChange={handleChange}
                 style={styles.input}
-                placeholder="NAME / CALLSIGN"
+                placeholder="FULL NAME"
               />
             </div>
 
@@ -138,12 +138,12 @@ export default function ContactPage() {
                 value={formData.email}
                 onChange={handleChange}
                 style={styles.input}
-                placeholder="EMAIL ENCRYPTED"
+                placeholder="EMAIL ADDRESS"
               />
             </div>
 
             <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>TRANSMISSION PACKET</label>
+              <label style={styles.inputLabel}>MESSAGE</label>
               <textarea
                 name="message" // Required for Formspree
                 required
@@ -338,7 +338,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: "bold",
     letterSpacing: "4px",
     cursor: "pointer",
-    fontSize: "0.7rem",
+    fontSize: "1rem",
     transition: "all 0.3s",
+    fontFamily: "var(--font-bebas)",
+    color: "#000",
+    width: "100%",
   },
 };

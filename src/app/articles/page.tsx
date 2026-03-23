@@ -83,7 +83,7 @@ export default function ArticlesArchivePage() {
                       />
                     ) : (
                       <div style={styles.placeholderImage}>
-                        <span style={styles.imageLabel}>NO_VISUAL</span>
+                        <span style={styles.imageLabel}>NO VISUAL</span>
                       </div>
                     )}
                   </div>
@@ -103,7 +103,7 @@ export default function ArticlesArchivePage() {
             ))}
           </div>
         ) : (
-          <div style={styles.noData}>NO ARCHIVED TRANSMISSIONS FOUND</div>
+          <div style={styles.noData}>NO ARCHIVED ARCTILE/S FOUND</div>
         )}
       </div>
     </div>
