@@ -205,7 +205,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  // ... rest of your styles are perfect ...
   navContainer: {
     height: "70px",
     display: "flex",
@@ -221,7 +220,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     boxSizing: "border-box",
     zIndex: 1000,
-    fontFamily: "var(--font-bebas)",
   },
   leftSection: { flex: 1, display: "flex", alignItems: "center" },
   centerSection: {

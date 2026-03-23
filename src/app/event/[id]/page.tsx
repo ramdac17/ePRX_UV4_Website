@@ -61,7 +61,7 @@ export default function EventDetailPage() {
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
-        <h2 style={styles.loadingText}>DECRYPTING_MISSION_STREAM...</h2>
+        <h2 style={styles.loadingText}>DECRYPTING MISSION STREAM...</h2>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export default function EventDetailPage() {
     return (
       <div style={styles.errorContainer}>
         <h2 style={styles.errorText}>
-          // ERROR: {error || "RESOURCE_NOT_FOUND"}
+          || ERROR: {error || "RESOURCE NOT FOUND"}
         </h2>
         <Link href="/live-events" style={styles.backLink}>
           RETURN_TO_BASE
@@ -88,8 +88,8 @@ export default function EventDetailPage() {
       >
         <header style={styles.header}>
           <div style={styles.meta}>
-            <span style={styles.category}>LIVE_EVENT</span>
-            <span style={styles.divider}>//</span>
+            <span style={styles.category}>LIVE EVENT</span>
+            <span style={styles.divider}>||</span>
             <span style={styles.date}>
               {new Date(event.date)
                 .toLocaleDateString("en-US", {
@@ -121,16 +121,21 @@ export default function EventDetailPage() {
         {event.image && (
           <div style={styles.imageContainer}>
             <img
-              src={`${STATIC_URL}/uploads/${event.image}`}
+              src={
+                event.image.startsWith("http")
+                  ? event.image
+                  : `${STATIC_URL}/uploads/${event.image}`
+              }
               alt={event.title}
               style={styles.heroImage}
+              onError={(e) => (e.currentTarget.style.display = "none")}
             />
           </div>
         )}
 
         <main style={styles.contentContainer}>
           <div style={styles.content}>
-            <h3 style={styles.sectionTitle}>|| MISSION_BRIEFING</h3>
+            <h3 style={styles.sectionTitle}>|| EVENT DETAILS</h3>
             {event.description.split("\n").map((paragraph, index) => (
               <p key={index} style={styles.paragraph}>
                 {paragraph}
@@ -139,20 +144,18 @@ export default function EventDetailPage() {
           </div>
 
           <div style={styles.contactCard}>
-            <h3 style={styles.sectionTitle}>|| POINT_OF_CONTACT</h3>
+            <h3 style={styles.sectionTitle}>|| POINT OF CONTACT</h3>
             <p style={styles.contactText}>
-              AGENT: {event.firstName} {event.lastName}
+              NAME: {event.firstName} {event.lastName}
             </p>
-            <p style={styles.contactText}>COMM_LINK: {event.email}</p>
+            <p style={styles.contactText}>EMAIL: {event.email}</p>
             <p style={styles.contactText}>MOBILE: {event.mobile}</p>
           </div>
         </main>
 
         <footer style={styles.footer}>
           <div style={styles.footerLine}></div>
-          <p style={styles.footerText}>
-            END_OF_TRANSMISSION // ePRX_UV1_PROTOCOL
-          </p>
+          <p style={styles.footerText}>END OF TRANSMISSION || PRX</p>
         </footer>
       </motion.div>
     </div>
@@ -239,16 +242,24 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   imageContainer: {
     width: "100%",
+    height: "500px", // ⚡ Give the "box" a fixed height for consistency
     marginBottom: "40px",
-    border: "1px solid #222",
-    backgroundColor: "#111",
+    border: "1px solid #333",
+    backgroundColor: "#000", // Background color fills any gaps
     overflow: "hidden",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+    display: "flex", // Center the image if using 'contain'
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
-  heroImage: { width: "100%", maxHeight: "70vh", objectFit: "cover" },
-  contentContainer: {
-    display: "grid",
-    gridTemplateColumns: "1fr 300px",
-    gap: "60px",
+  heroImage: {
+    width: "100%",
+    height: "100%", // ⚡ Force image to respect container height
+    objectFit: "cover", // Change to "contain" if you don't want any cropping
+    display: "block",
+    filter: "contrast(1.1) brightness(1.05)",
+    transition: "filter 0.3s ease",
   },
   content: { fontSize: "1.05rem", lineHeight: "1.8", color: "#ccc" },
   paragraph: { marginBottom: "25px" },

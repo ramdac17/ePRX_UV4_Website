@@ -43,6 +43,21 @@ export default function FuelPage() {
     fetchArticles();
   }, [BACKEND_API]);
 
+  const shareToFacebook = (
+    e: React.MouseEvent,
+    articleId: string,
+    title: string,
+  ) => {
+    e.preventDefault(); // Prevents clicking the card link
+    e.stopPropagation(); // Prevents event bubbling
+
+    // Construct the full URL of the article
+    const articleUrl = `${window.location.origin}/article/${articleId}`;
+    const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}&t=${encodeURIComponent(title)}`;
+
+    window.open(fbShareUrl, "_blank", "width=600,height=400");
+  };
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.header}>
@@ -97,6 +112,22 @@ export default function FuelPage() {
                       {item.content.substring(0, 100)}...
                     </p>
                     <div style={styles.readMore}>READ ANALYSIS →</div>
+
+                    <button
+                      onClick={(e) => shareToFacebook(e, item.id, item.title)}
+                      style={styles.fbButton}
+                      title="Share to Facebook"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                      </svg>
+                      <span>SHARE</span>
+                    </button>
                   </div>
                 </motion.div>
               </Link>
@@ -221,5 +252,26 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: "2px",
     textAlign: "center",
     padding: "100px 0",
+  },
+  cardFooter: {
+    marginTop: "auto",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  fbButton: {
+    backgroundColor: "transparent",
+    border: "1px solid #333",
+    color: "#888",
+    padding: "6px 12px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "0.6rem",
+    fontFamily: "monospace",
+    letterSpacing: "1px",
+    transition: "all 0.2s ease",
+    borderRadius: "2px",
   },
 };

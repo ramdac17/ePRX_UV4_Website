@@ -492,7 +492,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     minHeight: "100vh",
     overflowX: "hidden",
     width: "100%",
-    fontFamily: "var(--font-bebas)",
   },
   heroSplit: {
     minHeight: "100vh",

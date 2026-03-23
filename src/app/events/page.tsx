@@ -36,7 +36,7 @@ export default function LiveEventsPage() {
           setEvents(data);
         }
       } catch (error) {
-        console.error("EVENT_FETCH_PROTOCOL_FAILURE:", error);
+        console.error("EVENT FETCH PROTOCOL FAILURE:", error);
       } finally {
         setLoading(false);
       }
@@ -57,13 +57,13 @@ export default function LiveEventsPage() {
 
       <div style={styles.content}>
         {loading ? (
-          <div style={styles.loadingText}>SYNCHRONIZING_LIVE_FEED...</div>
+          <div style={styles.loadingText}>SYNCHRONIZING LIVE FEED...</div>
         ) : events.length > 0 ? (
           <div style={styles.grid}>
             {events.map((event) => (
               <Link
                 key={event.id}
-                href={`/event/${event.id}`} // Updated path
+                href={`/event/${event.id}`}
                 style={styles.cardLink}
               >
                 <motion.div
@@ -74,7 +74,6 @@ export default function LiveEventsPage() {
                   <div style={styles.imageContainer}>
                     {event.image ? (
                       <img
-                        // ✅ FIX: Hybrid URL detection (Cloudinary vs Local)
                         src={
                           event.image.startsWith("http")
                             ? event.image
@@ -83,13 +82,12 @@ export default function LiveEventsPage() {
                         alt={event.title}
                         style={styles.articleImage}
                         onError={(e) => {
-                          // If image fails, switch to placeholder
                           e.currentTarget.style.display = "none";
                         }}
                       />
                     ) : (
                       <div style={styles.placeholderImage}>
-                        <span style={styles.imageLabel}>NO_SIGNAL</span>
+                        <span style={styles.imageLabel}>NO SIGNAL</span>
                       </div>
                     )}
                     <div style={styles.overlayTag}>
@@ -108,14 +106,14 @@ export default function LiveEventsPage() {
                     <p style={styles.cardDesc}>
                       {event.description.substring(0, 120)}...
                     </p>
-                    <div style={styles.readMore}>JOIN_TRANSMISSION →</div>
+                    <div style={styles.readMore}>JOIN TRANSMISSION →</div>
                   </div>
                 </motion.div>
               </Link>
             ))}
           </div>
         ) : (
-          <div style={styles.noData}>NO_LIVE_TRANSMISSIONS_DETECTED</div>
+          <div style={styles.noData}>NO LIVE TRANSMISSIONS DETECTED</div>
         )}
       </div>
     </div>
