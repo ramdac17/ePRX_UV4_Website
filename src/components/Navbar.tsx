@@ -13,14 +13,20 @@ const STATIC_URL = process.env.NEXT_PUBLIC_STATIC_URL;
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user: authUser, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false); // Mobile responsiveness state
   const router = useRouter();
   const pathname = usePathname();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
+
+    // Check screen size for UI adaptation
+    const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const handleSignOut = () => {
@@ -72,7 +78,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             { name: "STORIES", path: "/stories" },
           ],
         },
-
         { name: "LIVE EVENTS", path: "/events" },
         { name: "ABOUT US", path: "/aboutus" },
         { name: "CONTACT", path: "/contactus" },
@@ -90,12 +95,14 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
       />
 
       <nav style={styles.navContainer}>
+        {/* LEFT SECTION: Hamburger menu */}
         <div style={styles.leftSection}>
-          {authUser && (
+          {(isMobile || authUser) && (
             <motion.div
               style={styles.hamburger}
               onClick={() => setIsMenuOpen(true)}
               whileHover="hover"
+              whileTap={{ scale: 0.95 }}
             >
               <motion.div
                 variants={{ hover: { width: "24px" } }}
@@ -113,63 +120,71 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           )}
         </div>
 
+        {/* CENTER SECTION: Desktop Links OR Mobile Brand */}
         <div style={styles.centerSection}>
-          {navItems.map((item) => (
-            <div
-              key={item.name}
-              style={{ position: "relative" }}
-              // Fixed: Individual dropdown tracking
-              onMouseEnter={() => item.children && setOpenDropdown(item.name)}
-              onMouseLeave={() => setOpenDropdown(null)}
-            >
-              <Link
-                href={item.path}
-                style={{
-                  ...styles.logo,
-                  color:
-                    // Fixed: Highlighting logic
-                    (item.path === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(item.path)) && item.path !== "#"
-                      ? "#d4ff00"
-                      : "#ffffff",
-                }}
+          {isMobile ? (
+            <Link href="/" style={styles.mobileBrand}>
+              ePRX <span style={{ color: "#d4ff00" }}>UV</span>
+            </Link>
+          ) : (
+            navItems.map((item) => (
+              <div
+                key={item.name}
+                style={{ position: "relative" }}
+                onMouseEnter={() => item.children && setOpenDropdown(item.name)}
+                onMouseLeave={() => setOpenDropdown(null)}
               >
-                {item.name} {item.children && "▾"}
-              </Link>
+                <Link
+                  href={item.path}
+                  style={{
+                    ...styles.logo,
+                    color:
+                      (item.path === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.path)) && item.path !== "#"
+                        ? "#d4ff00"
+                        : "#ffffff",
+                  }}
+                >
+                  {item.name} {item.children && "▾"}
+                </Link>
 
-              <AnimatePresence>
-                {item.children && openDropdown === item.name && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    style={styles.dropdown}
-                  >
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.path}
-                        href={child.path}
-                        style={styles.dropdownItem}
-                      >
-                        {child.name}
-                      </Link>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
+                <AnimatePresence>
+                  {item.children && openDropdown === item.name && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      style={styles.dropdown}
+                    >
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.path}
+                          href={child.path}
+                          style={styles.dropdownItem}
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))
+          )}
         </div>
 
+        {/* RIGHT SECTION: Auth and Profile */}
         <div style={styles.authSection}>
           {authUser ? (
             <div style={styles.profileArea}>
+              {!isMobile && (
+                <span style={styles.userName}>{authUser.firstName}</span>
+              )}
               <Link href="/profile" style={styles.avatarLink}>
                 <div style={styles.avatarCircle}>
                   {authUser.image ? (
                     <img
-                      // ✅ FIX: Check if image is a full URL (Cloudinary) or a local path
                       src={
                         authUser.image.startsWith("http")
                           ? authUser.image
@@ -178,7 +193,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                       alt="User Avatar"
                       style={styles.avatarImg}
                       onError={(e) => {
-                        // Fallback to initial if image fails
                         e.currentTarget.style.display = "none";
                       }}
                     />
@@ -189,9 +203,11 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   )}
                 </div>
               </Link>
-              <button onClick={handleSignOut} style={styles.authBtn}>
-                LOG OUT
-              </button>
+              {!isMobile && (
+                <button onClick={handleSignOut} style={styles.authBtn}>
+                  LOG OUT
+                </button>
+              )}
             </div>
           ) : (
             <Link href="/login" style={styles.authBtn}>
@@ -210,7 +226,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 2%",
+    padding: "0 4%",
     backgroundColor: "rgba(5, 5, 5, 0.95)",
     backdropFilter: "blur(12px)",
     borderBottom: "1px solid #1a1a1a",
@@ -224,18 +240,27 @@ const styles: { [key: string]: React.CSSProperties } = {
   leftSection: { flex: 1, display: "flex", alignItems: "center" },
   centerSection: {
     display: "flex",
-    gap: "40px",
+    gap: "30px",
     justifyContent: "center",
     alignItems: "center",
   },
+  mobileBrand: {
+    fontFamily: "var(--font-bebas), sans-serif",
+    fontSize: "1.4rem",
+    fontWeight: "bold",
+    letterSpacing: "3px",
+    color: "#ffffff",
+    textDecoration: "none",
+  },
   logo: {
     fontFamily: "var(--font-bebas), sans-serif",
-    fontSize: "0.8rem",
+    fontSize: "0.75rem",
     fontWeight: "bold",
-    letterSpacing: "5px",
+    letterSpacing: "4px",
     color: "#ffffff",
     textDecoration: "none",
     padding: "10px 0",
+    transition: "color 0.2s ease",
   },
   dropdown: {
     position: "absolute",
@@ -248,7 +273,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     minWidth: "160px",
     display: "flex",
     flexDirection: "column",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.8)",
   },
   dropdownItem: {
     padding: "12px 20px",
@@ -265,10 +290,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "flex-end",
     alignItems: "center",
   },
-  profileArea: { display: "flex", alignItems: "center", gap: "10px" },
+  profileArea: { display: "flex", alignItems: "center", gap: "15px" },
+  userName: {
+    fontFamily: "monospace",
+    fontSize: "0.65rem",
+    color: "#555",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+  },
   avatarCircle: {
-    width: "35px",
-    height: "35px",
+    width: "32px",
+    height: "32px",
     borderRadius: "50%",
     backgroundColor: "#000",
     border: "1.5px solid #d4ff00",
@@ -278,15 +310,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: "center",
   },
   avatarImg: { width: "100%", height: "100%", objectFit: "cover" },
-  avatarInitial: { color: "#d4ff00", fontSize: "0.85rem", fontWeight: "bold" },
+  avatarInitial: { color: "#d4ff00", fontSize: "0.8rem", fontWeight: "bold" },
   authBtn: {
-    fontSize: "0.6rem",
+    fontFamily: "var(--font-bebas)",
+    fontSize: "0.65rem",
     letterSpacing: "2px",
     color: "#fff",
     background: "transparent",
     border: "1px solid #333",
-    padding: "5px 12px",
+    padding: "6px 14px",
     cursor: "pointer",
+    transition: "all 0.2s ease",
   },
   hamburger: {
     cursor: "pointer",

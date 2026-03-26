@@ -44,6 +44,15 @@ export default function Home() {
   const [isMobileVisible, setMobileVisible] = useState(false);
   const [isArchiveVisible, setArchiveVisible] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 968);
+    checkMobile(); // Initial check
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const lastUpdated = useMemo(() => {
     return new Date()
       .toLocaleDateString("en-US", {
@@ -177,12 +186,34 @@ export default function Home() {
         onViewportEnter={triggerGlitch}
         style={{
           ...styles.heroSplit,
+          flexDirection: isMobile ? "column" : "row", // ⚡ FIX 1: Stack on mobile
+          height: isMobile ? "auto" : "100vh", // ⚡ FIX 2: Let it grow on mobile
+          paddingTop: isMobile ? "120px" : "80px", // ⚡ FIX 3: Push below Navbar
           backgroundPositionY: `${scrollY * 0.5}px`,
         }}
       >
-        <div style={styles.heroLeft}>
-          <div style={styles.brandContent}>
-            <div style={styles.topHeroLogo} className="logo-glow">
+        <div
+          style={{
+            ...styles.heroLeft,
+            paddingLeft: isMobile ? "8%" : "8%",
+            paddingRight: isMobile ? "8%" : "0",
+            textAlign: isMobile ? "center" : "left", // ⚡ Center text on mobile
+            alignItems: isMobile ? "center" : "flex-start",
+          }}
+        >
+          <div
+            style={{
+              ...styles.brandContent,
+              alignItems: isMobile ? "center" : "flex-start", // 👈 Add this line
+            }}
+          >
+            <div
+              style={{
+                ...styles.topHeroLogo,
+                alignSelf: isMobile ? "center" : "flex-start", // ⚡ Center logo
+              }}
+              className="logo-glow"
+            >
               <img
                 src="/assets/images/eprx-logo.png"
                 alt="ePRX"
@@ -190,14 +221,23 @@ export default function Home() {
               />
             </div>
             <h1
-              style={styles.heroTitleLeft}
+              style={{
+                ...styles.heroTitleLeft,
+                fontSize: isMobile ? "12vw" : "6vw", // ⚡ Scaled for phone screens
+              }}
               className={isGlitching ? "glitch-active" : ""}
             >
               <span style={{ color: "#d4ff00" }}>P</span>INOY
               <span style={{ color: "#d4ff00" }}> R</span>UNNER E
               <span style={{ color: "#d4ff00" }}>X</span>TREME
             </h1>
-            <h2 style={styles.heroTagline}>
+            <h2
+              style={{
+                ...styles.heroTagline,
+                fontSize: isMobile ? "1.2rem" : "2rem",
+                textAlign: isMobile ? "center" : "left", // This handles the text wrapping
+              }}
+            >
               BEYOND THE <span style={{ color: "#d4ff00" }}>MILE</span>
             </h2>
             <p style={styles.heroSubtitleLeft}>
@@ -214,13 +254,23 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={styles.heroRight}>
+        <div
+          style={{
+            ...styles.heroRight,
+            paddingRight: isMobile ? "8%" : "8%",
+            paddingLeft: isMobile ? "8%" : "0",
+            marginTop: isMobile ? "40px" : "0", // ⚡ Space between text and chart
+            width: "100%",
+          }}
+        >
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            onMouseEnter={() => setIsDataHovered(true)}
-            onMouseLeave={() => setIsDataHovered(false)}
-            style={styles.dataContainer}
+            initial={{ opacity: 0, x: isMobile ? 0 : 20, y: isMobile ? 20 : 0 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            style={{
+              ...styles.dataContainer,
+              maxWidth: isMobile ? "100%" : "450px", // ⚡ Full width on mobile
+              marginBottom: isMobile ? "30px" : "0", // ⚡ Space below on mobile
+            }}
           >
             <div style={styles.dataHeader}>
               <span style={styles.dataTitle}>SESSION ACTIVITY LOGS (KM)</span>
@@ -487,11 +537,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     minHeight: "100vh",
     display: "flex",
     width: "100%",
-    paddingTop: "80px",
+    // Remove backgroundAttachment: "fixed" for mobile (it causes lag/bugs on iOS)
+    backgroundAttachment:
+      typeof window !== "undefined" && window.innerWidth < 768
+        ? "scroll"
+        : "fixed",
     backgroundImage:
       'linear-gradient(to right, rgba(15,15,15,1) 35%, rgba(15,15,15,0.2) 100%), url("/assets/images/register-sky.jpg")',
     backgroundSize: "cover",
-    backgroundAttachment: "fixed",
     boxSizing: "border-box",
   },
   heroLeft: {
@@ -513,10 +566,10 @@ const styles: { [key: string]: React.CSSProperties } = {
   dataContainer: {
     width: "100%",
     maxWidth: "450px",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: "rgba(0, 0, 0, 0.85)", // Darkened for better contrast on mobile
     border: "1px solid #1a1a1a",
-    padding: "30px",
-    backdropFilter: "blur(10px)",
+    padding: "20px", // Reduced padding for mobile room
+    backdropFilter: "blur(15px)",
   },
   dataHeader: {
     display: "flex",
