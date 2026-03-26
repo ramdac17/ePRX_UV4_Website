@@ -33,7 +33,7 @@ export default function Footer() {
         {/* Left: Branding */}
         <div style={dynamicContainer as any}>
           <div style={styles.brandSection}>
-            <span style={styles.brand}>PRX</span>
+            <span style={styles.brand}>PRX - PINOY RUNNER EXTREME</span>
             <span style={styles.copyright}>© 2026 || ALL RIGHTS RESERVED</span>
           </div>
 
@@ -45,7 +45,7 @@ export default function Footer() {
               onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
             >
-              ABOUT US
+              ABOUT PRX
             </Link>
             <Link
               href="/contactus"
@@ -53,7 +53,7 @@ export default function Footer() {
               onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
             >
-              CONTACT US
+              CONTACT PRX
             </Link>
             <Link
               href="/privacy"

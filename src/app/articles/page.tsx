@@ -89,7 +89,7 @@ export default function ArticlesArchivePage() {
                   </div>
                   <div style={styles.cardContent}>
                     <span style={styles.tag}>
-                      {item.category} //{" "}
+                      {item.category} ||{" "}
                       {new Date(item.createdAt).getFullYear()}
                     </span>
                     <h2 style={styles.cardTitle}>{item.title.toUpperCase()}</h2>

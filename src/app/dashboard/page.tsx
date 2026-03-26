@@ -202,12 +202,12 @@ export default function Home() {
             </h2>
             <p style={styles.heroSubtitleLeft}>
               A high-performance lifestyle brand curated for those who find
-              freedom in running.
+              freedom in <span style={{ color: "#d4ff00" }}>RUNNING</span>
             </p>
             <div style={styles.heroActionContainerLeft}>
               <Link href={user ? "/dashboard" : "/login"}>
                 <button style={styles.ctaBtn}>
-                  {user ? "REFRESH ACTIVITY CHART" : "INITIALIZE SESSION"}
+                  {user ? "REFRESH ACTIVITY CHART" : "LOGIN TO DASHBOARD"}
                 </button>
               </Link>
             </div>
