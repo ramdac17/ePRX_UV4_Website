@@ -17,6 +17,7 @@ interface Event {
   image: string | null;
   date: string;
   createdAt: string;
+  eventUrl: string;
 }
 
 export default function EventDetailClient({ id }: { id: string }) {
@@ -58,17 +59,24 @@ export default function EventDetailClient({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <h2 style={styles.loadingText}>DECRYPTING MISSION STREAM...</h2>
+      <div className="h-screen flex items-center justify-center bg-[#0a0a0a]">
+        <h2 className="font-mono text-eprx-lime animate-pulse tracking-[4px]">
+          DECRYPTING MISSION STREAM...
+        </h2>
       </div>
     );
   }
 
   if (error || !event) {
     return (
-      <div style={styles.errorContainer}>
-        <h2 style={styles.errorText}>|| ERROR: {error}</h2>
-        <Link href="/events" style={styles.backLink}>
+      <div className="h-screen flex flex-col items-center justify-center bg-[#0a0a0a] gap-5">
+        <h2 className="font-mono text-red-500 tracking-widest uppercase">
+          || ERROR: {error}
+        </h2>
+        <Link
+          href="/events"
+          className="border border-eprx-lime text-eprx-lime px-6 py-2 font-mono hover:bg-eprx-lime hover:text-black transition-all"
+        >
           RETURN_TO_BASE
         </Link>
       </div>
@@ -76,45 +84,47 @@ export default function EventDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div style={styles.pageContainer}>
+    <div className="min-h-screen bg-[#0a0a0a] text-white pt-24 pb-16 px-6 md:px-[8%]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        style={styles.articleWrapper}
+        className="max-w-5xl mx-auto"
       >
-        <header style={styles.header}>
-          <div style={styles.meta}>
-            <span style={styles.category}>LIVE EVENT</span>
-            <span style={styles.divider}>||</span>
-            <span style={styles.date}>
-              {new Date(event.date)
-                .toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "2-digit",
-                })
-                .toUpperCase()}
+        {/* Header Section */}
+        <header className="mb-10">
+          <div className="flex flex-wrap items-center gap-3 text-[0.65rem] md:text-xs text-eprx-lime font-mono tracking-[2px] mb-4">
+            <span className="uppercase">LIVE EVENT</span>
+            <span className="text-[#333]">||</span>
+            <span className="uppercase">
+              {new Date(event.date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                timeZone: "UTC",
+              })}
             </span>
           </div>
-          <h1 style={styles.title}>{event.title.toUpperCase()}</h1>
 
-          <div style={styles.intelGrid}>
-            <div style={styles.intelItem}>
-              <span style={styles.authorLabel}>LOCATION:</span>
-              <span style={styles.intelValue}>
-                {event.location.toUpperCase()}
+          <h1 className="font-bebas text-5xl md:text-7xl lg:text-8xl leading-none mb-8 wrap-break-word">
+            {event.title.toUpperCase()}
+          </h1>
+
+          <div className="flex flex-col md:flex-row gap-8 md:gap-16 border-t border-[#1a1a1a] pt-6">
+            <div className="flex flex-col gap-1">
+              <span className="text-[0.6rem] font-mono text-[#444] tracking-wider uppercase">
+                LOCATION:
+              </span>
+              <span className="text-sm md:text-base font-mono text-[#999] uppercase">
+                {event.location}
               </span>
 
-              {/* 🛰️ SHARE BUTTON - Nested under Location */}
               <button
                 onClick={shareToFacebook}
-                style={styles.shareBtnInline}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+                className="flex items-center gap-2 mt-2 text-[#444] hover:text-eprx-lime transition-colors font-mono text-[0.6rem] tracking-widest uppercase"
               >
                 <svg
-                  width="10"
-                  height="10"
+                  width="12"
+                  height="12"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -124,17 +134,20 @@ export default function EventDetailClient({ id }: { id: string }) {
               </button>
             </div>
 
-            <div style={styles.intelItem}>
-              <span style={styles.authorLabel}>ORGANIZER:</span>
-              <span style={styles.intelValue}>
-                {event.organizer.toUpperCase()}
+            <div className="flex flex-col gap-1">
+              <span className="text-[0.6rem] font-mono text-[#444] tracking-wider uppercase">
+                ORGANIZER:
+              </span>
+              <span className="text-sm md:text-base font-mono text-[#999] uppercase">
+                {event.organizer}
               </span>
             </div>
           </div>
         </header>
 
+        {/* Hero Image */}
         {event.image && (
-          <div style={styles.imageContainer}>
+          <div className="w-full aspect-video md:h-125 mb-12 border border-[#222] bg-black overflow-hidden shadow-2xl relative">
             <img
               src={
                 event.image.startsWith("http")
@@ -142,182 +155,72 @@ export default function EventDetailClient({ id }: { id: string }) {
                   : `${STATIC_URL}/uploads/${event.image}`
               }
               alt={event.title}
-              style={styles.heroImage}
+              className="w-full h-full object-cover filter contrast-110 brightness-105"
             />
           </div>
         )}
 
-        <main style={styles.contentContainer}>
-          <div style={styles.content}>
-            <h3 style={styles.sectionTitle}>|| EVENT DETAILS</h3>
-            {event.description.split("\n").map((paragraph, index) => (
-              <p key={index} style={styles.paragraph}>
-                {paragraph}
-              </p>
-            ))}
+        {/* Content Layout */}
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            <h3 className="text-eprx-lime font-mono text-[0.7rem] tracking-[3px] mb-6 uppercase">
+              || EVENT DETAILS
+            </h3>
+            <div className="text-[#ccc] leading-relaxed space-y-6 text-base md:text-lg whitespace-pre-line">
+              {event.description}
+            </div>
           </div>
 
-          <div style={styles.contactCard}>
-            <h3 style={styles.sectionTitle}>|| POINT OF CONTACT</h3>
-            <p style={styles.contactText}>
-              NAME: {event.firstName} {event.lastName}
-            </p>
-            <p style={styles.contactText}>EMAIL: {event.email}</p>
-            <p style={styles.contactText}>MOBILE: {event.mobile}</p>
-          </div>
+          {/* Sidebar Contact Card */}
+          <aside className="h-fit">
+            <div className="bg-eprx-dark p-8 border border-[#1a1a1a]">
+              <h3 className="text-eprx-lime font-mono text-[0.7rem] tracking-[3px] mb-6 uppercase">
+                || POINT OF CONTACT
+              </h3>
+              <div className="space-y-4 font-mono text-[0.7rem] md:text-[0.75rem] text-[#888]">
+                <p>
+                  NAME:{" "}
+                  <span className="text-white ml-2">
+                    {event.firstName} {event.lastName}
+                  </span>
+                </p>
+                <p>
+                  EMAIL:{" "}
+                  <span className="text-white ml-2 lowercase">
+                    {event.email}
+                  </span>
+                </p>
+                <p>
+                  MOBILE:{" "}
+                  <span className="text-white ml-2">{event.mobile}</span>
+                </p>
+                <div className="pt-4 border-t border-[#222] mt-4">
+                  <p className="mb-2">OFFICIAL UPLINK:</p>
+                  <a
+                    href={
+                      event.eventUrl.startsWith("http")
+                        ? event.eventUrl
+                        : `https://${event.eventUrl}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-eprx-lime hover:text-white transition-colors break-all underline underline-offset-4 decoration-eprx-lime/30 hover:decoration-white"
+                  >
+                    {event.eventUrl}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </aside>
         </main>
 
-        <footer style={styles.footer}>
-          <div style={styles.footerLine}></div>
-          <p style={styles.footerText}>END OF ARCTILE || PRX</p>
+        <footer className="mt-24 text-center border-t border-[#222] pt-8">
+          <p className="text-[#444] font-mono text-[0.6rem] tracking-[4px] uppercase">
+            PRX ARTICLES
+          </p>
         </footer>
       </motion.div>
     </div>
   );
 }
-
-// Ensure shareBtnInline is added to styles
-const styles: { [key: string]: React.CSSProperties } = {
-  // ... (keep previous styles)
-  pageContainer: {
-    backgroundColor: "#0a0a0a",
-    minHeight: "100vh",
-    color: "#fff",
-    padding: "100px 8% 60px",
-  },
-  loadingContainer: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#0a0a0a",
-  },
-  loadingText: {
-    fontFamily: "monospace",
-    color: "#d4ff00",
-    letterSpacing: "4px",
-  },
-  errorContainer: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#0a0a0a",
-    gap: "20px",
-  },
-  errorText: {
-    fontFamily: "monospace",
-    color: "#ff3e3e",
-    letterSpacing: "2px",
-  },
-  backLink: {
-    color: "#d4ff00",
-    textDecoration: "none",
-    fontFamily: "monospace",
-    border: "1px solid #d4ff00",
-    padding: "10px 20px",
-  },
-  articleWrapper: { maxWidth: "1000px", margin: "0 auto" },
-  header: { marginBottom: "40px" },
-  meta: {
-    display: "flex",
-    gap: "10px",
-    fontSize: "0.75rem",
-    color: "#d4ff00",
-    fontFamily: "monospace",
-    letterSpacing: "2px",
-    marginBottom: "15px",
-  },
-  divider: { color: "#333" },
-  title: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "5rem",
-    lineHeight: "0.9",
-    margin: "0 0 30px 0",
-    color: "#fff",
-  },
-  intelGrid: {
-    display: "flex",
-    gap: "40px",
-    borderTop: "1px solid #1a1a1a",
-    paddingTop: "20px",
-  },
-  intelItem: { display: "flex", flexDirection: "column", gap: "5px" },
-  authorLabel: {
-    fontSize: "0.6rem",
-    fontFamily: "monospace",
-    color: "#444",
-    letterSpacing: "1px",
-  },
-  intelValue: {
-    fontSize: "0.8rem",
-    fontFamily: "monospace",
-    color: "#999",
-    letterSpacing: "1px",
-  },
-  shareBtnInline: {
-    backgroundColor: "transparent",
-    border: "none",
-    color: "#444",
-    fontSize: "0.55rem",
-    fontFamily: "monospace",
-    padding: "5px 0 0 0",
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    cursor: "pointer",
-    letterSpacing: "1px",
-    transition: "color 0.3s ease",
-  },
-  imageContainer: {
-    width: "100%",
-    height: "500px",
-    marginBottom: "40px",
-    border: "1px solid #333",
-    backgroundColor: "#000",
-    overflow: "hidden",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    display: "block",
-    filter: "contrast(1.1) brightness(1.05)",
-  },
-  content: { fontSize: "1.05rem", lineHeight: "1.8", color: "#ccc" },
-  paragraph: { marginBottom: "25px" },
-  sectionTitle: {
-    fontSize: "0.7rem",
-    color: "#d4ff00",
-    letterSpacing: "3px",
-    marginBottom: "20px",
-    fontFamily: "monospace",
-  },
-  contactCard: {
-    backgroundColor: "#0f0f0f",
-    padding: "30px",
-    border: "1px solid #1a1a1a",
-    height: "fit-content",
-    marginTop: "40px",
-  },
-  contactText: {
-    fontSize: "0.75rem",
-    fontFamily: "monospace",
-    color: "#888",
-    marginBottom: "10px",
-  },
-  footer: { marginTop: "80px", textAlign: "center" },
-  footerLine: { height: "1px", backgroundColor: "#222", marginBottom: "20px" },
-  footerText: {
-    fontSize: "0.6rem",
-    color: "#444",
-    fontFamily: "monospace",
-    letterSpacing: "3px",
-  },
-};

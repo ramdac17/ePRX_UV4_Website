@@ -120,16 +120,16 @@ const MobileEcosystem = () => {
             </div>
           </div>
 
-          <div style={styles.qrContainer}>
+          {/*<div style={styles.qrContainer}>
             <div style={styles.qrFrame}>
-              <img
+                <img
                 src="/assets/images/prxQRCode.png"
                 alt="Scan"
                 style={styles.qrImage}
-              />
+              /> 
             </div>
             <span style={styles.qrLabel}>SCAN TO SYNC</span>
-          </div>
+          </div>*/}
         </div>
       </div>
     </section>

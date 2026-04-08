@@ -177,7 +177,7 @@ export default function PostEventPage() {
                   name="location"
                   required
                   style={styles.input}
-                  placeholder="COORDINATES"
+                  placeholder="EVENT LOCATION"
                 />
               </div>
               <div style={styles.fieldGroup}>

@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : `${BACKEND_API.replace("/api", "")}/uploads/${event.image}`;
 
     return {
-      title: `${event.title.toUpperCase()} | MISSION_INTEL`,
+      title: `${event.title.toUpperCase()} | ARTICLES ARCHIVE`,
       description: event.description.substring(0, 160),
       openGraph: {
         title: event.title,
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch (e) {
-    return { title: "PRX | MISSION_ARCHIVE" };
+    return { title: "PRX | ARTICLES ARCHIVE" };
   }
 }
 

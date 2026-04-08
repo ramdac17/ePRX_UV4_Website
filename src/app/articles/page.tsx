@@ -17,7 +17,6 @@ export default function ArticlesArchivePage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // PRX Connection Logic
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
   const STATIC_URL = BACKEND_API.replace("/api", "");
@@ -28,16 +27,14 @@ export default function ArticlesArchivePage() {
         const response = await fetch(`${BACKEND_API}/article`);
         if (response.ok) {
           const data: Article[] = await response.json();
-
-          // ✅ FILTER LOGIC: Only allow "ARTICLE" category
+          // Filter logic maintained: Only "ARTICLE" category
           const filteredData = data.filter(
             (item) => item.category === "ARTICLE",
           );
-
           setArticles(filteredData);
         }
       } catch (error) {
-        console.error("FETCH_ERROR:", error);
+        console.error("STATION_ARCHIVE_FETCH_FAILURE:", error);
       } finally {
         setLoading(false);
       }
@@ -46,31 +43,39 @@ export default function ArticlesArchivePage() {
   }, [BACKEND_API]);
 
   return (
-    <div style={styles.pageContainer}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>
-          STATION <span style={{ color: "#d4ff00" }}>ARCHIVES</span>
+    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-16 px-6 md:px-[8%]">
+      {/* Header Section */}
+      <header className="mb-12 border-b border-[#1a1a1a] pb-10 text-left">
+        <h1 className="font-bebas text-5xl md:text-8xl leading-[0.9] tracking-tighter m-0 uppercase">
+          STATION <span className="text-eprx-lime">ARCHIVES</span>
         </h1>
-        <p style={styles.subtitle}>CENTRAL ARTICLES SECTION</p>
-      </div>
+        <p className="text-[#444] font-mono tracking-[4px] text-[0.7rem] md:text-xs mt-4 uppercase">
+          ARTICLES
+        </p>
+      </header>
 
-      <div style={styles.content}>
+      {/* Main Grid Feed */}
+      <main>
         {loading ? (
-          <div style={styles.loadingText}>DECRYPTING ARCHIVE STREAM...</div>
+          <div className="flex justify-center py-24">
+            <h2 className="font-mono text-eprx-lime animate-pulse tracking-[4px] uppercase text-sm md:text-base">
+              DECRYPTING ARCHIVE STREAM...
+            </h2>
+          </div>
         ) : articles.length > 0 ? (
-          <div style={styles.grid}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {articles.map((item) => (
               <Link
                 key={item.id}
                 href={`/article/${item.id}`}
-                style={styles.cardLink}
+                className="group block"
               >
                 <motion.div
-                  style={styles.card}
-                  whileHover={{ y: -8, borderColor: "#d4ff00" }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                  whileHover={{ y: -8 }}
+                  className="bg-[#0a0a0a] border border-[#1a1a1a] h-full flex flex-col transition-all duration-300"
                 >
-                  <div style={styles.imageContainer}>
+                  {/* Visual Header */}
+                  <div className="h-52 bg-[#111] overflow-hidden relative border-b border-[#1a1a1a]">
                     {item.image ? (
                       <img
                         src={
@@ -79,151 +84,52 @@ export default function ArticlesArchivePage() {
                             : `${STATIC_URL}/uploads/${item.image}`
                         }
                         alt={item.title}
-                        style={styles.articleImage}
+                        className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div style={styles.placeholderImage}>
-                        <span style={styles.imageLabel}>NO VISUAL</span>
+                      <div className="w-full h-full flex items-center justify-center bg-eprx-dark">
+                        <span className="text-[#1a1a1a] font-bebas text-4xl tracking-[5px] uppercase">
+                          NO VISUAL
+                        </span>
                       </div>
                     )}
                   </div>
-                  <div style={styles.cardContent}>
-                    <span style={styles.tag}>
+
+                  {/* Content Body */}
+                  <div className="p-6 flex flex-col flex-1">
+                    <span className="text-eprx-lime text-[0.6rem] md:text-[0.65rem] font-mono tracking-widest mb-4 uppercase">
                       {item.category} ||{" "}
-                      {new Date(item.createdAt).getFullYear()}
+                      {new Date(item.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "2-digit",
+                        timeZone: "UTC", // ⚡ Keeps dates consistent across all timezones
+                      })}
                     </span>
-                    <h2 style={styles.cardTitle}>{item.title.toUpperCase()}</h2>
-                    <p style={styles.cardDesc}>
-                      {item.content.substring(0, 120)}...
+                    <h2 className="font-bebas text-3xl leading-none mb-4 uppercase text-white">
+                      {item.title}
+                    </h2>
+                    <p className="text-[#888] text-sm leading-relaxed mb-6 line-clamp-3">
+                      {item.content}
                     </p>
-                    <div style={styles.readMore}>ACCESS DATA →</div>
+                    <div className="mt-auto pt-4 border-t border-[#1a1a1a]">
+                      <span className="inline-block text-white text-[0.65rem] font-mono tracking-widest border border-[#333] px-3 py-2 transition-all duration-300 group-hover:border-[#555]">
+                        READ FULL ARTICLE
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               </Link>
             ))}
           </div>
         ) : (
-          <div style={styles.noData}>NO ARCHIVED ARCTILE/S FOUND</div>
+          <div className="text-center py-24">
+            <p className="font-mono text-[#444] text-xs md:text-sm tracking-widest uppercase">
+              NO ARCHIVED ARTICLES DETECTED
+            </p>
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  pageContainer: {
-    backgroundColor: "#0f0f0f",
-    color: "#fff",
-    minHeight: "100vh",
-    padding: "100px 8% 60px",
-  },
-  header: {
-    marginBottom: "60px",
-    borderBottom: "1px solid #1a1a1a",
-    paddingBottom: "40px",
-  },
-  title: {
-    fontFamily: "var(--font-bebas), sans-serif",
-    fontSize: "6rem",
-    margin: 0,
-    lineHeight: "0.9",
-    letterSpacing: "-2px",
-  },
-  subtitle: {
-    color: "#666",
-    letterSpacing: "4px",
-    fontSize: "0.8rem",
-    marginTop: "15px",
-    fontFamily: "monospace",
-  },
-  content: { display: "flex", flexDirection: "column" },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))",
-    gap: "30px",
-  },
-  cardLink: { textDecoration: "none", color: "inherit", display: "block" },
-  card: {
-    backgroundColor: "#0a0a0a",
-    border: "1px solid #1a1a1a",
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    transition: "border-color 0.3s ease",
-  },
-  imageContainer: {
-    height: "220px",
-    backgroundColor: "#111",
-    overflow: "hidden",
-    position: "relative",
-    borderBottom: "1px solid #1a1a1a",
-  },
-  placeholderImage: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#0f0f0f",
-  },
-  imageLabel: {
-    color: "#222",
-    fontFamily: "var(--font-bebas)",
-    fontSize: "2.5rem",
-    letterSpacing: "5px",
-  },
-  cardContent: {
-    padding: "30px",
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-  tag: {
-    color: "#d4ff00",
-    fontSize: "0.65rem",
-    letterSpacing: "3px",
-    marginBottom: "15px",
-    fontFamily: "monospace",
-  },
-  cardTitle: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "2.2rem",
-    margin: "0 0 15px 0",
-    lineHeight: "1",
-    color: "#fff",
-  },
-  cardDesc: {
-    color: "#888",
-    fontSize: "0.9rem",
-    lineHeight: "1.6",
-    marginBottom: "25px",
-  },
-  readMore: {
-    color: "#fff",
-    fontSize: "0.7rem",
-    letterSpacing: "3px",
-    fontFamily: "monospace",
-    marginTop: "auto",
-    border: "1px solid #333",
-    padding: "8px 15px",
-    width: "fit-content",
-    transition: "all 0.3s",
-  },
-  articleImage: { width: "100%", height: "100%", objectFit: "cover" },
-  loadingText: {
-    fontFamily: "monospace",
-    color: "#d4ff00",
-    fontSize: "1rem",
-    letterSpacing: "4px",
-    textAlign: "center",
-    padding: "100px 0",
-  },
-  noData: {
-    fontFamily: "monospace",
-    color: "#444",
-    fontSize: "0.8rem",
-    letterSpacing: "2px",
-    textAlign: "center",
-    padding: "100px 0",
-  },
-};

@@ -45,7 +45,7 @@ const ForgotPasswordForm = () => {
 
       // We don't auto-redirect immediately so the user knows they need to check email
     } catch (err: any) {
-      triggerToast("UPLINK_FAILURE: UNABLE TO SEND RECOVERY LINK");
+      triggerToast("UPLINK FAILURE: UNABLE TO SEND RECOVERY LINK");
     } finally {
       setLoading(false);
     }
@@ -110,9 +110,10 @@ const ForgotPasswordForm = () => {
                 className="text-center sm:text-left"
               >
                 <header className="mb-8">
-                  <h1 className="font-bebas text-5xl md:text-6xl tracking-tight leading-none mb-2 uppercase text-eprx-lime">
-                    LINK SENT
+                  <h1 className="font-bebas text-5xl md:text-6xl tracking-tight leading-none mb-2 uppercase">
+                    LINK <span className="text-eprx-lime">SENT</span>
                   </h1>
+
                   <p className="text-sm text-white mb-4 font-mono">
                     [{email.toUpperCase()}]
                   </p>
@@ -124,7 +125,7 @@ const ForgotPasswordForm = () => {
 
                 <button
                   onClick={() => router.push("/login")}
-                  className="text-white border-b border-white pb-1 text-xs font-bold tracking-[2px] hover:text-eprx-lime hover:border-eprx-lime transition-all"
+                  className="text-white pb-1 text-xs font-bold tracking-[2px] hover:text-eprx-lime transition-all"
                 >
                   RETURN TO LOGIN
                 </button>

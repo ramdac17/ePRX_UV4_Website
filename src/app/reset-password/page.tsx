@@ -136,7 +136,7 @@ const ResetForm = () => {
               disabled={loading}
               className="w-full py-4 border border-[#333] text-white font-bebas text-xl tracking-[4px] hover:bg-white hover:text-black transition-all disabled:opacity-50"
             >
-              {loading ? "PATCHING DATABASE..." : "INITIALIZE OVERRIDE →"}
+              {loading ? "PATCHING DATABASE..." : "INITIALIZE RESET PASSWORD"}
             </motion.button>
           </form>
 

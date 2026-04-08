@@ -20,7 +20,6 @@ interface Article {
 
 export default function ArticleDetailClient({ id }: { id: string }) {
   const BACKEND_API = process.env.NEXT_PUBLIC_API_URL;
-
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,17 +57,24 @@ export default function ArticleDetailClient({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <h2 style={styles.loadingText}>DECRYPTING DATA STREAM...</h2>
+      <div className="h-screen flex items-center justify-center bg-[#050505]">
+        <h2 className="font-mono text-eprx-lime tracking-[6px] animate-pulse uppercase text-sm">
+          DECRYPTING DATA STREAM...
+        </h2>
       </div>
     );
   }
 
   if (error || !article) {
     return (
-      <div style={styles.errorContainer}>
-        <h2 style={styles.errorText}>|| ERROR: {error}</h2>
-        <Link href="/" style={styles.backLink}>
+      <div className="h-screen flex flex-col items-center justify-center bg-[#050505] gap-6">
+        <h2 className="font-mono text-red-500 tracking-widest uppercase">
+          || ERROR: {error || "UNKNOWN_EXCEPTION"}
+        </h2>
+        <Link
+          href="/"
+          className="font-mono text-eprx-lime border border-eprx-lime px-6 py-2 hover:bg-eprx-lime hover:text-black transition-all text-xs"
+        >
           RETURN TO DASHBOARD
         </Link>
       </div>
@@ -82,65 +88,63 @@ export default function ArticleDetailClient({ id }: { id: string }) {
     : "SYSTEM_AUTO";
 
   return (
-    <div style={styles.pageContainer}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
+    <div className="min-h-screen bg-[#050505] text-white pt-28 pb-20 px-6 md:px-[10%]">
+      <motion.article
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        style={styles.articleWrapper}
+        transition={{ duration: 0.6 }}
+        className="max-w-4xl mx-auto"
       >
-        <header style={styles.header}>
-          <div style={styles.meta}>
-            <span style={styles.category}>{article.category}</span>
-            <span style={styles.divider}> || </span>
-            <span style={styles.date}>
-              {new Date(article.createdAt)
-                .toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "2-digit",
-                })
-                .toUpperCase()}
+        {/* Header Section */}
+        <header className="mb-12">
+          <div className="flex items-center gap-3 font-mono text-[0.65rem] md:text-xs text-eprx-lime tracking-[3px] mb-6 uppercase">
+            <span>{article.category}</span>
+            <span className="text-[#333]">||</span>
+            <span className="text-[#888]">
+              {new Date(article.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                timeZone: "UTC",
+              })}
             </span>
           </div>
 
-          <h1 style={styles.title}>{article.title.toUpperCase()}</h1>
+          <h1 className="font-bebas text-5xl md:text-7xl leading-[0.9] mb-8 uppercase tracking-tighter">
+            {article.title}
+          </h1>
 
-          <div style={styles.subHeader}>
-            <div style={styles.authorSection}>
-              <div style={{ marginBottom: "12px" }}>
-                <span style={styles.authorLabel}>AUTHOR:</span>
-                <span style={styles.authorName}>
-                  {authorName.toUpperCase()}
-                </span>
-              </div>
-
-              {/* 🛰️ SHARE BUTTON - Nested under Author Section */}
-              <button
-                onClick={shareToFacebook}
-                style={styles.shareBtnInline}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#d4ff00";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#666";
-                }}
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                SHARE ON FACEBOOK
-              </button>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#1a1a1a] pb-8">
+            <div className="font-mono">
+              <span className="block text-[0.6rem] text-[#444] tracking-widest mb-1 uppercase">
+                AUTHOR
+              </span>
+              <span className="text-[#aaa] text-xs uppercase tracking-wider">
+                {authorName}
+              </span>
             </div>
+
+            <button
+              onClick={shareToFacebook}
+              className="flex items-center gap-2 text-[#666] hover:text-eprx-lime transition-colors font-mono text-[0.6rem] tracking-[2px] uppercase group"
+            >
+              <svg
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                className="opacity-60 group-hover:opacity-100"
+              >
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              SHARE ON FACEBOOK
+            </button>
           </div>
         </header>
 
+        {/* Hero Image */}
         {article.image && (
-          <div style={styles.imageContainer}>
+          <div className="w-full mb-12 border border-[#1a1a1a] bg-[#0a0a0a] overflow-hidden rounded-sm">
             <img
               src={
                 article.image.startsWith("http")
@@ -148,173 +152,31 @@ export default function ArticleDetailClient({ id }: { id: string }) {
                   : `${STATIC_URL}/uploads/${article.image}`
               }
               alt={article.title}
-              style={styles.heroImage}
+              className="w-full h-auto max-h-175 object-cover filter contrast-[1.02] brightness-[0.95]"
             />
           </div>
         )}
 
-        <main style={styles.contentContainer}>
-          <div style={styles.content}>
-            {article.content.split("\n").map((paragraph, index) => (
-              <p key={index} style={styles.paragraph}>
-                {paragraph}
-              </p>
-            ))}
+        {/* Content Body */}
+        <main className="prose prose-invert prose-p:text-[#ccc] prose-p:leading-relaxed prose-p:text-lg max-w-none">
+          <div className="space-y-6">
+            {article.content.split("\n").map((paragraph, index) =>
+              paragraph.trim() ? (
+                <p key={index} className="font-sans font-light tracking-wide">
+                  {paragraph}
+                </p>
+              ) : null,
+            )}
           </div>
         </main>
 
-        <footer style={styles.footer}>
-          <div style={styles.footerLine}></div>
-          <p style={styles.footerText}>
-            END OF ARTICLE || PRX ARCHIVES || 2026
+        {/* Footer Signature */}
+        <footer className="mt-20 pt-10 border-t border-[#1a1a1a] text-center">
+          <p className="font-mono text-[0.6rem] text-[#333] tracking-[5px] uppercase">
+            PRX ARTICLE ARCHIVE || {new Date().getFullYear()}
           </p>
         </footer>
-      </motion.div>
+      </motion.article>
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  pageContainer: {
-    backgroundColor: "#0a0a0a",
-    minHeight: "100vh",
-    color: "#fff",
-    padding: "60px 8%",
-    marginTop: "40px",
-  },
-  loadingContainer: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#0a0a0a",
-  },
-  loadingText: {
-    fontFamily: "monospace",
-    color: "#d4ff00",
-    letterSpacing: "4px",
-  },
-  errorContainer: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#0a0a0a",
-    gap: "20px",
-  },
-  errorText: {
-    fontFamily: "monospace",
-    color: "#ff3e3e",
-    letterSpacing: "2px",
-  },
-  backLink: {
-    color: "#d4ff00",
-    textDecoration: "none",
-    fontFamily: "monospace",
-    border: "1px solid #d4ff00",
-    padding: "10px 20px",
-  },
-  articleWrapper: {
-    maxWidth: "900px",
-    margin: "0 auto",
-  },
-  header: {
-    marginBottom: "40px",
-  },
-  meta: {
-    display: "flex",
-    gap: "10px",
-    fontSize: "0.75rem",
-    color: "#d4ff00",
-    fontFamily: "monospace",
-    letterSpacing: "2px",
-    marginBottom: "15px",
-  },
-  divider: {
-    color: "#333",
-  },
-  title: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "5rem",
-    lineHeight: "0.9",
-    margin: "0 0 20px 0",
-    color: "#fff",
-  },
-  authorSection: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-  },
-  authorLabel: {
-    fontSize: "0.7rem",
-    fontFamily: "monospace",
-    letterSpacing: "1px",
-    color: "#666",
-  },
-  authorName: {
-    fontSize: "0.7rem",
-    fontFamily: "monospace",
-    letterSpacing: "1px",
-    color: "#999",
-    marginLeft: "8px",
-  },
-  shareBtnInline: {
-    backgroundColor: "transparent",
-    border: "none",
-    color: "#666",
-    fontSize: "0.6rem",
-    fontFamily: "monospace",
-    padding: "0",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    cursor: "pointer",
-    letterSpacing: "2px",
-    transition: "color 0.3s ease",
-  },
-  subHeader: {
-    marginTop: "20px",
-  },
-  imageContainer: {
-    width: "100%",
-    marginBottom: "40px",
-    border: "1px solid #222",
-    backgroundColor: "#111",
-    overflow: "hidden",
-  },
-  heroImage: {
-    width: "100%",
-    maxHeight: "600px",
-    objectFit: "cover",
-    display: "block",
-    filter: "contrast(1.05) brightness(1.02)",
-  },
-  contentContainer: {
-    position: "relative",
-  },
-  content: {
-    fontSize: "1.05rem",
-    lineHeight: "1.8",
-    color: "#ccc",
-    maxWidth: "100%",
-  },
-  paragraph: {
-    marginBottom: "25px",
-  },
-  footer: {
-    marginTop: "80px",
-    textAlign: "center",
-  },
-  footerLine: {
-    height: "1px",
-    backgroundColor: "#222",
-    marginBottom: "20px",
-  },
-  footerText: {
-    fontSize: "0.6rem",
-    color: "#444",
-    fontFamily: "monospace",
-    letterSpacing: "3px",
-  },
-};
