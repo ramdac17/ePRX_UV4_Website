@@ -91,9 +91,7 @@ const ResetForm = () => {
           className="w-full max-w-md"
         >
           <header className="mb-10">
-            <div className="text-eprx-lime font-mono text-[0.6rem] tracking-[4px] mb-2">
-              UPLINK ESTABLISHED || RESET PROTOCOL
-            </div>
+            <div className="text-eprx-lime font-mono text-[0.6rem] tracking-[4px] mb-2"></div>
             <h1 className="font-bebas text-5xl md:text-6xl tracking-tight leading-none mb-2 uppercase">
               OVERRIDE <span className="text-eprx-lime">SECURITY</span>
             </h1>
@@ -105,7 +103,7 @@ const ResetForm = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="group">
               <label className="block text-[0.6rem] tracking-[2px] text-[#444] mb-2 group-focus-within:text-eprx-lime transition-colors font-bold uppercase">
-                NEW_PASSWORD
+                NEW PASSWORD
               </label>
               <input
                 type="password"
