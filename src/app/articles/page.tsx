@@ -34,7 +34,7 @@ export default function ArticlesArchivePage() {
           setArticles(filteredData);
         }
       } catch (error) {
-        console.error("STATION_ARCHIVE_FETCH_FAILURE:", error);
+        console.error("STATION ARCHIVE FETCH FAILURE:", error);
       } finally {
         setLoading(false);
       }
@@ -97,13 +97,13 @@ export default function ArticlesArchivePage() {
 
                   {/* Content Body */}
                   <div className="p-6 flex flex-col flex-1">
-                    <span className="text-eprx-lime text-[0.6rem] md:text-[0.65rem] font-mono tracking-widest mb-4 uppercase">
+                    <span className="text-[#666] text-[0.6rem] font-mono tracking-[2px] mb-4 uppercase font-bold">
                       {item.category} ||{" "}
                       {new Date(item.createdAt).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "short",
                         day: "2-digit",
-                        timeZone: "UTC", // ⚡ Keeps dates consistent across all timezones
+                        timeZone: "UTC",
                       })}
                     </span>
                     <h2 className="font-bebas text-3xl leading-none mb-4 uppercase text-white">
@@ -114,7 +114,7 @@ export default function ArticlesArchivePage() {
                     </p>
                     <div className="mt-auto pt-4 border-t border-[#1a1a1a]">
                       <span className="inline-block text-white text-[0.65rem] font-mono tracking-widest border border-[#333] px-3 py-2 transition-all duration-300 group-hover:border-[#555]">
-                        READ FULL ARTICLE
+                        READ ARTICLE
                       </span>
                     </div>
                   </div>
@@ -125,7 +125,7 @@ export default function ArticlesArchivePage() {
         ) : (
           <div className="text-center py-24">
             <p className="font-mono text-[#444] text-xs md:text-sm tracking-widest uppercase">
-              NO ARCHIVED ARTICLES DETECTED
+              NO ARCHIVED ARTICLES FOUND
             </p>
           </div>
         )}
