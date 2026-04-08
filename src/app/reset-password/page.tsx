@@ -2,36 +2,49 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import Toast from "@/components/Toast";
 
 const ResetForm = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  // Extracting both to satisfy the AuthService.resetPassword(resetDto)
   const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
-  // Toast State
-  const [showToast, setShowToast] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("error");
+  const [toast, setToast] = useState({
+    show: false,
+    msg: "",
+    type: "error" as "success" | "error",
+  });
 
+  // Security Redirect: If no token, the uplink is invalid.
   useEffect(() => {
     if (!token) {
       router.push("/login");
     }
   }, [token, router]);
 
+  const triggerToast = (msg: string, type: "success" | "error" = "error") => {
+    setToast({ show: true, msg: msg.toUpperCase(), type });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
-      setToastMsg("VALIDATION_ERROR: PASSWORDS_DO_NOT_MATCH");
-      setToastType("error");
-      setShowToast(true);
+      triggerToast("VALIDATION ERROR: CREDENTIAL MISMATCH");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      triggerToast("SECURITY ERROR: PASSWORD TOO WEAK (MIN 6 CHARS)");
       return;
     }
 
@@ -43,47 +56,60 @@ const ResetForm = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, newPassword }),
+          body: JSON.stringify({
+            email, // AuthService expects this
+            token,
+            newPassword,
+          }),
         },
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "RESET_FAILED");
+        throw new Error(data.message || "OVERRIDE_FAILED");
       }
 
-      setToastMsg("CREDENTIALS_UPDATED: RE-INITIALIZING_LOGIN...");
-      setToastType("success");
-      setShowToast(true);
+      triggerToast("CREDENTIALS REGENERATED: RE-INITIALIZING...", "success");
 
+      // Brief delay for the user to process the success
       setTimeout(() => router.push("/login"), 2500);
     } catch (err: any) {
-      setToastMsg(err.message?.toUpperCase() || "TRANSMISSION_ERROR");
-      setToastType("error");
-      setShowToast(true);
+      triggerToast(err.message || "TRANSMISSION_ERROR");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.formSide}>
-        <div style={styles.formWrapper}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>RESET_PASSWORD</h1>
-            <p style={styles.subtitle}>
-              ESTABLISHING NEW SECURITY CREDENTIALS FOR YOUR RUNNER ID.
+    <div className="flex w-screen h-screen bg-eprx-dark text-white overflow-hidden">
+      {/* Form Side */}
+      <div className="flex-1 lg:flex-[0.85] flex items-center justify-center p-6 sm:p-10">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md"
+        >
+          <header className="mb-10">
+            <div className="text-eprx-lime font-mono text-[0.6rem] tracking-[4px] mb-2">
+              UPLINK ESTABLISHED || RESET PROTOCOL
+            </div>
+            <h1 className="font-bebas text-5xl md:text-6xl tracking-tight leading-none mb-2 uppercase">
+              OVERRIDE <span className="text-eprx-lime">SECURITY</span>
+            </h1>
+            <p className="text-[0.7rem] text-[#666] tracking-wider uppercase leading-relaxed font-inter">
+              Establishing new encrypted credentials for {email || "RUNNER_ID"}.
             </p>
-          </div>
+          </header>
 
-          <form onSubmit={handleSubmit}>
-            <div style={styles.inputContainer}>
-              <label style={styles.label}>NEW PASSWORD</label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="group">
+              <label className="block text-[0.6rem] tracking-[2px] text-[#444] mb-2 group-focus-within:text-eprx-lime transition-colors font-bold uppercase">
+                NEW_PASSWORD
+              </label>
               <input
                 type="password"
-                style={styles.input}
+                className="w-full bg-transparent border-b border-[#222] text-white py-2 outline-none focus:border-eprx-lime transition-colors font-inter tracking-widest"
                 placeholder="••••••••"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -91,11 +117,13 @@ const ResetForm = () => {
               />
             </div>
 
-            <div style={styles.inputContainer}>
-              <label style={styles.label}>CONFIRM NEW PASSWORD</label>
+            <div className="group">
+              <label className="block text-[0.6rem] tracking-[2px] text-[#444] mb-2 group-focus-within:text-eprx-lime transition-colors font-bold uppercase">
+                CONFIRM RE-ENTRY
+              </label>
               <input
                 type="password"
-                style={styles.input}
+                className="w-full bg-transparent border-b border-[#222] text-white py-2 outline-none focus:border-eprx-lime transition-colors font-inter tracking-widest"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -103,172 +131,59 @@ const ResetForm = () => {
               />
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               type="submit"
               disabled={loading}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              style={{
-                ...styles.resetBtn,
-                backgroundColor: isHovered ? "#fff" : "transparent",
-                color: isHovered ? "#000" : "#fff",
-                borderColor: isHovered ? "#fff" : "#333",
-                opacity: loading ? 0.5 : 1,
-              }}
+              className="w-full py-4 border border-[#333] text-white font-bebas text-xl tracking-[4px] hover:bg-white hover:text-black transition-all disabled:opacity-50"
             >
-              {loading ? "PATCHING_CORE..." : "CONFIRM_NEW_CREDENTIALS →"}
-            </button>
+              {loading ? "PATCHING DATABASE..." : "INITIALIZE OVERRIDE →"}
+            </motion.button>
           </form>
 
-          <div style={styles.footer}>
-            <p style={styles.footerText}>ABORT MISSION?</p>
-            <button
-              onClick={() => router.push("/login")}
-              style={styles.backLink}
+          <footer className="mt-10 pt-6 border-t border-[#1a1a1a]">
+            <Link
+              href="/login"
+              className="text-[#444] text-[0.65rem] font-bold hover:text-white transition-colors tracking-[2px] uppercase"
             >
-              RETURN_TO_LOGIN
-            </button>
+              RETURN TO LOGIN
+            </Link>
+          </footer>
+        </motion.div>
+      </div>
+
+      {/* Visual Side */}
+      <div className="hidden lg:flex flex-1 relative bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')] bg-cover bg-center">
+        <div className="absolute inset-0 bg-black/80 flex flex-col justify-between p-16 text-right">
+          <div className="[writing-mode:vertical-lr] self-start text-[0.6rem] tracking-[8px] text-white/40 font-bold uppercase mt-20"></div>
+          <div className="mb-20">
+            <h2 className="font-bebas text-7xl xl:text-9xl leading-[0.8] tracking-tighter uppercase">
+              SECURE <br /> <span className="text-eprx-lime">ACCESS</span>
+            </h2>
           </div>
         </div>
       </div>
 
-      <div style={styles.visualSide}>
-        <div style={styles.overlay}>
-          <div style={styles.verticalText}>SYSTEM OVERRIDE</div>
-          <h2 style={styles.brandingTitle}>
-            SECURE <br />
-            <span style={{ color: "#d4ff00" }}>ACCESS</span>
-          </h2>
-        </div>
-      </div>
-
       <Toast
-        isVisible={showToast}
-        message={toastMsg}
-        type={toastType}
-        onClose={() => setShowToast(false)}
+        isVisible={toast.show}
+        message={toast.msg}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
       />
     </div>
   );
 };
 
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: "flex",
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "#0f0f0f",
-    color: "#fff",
-    overflow: "hidden",
-  },
-  formSide: {
-    flex: "0.85",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "40px",
-  },
-  formWrapper: { width: "100%", maxWidth: "360px" },
-  header: { marginBottom: "30px" },
-  title: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "3rem",
-    letterSpacing: "3px",
-    lineHeight: "1",
-    marginBottom: "10px",
-  },
-  subtitle: {
-    fontFamily: "var(--font-inter)",
-    color: "#666",
-    fontSize: "0.75rem",
-    lineHeight: "1.4",
-  },
-  inputContainer: { marginBottom: "20px" },
-  label: {
-    display: "block",
-    fontSize: "0.65rem",
-    letterSpacing: "2px",
-    color: "#444",
-    marginBottom: "8px",
-  },
-  input: {
-    width: "100%",
-    backgroundColor: "transparent",
-    border: "none",
-    borderBottom: "1px solid #222",
-    color: "#fff",
-    padding: "10px 0",
-    fontSize: "1rem",
-    outline: "none",
-  },
-  resetBtn: {
-    width: "100%",
-    padding: "16px",
-    border: "1px solid",
-    fontSize: "0.75rem",
-    letterSpacing: "4px",
-    cursor: "pointer",
-    transition: "0.4s",
-    marginTop: "10px",
-  },
-  visualSide: {
-    flex: "1.15",
-    backgroundImage:
-      'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    position: "relative",
-  },
-  overlay: {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    padding: "60px",
-    textAlign: "right",
-  },
-  verticalText: {
-    transform: "rotate(90deg)",
-    transformOrigin: "right top",
-    fontSize: "0.7rem",
-    letterSpacing: "5px",
-    color: "#ccc",
-    marginTop: "100px",
-  },
-  brandingTitle: {
-    fontSize: "4.5rem",
-    lineHeight: "0.9",
-    letterSpacing: "2px",
-  },
-  footer: {
-    marginTop: "30px",
-    borderTop: "1px solid #1a1a1a",
-    paddingTop: "20px",
-  },
-  footerText: {
-    fontSize: "0.65rem",
-    color: "#444",
-    letterSpacing: "2px",
-    marginBottom: "5px",
-  },
-  backLink: {
-    backgroundColor: "transparent",
-    border: "none",
-    color: "#d4ff00",
-    fontSize: "0.75rem",
-    letterSpacing: "1px",
-    fontWeight: "600",
-    cursor: "pointer",
-    padding: 0,
-  },
-  loader: { backgroundColor: "#0f0f0f", height: "100vh" },
-};
-
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div style={styles.loader} />}>
+    <Suspense
+      fallback={
+        <div className="bg-eprx-dark h-screen flex items-center justify-center text-eprx-lime font-mono tracking-[4px] text-xs">
+          INITIALIZING OVERRIDE ENVIRONMENT...
+        </div>
+      }
+    >
       <ResetForm />
     </Suspense>
   );

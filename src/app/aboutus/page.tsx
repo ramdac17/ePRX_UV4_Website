@@ -9,406 +9,172 @@ export default function AboutPage() {
       id: "01",
       title: "THE MISSION",
       content:
-        "PRX (PINOY RUNNER EXTREME) IS ENGINEERED TO BRIDGE THE GAP BETWEEN ARCHAIZED DATA SYSTEMS AND THE FUTURE OF SECURE DIGITAL INTERACTION. OUR GOAL IS ABSOLUTE CONNECTIVITY WITHOUT COMPROMISE.",
+        "PRX.com (PINOY RUNNER EXTREME) IS ENGINEERED TO BRIDGE THE GAP BETWEEN ARCHAIZED DATA SYSTEMS AND THE FUTURE OF SECURE DIGITAL INTERACTION.",
     },
     {
       id: "02",
       title: "THE TECH",
       content:
-        "BUILT ON A FOUNDATION OF NEXT-GEN REACT ARCHITECTURE AND POSTGRESQL CORE, OUR SYSTEM ENSURES SUB-MILLISECOND LATENCY AND ENCRYPTED PROFILE INTEGRITY.",
+        "BUILT ON A FOUNDATION OF NEXT-GEN REACT ARCHITECTURE AND POSTGRESQL CORE, PRX.com SYSTEM ENSURES SUB-MILLISECOND LATENCY.",
     },
     {
       id: "03",
       title: "THE VISION",
       content:
-        "WE ARE NOT JUST BUILDING A PLATFORM; WE ARE ARCHITECTING AN ECOSYSTEM FOR ELITE ATHLETES WHO DEMAND EFFICIENCY, SPEED, AND MINIMALIST PRECISION.",
+        "WE ARE ARCHITECTING AN ECOSYSTEM FOR ELITE ATHLETES WHO DEMAND EFFICIENCY, SPEED, AND MINIMALIST PRECISION.",
     },
   ];
 
   const admins = [
     {
       name: "Merric Kyo Evangelista",
-      role: "SOFTWARE ENGINEER | LEAD DEVELOPER",
+      role: "SOFTWARE ENGINEER | LEAD DEVELOPER | SITE OWNER",
       img: "/assets/images/MerricV5.jpg",
-      bio: "RESPONSIBLE FOR THE CORE STRUCTURE AND DATA UPLINK PROTOCOLS. SPECIALIZES IN HIGH-AVAILABILITY CLOUD INFRASTRUCTURE. A DEDICATED RUNNER, A LOVING FATHER AND A GAMER AT HEART.",
+      bio: "RESPONSIBLE FOR THE OVERALL CORE STRUCTURE AND DATA UPLINK PROTOCOLS. A DEDICATED RUNNER, A LOVING FATHER AND A GAMER AT HEART.",
     },
   ];
 
   return (
-    <div style={styles.container}>
-      <div style={styles.wrapper}>
-        {/* Brand Logo Section */}
-        <div style={styles.logoContainer}>
+    /* Use the global background variable and Inter font */
+    <div className="bg-background min-h-screen flex flex-col justify-center items-center px-[5%] py-16 text-white font-inter">
+      {/* Brand & Header */}
+      <div className="text-center mb-12">
+        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 mt-10 border-2 border-eprx-lime overflow-hidden shadow-[0_0_20px_rgba(212,255,0,0.3)]">
           <img
             src="/assets/images/eprx-logo.png"
             alt="PRX Logo"
-            style={styles.brandLogo}
+            className="w-full h-full object-contain"
           />
         </div>
 
         {/* Header Section */}
-        <header style={styles.header}>
+        <header className="mb-20 flex flex-col items-center text-center">
           <motion.span
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            style={styles.version}
+            className="text-[0.6rem] text-[#444] tracking-[4px] mb-4"
           >
             CORE SYSTEM ||{" "}
-            <span style={{ color: "#d4ff00" }}>PINOY RUNNER EXTREME</span> ||
-            EST 2013
+            <span className="text-eprx-lime">PINOY RUNNER EXTREME</span> || EST
+            2013
           </motion.span>
+
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            style={styles.mainTitle}
+            className="font-bebas text-5xl md:text-6xl tracking-tight mb-8 uppercase"
           >
-            ABOUT <span style={{ color: "#d4ff00" }}>PRX</span>
+            ABOUT <span className="text-eprx-lime">PRX</span>
           </motion.h1>
 
-          {/* ⚡ NEW: Hero Image & Mock Description */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            style={styles.heroContainer}
+            className="w-full max-w-3xl"
           >
-            <div style={styles.imageFrame}>
+            <div className="relative border border-[#1a1a1a] p-1 bg-[#080808]">
               <img
-                src="/assets/images/prx-pastel.png" // Ensure this path is correct
+                src="/assets/images/prx-3dV2.jpg"
                 alt="PRX Operational Interface"
-                style={styles.heroImage}
-                onError={(e) => {
-                  e.currentTarget.src = "";
-                }}
+                className="w-full h-auto max-h-100 object-cover block filter"
               />
-              <div style={styles.imageOverlay} />
+              <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[#050505] pointer-events-none" />
             </div>
-            <p style={styles.heroDescription}>
-              <span style={{ color: "#d4ff00" }}>PINOY RUNNER EXTREME </span>- A
-              proactive community of runners dedicated on promoting a healthy
-              lifestyle through the power of running. By fostering consistency,
-              discipline, and support, we inspire individuals to stay active,
-              build resilience, and embrace wellness. Keep running, stay strong!
-              || PRX CORE SYSTEM || 2013
+            <p className="text-[0.75rem] leading-relaxed text-[#666] mt-8 text-left tracking-wide border-l border-eprx-lime pl-4">
+              <span className="text-eprx-lime font-bold">
+                PINOY RUNNER EXTREME
+              </span>{" "}
+              - A proactive community dedicated to fostering consistency,
+              discipline, and wellness. Keep running, stay strong!
             </p>
           </motion.div>
         </header>
 
-        {/* Mission/Tech/Vision Grid */}
-        <div style={styles.grid}>
+        {/* Grid Section - Using our 'reveal' class from globals.css */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-24">
           {sections.map((section, i) => (
-            <motion.div
+            <div
               key={section.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-              style={styles.card}
+              className="bg-[#080808] p-8 border border-[#111] relative group hover:border-eprx-lime transition-colors"
             >
-              <span style={styles.cardNumber}>{section.id}</span>
-              <h3 style={styles.cardTitle}>{section.title}</h3>
-              <p style={styles.cardText}>{section.content}</p>
-            </motion.div>
+              <span className="text-[0.6rem] text-eprx-lime absolute top-3 right-3 opacity-30">
+                {section.id}
+              </span>
+              <h3 className="font-bebas text-lg tracking-widest text-white mb-4 border-l-2 border-eprx-lime pl-3">
+                {section.title}
+              </h3>
+              <p className="text-[0.8rem] leading-relaxed text-[#666] group-hover:text-white transition-colors">
+                {section.content}
+              </p>
+            </div>
           ))}
         </div>
 
-        {/* Meet the Admins Section */}
-        <div style={styles.adminSection}>
-          <h2 style={styles.adminSectionTitle}>
-            <span style={{ color: "#d4ff00" }}>|</span> OPERATOR LOGS || MEET
-            THE ADMINS
+        {/* Admin Section */}
+        <section className="border-t border-[#111] pt-20 mb-24">
+          <h2 className="text-[0.65rem] tracking-[4px] text-[#333] text-center mb-16">
+            <span className="text-eprx-lime">|</span> OPERATOR LOGS || MEET THE
+            ADMINS
           </h2>
 
-          <div style={styles.adminList}>
+          <div className="flex flex-col gap-20">
             {admins.map((admin, i) => (
               <motion.div
                 key={admin.name}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                style={{
-                  ...styles.adminRow,
-                  flexDirection: i % 2 === 0 ? "row" : "row-reverse",
-                }}
+                className={`flex flex-wrap items-center justify-center gap-12 w-full ${i % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}
               >
-                <div style={styles.profileContainer}>
-                  <div style={styles.profileCircle}>
+                <div className="relative">
+                  <div className="w-36 h-36 rounded-full border border-[#1a1a1a] p-1.5 bg-black overflow-hidden">
                     <img
                       src={admin.img}
                       alt={admin.name}
-                      style={styles.profileImg}
+                      className="w-full h-full rounded-full object-cover filter contrast-110 brightness-90"
                     />
                   </div>
-                  <div style={styles.scanLine} />
+                  <div className="absolute top-[15%] -left-2 w-px h-[70%] bg-eprx-lime opacity-40 shadow-[0_0_10px_#d4ff00]" />
                 </div>
 
                 <div
-                  style={{
-                    ...styles.adminInfo,
-                    textAlign: i % 2 === 0 ? "left" : "right",
-                    alignItems: i % 2 === 0 ? "flex-start" : "flex-end",
-                  }}
+                  className={`max-w-100 flex flex-col ${i % 2 === 0 ? "text-left" : "text-right"}`}
                 >
-                  <span style={styles.adminRoleLabel}>{admin.role}</span>
-                  <h3 style={styles.adminName}>{admin.name}</h3>
+                  <span className="text-[0.6rem] text-eprx-lime tracking-[3px] font-bold uppercase">
+                    {admin.role}
+                  </span>
+                  <h3 className="text-3xl font-bebas text-white mt-1 mb-4">
+                    {admin.name}
+                  </h3>
                   <div
-                    style={{
-                      ...styles.bioDivider,
-                      marginLeft: i % 2 === 0 ? "0" : "auto",
-                      marginRight: i % 2 === 0 ? "auto" : "0",
-                    }}
+                    className={`w-10 h-px bg-eprx-lime mb-4 ${i % 2 === 0 ? "mr-auto" : "ml-auto"}`}
                   />
-                  <p style={styles.adminBio}>{admin.bio}</p>
-                  <div style={styles.adminStats}>
-                    <span style={styles.statLabel}>
-                      STATUS: <span style={{ color: "#d4ff00" }}>ACTIVE</span>
-                    </span>
-                    <span style={styles.statLabel}>
-                      CLEARANCE: <span style={{ color: "#fff" }}>ADMIN</span>
-                    </span>
-                  </div>
+                  <p className="text-[0.85rem] leading-relaxed text-[#777]">
+                    {admin.bio}
+                  </p>
                 </div>
               </motion.div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Tactical Specs Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          style={styles.specBox}
-        >
-          {["UPTIME", "PROTOCOL", "LOCATION", "STATUS"].map((label) => (
-            <div key={label} style={styles.specItem}>
-              <span style={styles.specLabel}>{label}</span>
+        {/* Footer Specs */}
+        <footer className="flex flex-wrap justify-between border-t border-[#111] pt-8 gap-5 pb-10">
+          {["UPTIME", "PROTOCOL", "STATUS"].map((label) => (
+            <div key={label} className="flex flex-col gap-1">
+              <span className="text-[0.5rem] text-[#333] tracking-[2px]">
+                {label}
+              </span>
               <span
-                style={{
-                  ...styles.specValue,
-                  color: label === "STATUS" ? "#d4ff00" : "#fff",
-                }}
+                className={`text-[0.7rem] tracking-widest font-bold ${label === "STATUS" ? "text-eprx-lime" : "text-white"}`}
               >
                 {label === "UPTIME"
                   ? "99.99%"
                   : label === "PROTOCOL"
-                    ? "HTTPS/SECURE"
-                    : label === "LOCATION"
-                      ? "DISTRIBUTED NODE"
-                      : "OPERATIONAL"}
+                    ? "SECURE/UPLINK"
+                    : "OPERATIONAL"}
               </span>
             </div>
           ))}
-        </motion.div>
+        </footer>
       </div>
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  // ... (All previous styles remain intact)
-  container: {
-    backgroundColor: "#050505",
-    minHeight: "100vh",
-    padding: "60px 8%",
-    color: "#fff",
-    display: "flex",
-    justifyContent: "center",
-    fontFamily: "monospace",
-  },
-  wrapper: { maxWidth: "1100px", width: "100%" },
-  logoContainer: {
-    width: "100px",
-    height: "100px",
-    backgroundColor: "#FFFFFF",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto 30px auto",
-    marginTop: "40px",
-    border: "2px solid #d4ff00",
-    overflow: "hidden",
-  },
-  brandLogo: { width: "100%", height: "100%", objectFit: "contain" },
-  header: {
-    marginBottom: "50px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    textAlign: "center",
-  },
-  version: {
-    fontSize: "0.6rem",
-    color: "#444",
-    letterSpacing: "5px",
-    marginBottom: "10px",
-  },
-  mainTitle: {
-    fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
-    margin: "0 0 40px 0",
-    letterSpacing: "2px",
-    textTransform: "uppercase",
-    fontWeight: "900",
-  },
-
-  // ⚡ NEW STYLES
-  heroContainer: {
-    width: "100%",
-    maxWidth: "900px",
-    marginTop: "20px",
-  },
-  imageFrame: {
-    position: "relative",
-    border: "1px solid #1a1a1a",
-    padding: "10px",
-    backgroundColor: "#080808",
-  },
-  heroImage: {
-    width: "100%",
-    height: "auto",
-    maxHeight: "450px",
-    objectFit: "cover",
-    // filter: "grayscale(100%) contrast(1.1)",
-    display: "block",
-  },
-  imageOverlay: {
-    position: "absolute",
-    inset: 0,
-    background: "linear-gradient(to bottom, transparent 70%, #050505)",
-    pointerEvents: "none",
-  },
-  heroDescription: {
-    fontSize: "0.75rem",
-    lineHeight: "1.6",
-    color: "#666",
-    marginTop: "20px",
-    textAlign: "left",
-    letterSpacing: "1px",
-    borderLeft: "2px solid #d4ff00",
-    paddingLeft: "20px",
-    fontFamily: "monospace",
-  },
-
-  // ... (Rest of styles)
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "20px",
-    marginBottom: "120px",
-  },
-  card: {
-    backgroundColor: "#0a0a0a",
-    padding: "40px 30px",
-    border: "1px solid #1a1a1a",
-    position: "relative",
-  },
-  cardNumber: {
-    fontSize: "0.6rem",
-    color: "#d4ff00",
-    position: "absolute",
-    top: "15px",
-    right: "15px",
-    opacity: 0.5,
-  },
-  cardTitle: {
-    fontSize: "0.8rem",
-    letterSpacing: "3px",
-    color: "#fff",
-    marginBottom: "20px",
-    borderLeft: "2px solid #d4ff00",
-    paddingLeft: "15px",
-  },
-  cardText: { fontSize: "0.85rem", lineHeight: "1.8", color: "#777" },
-  adminSection: {
-    marginTop: "60px",
-    borderTop: "1px solid #1a1a1a",
-    paddingTop: "100px",
-    marginBottom: "120px",
-  },
-  adminSectionTitle: {
-    fontSize: "0.75rem",
-    letterSpacing: "5px",
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: "80px",
-  },
-  adminList: { display: "flex", flexDirection: "column", gap: "120px" },
-  adminRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "80px",
-    width: "100%",
-    flexWrap: "wrap",
-  },
-  profileContainer: { position: "relative" },
-  profileCircle: {
-    width: "240px",
-    height: "240px",
-    borderRadius: "50%",
-    border: "1px solid #222",
-    padding: "10px",
-    backgroundColor: "#000",
-    overflow: "hidden",
-  },
-  profileImg: {
-    width: "100%",
-    height: "100%",
-    borderRadius: "50%",
-    objectFit: "cover",
-  },
-  scanLine: {
-    position: "absolute",
-    top: "10%",
-    left: "-15px",
-    width: "2px",
-    height: "80%",
-    backgroundColor: "#d4ff00",
-    opacity: 0.4,
-  },
-  adminInfo: {
-    flex: 1,
-    maxWidth: "500px",
-    display: "flex",
-    flexDirection: "column",
-  },
-  adminName: {
-    fontSize: "2.5rem",
-    letterSpacing: "1px",
-    color: "#fff",
-    margin: "5px 0 20px 0",
-    fontWeight: "800",
-  },
-  adminRoleLabel: {
-    fontSize: "0.7rem",
-    color: "#d4ff00",
-    letterSpacing: "4px",
-    fontWeight: "bold",
-  },
-  bioDivider: {
-    width: "60px",
-    height: "1px",
-    backgroundColor: "#d4ff00",
-    marginBottom: "25px",
-  },
-  adminBio: {
-    fontSize: "0.9rem",
-    lineHeight: "1.8",
-    color: "#888",
-    letterSpacing: "0.5px",
-  },
-  adminStats: { marginTop: "30px", display: "flex", gap: "30px" },
-  statLabel: { fontSize: "0.6rem", letterSpacing: "2px", color: "#444" },
-  specBox: {
-    display: "flex",
-    justifyContent: "space-between",
-    borderTop: "1px solid #1a1a1a",
-    paddingTop: "40px",
-    flexWrap: "wrap",
-    gap: "20px",
-  },
-  specItem: { display: "flex", flexDirection: "column", gap: "5px" },
-  specLabel: { fontSize: "0.55rem", color: "#444", letterSpacing: "3px" },
-  specValue: { fontSize: "0.75rem", letterSpacing: "2px", fontWeight: "bold" },
-};

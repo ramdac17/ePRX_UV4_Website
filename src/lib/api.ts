@@ -4,6 +4,8 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
+console.log("UPLINK ADDR:", process.env.NEXT_PUBLIC_API_URL);
+
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const session = localStorage.getItem("eprx_session");

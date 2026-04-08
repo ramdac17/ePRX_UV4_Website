@@ -24,8 +24,8 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts", // Point specifically to src
+    "src/**/*.tsx", // Point specifically to src
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"

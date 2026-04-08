@@ -13,7 +13,7 @@ export default function Home() {
           <Image
             className="logo-glow rounded-full"
             src="/assets/images/ePRE1.png"
-            alt="ePRX UV1 Logo"
+            alt="PRX Logo"
             width={120}
             height={120}
             priority

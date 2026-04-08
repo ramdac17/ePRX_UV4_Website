@@ -35,6 +35,7 @@ export default function NavbarDrawer({
     { name: "LIVE EVENTS", path: "/events" },
     { name: "ARTICLES", path: "/articles" },
     { name: "ABOUT US", path: "/aboutus" },
+    { name: "CONTACT US", path: "/contactus" },
     { name: "LOGIN", path: "/login" },
   ];
 

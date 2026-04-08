@@ -79,9 +79,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           ],
         },
         { name: "LIVE EVENTS", path: "/events" },
-        { name: "ABOUT US", path: "/aboutus" },
-        { name: "CONTACT", path: "/contactus" },
-        { name: "JOIN US", path: "/register" },
+        { name: "ABOUT PRX", path: "/aboutus" },
+        { name: "CONTACT PRX", path: "/contactus" },
+        { name: "JOIN PRX", path: "/register" },
       ];
 
   if (!mounted) return null;

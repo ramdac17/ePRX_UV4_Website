@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -9,8 +9,8 @@ import api from "@/lib/api";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -22,31 +22,24 @@ const LoginForm = () => {
 
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
+  useEffect(() => {
+    // Check window only after mount to avoid hydration mismatch
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const { data } = await api.post("/auth/login", formData);
-
-      // NestJS / standard DTO alignment
       const user = data.user || data;
       const token = data.accessToken || data.token;
+      if (!token) throw new Error("TOKEN MISSING");
 
-      if (!token) throw new Error("TOKEN MISSING FROM RESPONSE");
-
-      // Optional: Check email verification
-      if (user.emailVerified === false) {
-        setToastMsg("IDENTITY LOCKED: PLEASE VERIFY YOUR EMAIL.");
-        setToastType("error");
-        setShowToast(true);
-        setLoading(false);
-        return;
-      }
-
-      // ✅ Store session in AuthContext only
       login(user, token);
-
       setToastMsg("ACCESS GRANTED: INITIALIZING...");
       setToastType("success");
       setShowToast(true);
@@ -57,9 +50,11 @@ const LoginForm = () => {
       }, 1200);
     } catch (err: any) {
       const rawMessage = err.response?.data?.message || "TRANSMISSION ERROR";
-      const message = Array.isArray(rawMessage) ? rawMessage[0] : rawMessage;
-
-      setToastMsg(message.toUpperCase());
+      setToastMsg(
+        Array.isArray(rawMessage)
+          ? rawMessage[0].toUpperCase()
+          : rawMessage.toUpperCase(),
+      );
       setToastType("error");
       setShowToast(true);
     } finally {
@@ -68,22 +63,31 @@ const LoginForm = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.formSide}>
-        <div style={styles.formWrapper}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>RETURNING RUNNER</h1>
-            <p style={styles.subtitle}>
+    <div
+      className={`flex w-screen h-screen bg-background text-white overflow-hidden ${isMobile ? "flex-col" : "flex-row"}`}
+    >
+      {/* Form Side */}
+      <div
+        className={`flex items-center justify-center bg-background ${isMobile ? "w-full p-6" : "w-[45%] p-10"}`}
+      >
+        <div className="w-full max-w-85">
+          <div className="mb-10">
+            <h1 className="font-bebas text-5xl md:text-6xl tracking-tight leading-none mb-2">
+              RETURNING <span className="text-eprx-lime">RUNNER</span>
+            </h1>
+            <p className="text-[0.7rem] text-[#666] tracking-wider uppercase font-inter">
               Enter credentials for performance dashboard access.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div style={styles.inputContainer}>
-              <label style={styles.label}>EMAIL ADDRESS</label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="group">
+              <label className="block text-[0.6rem] tracking-[2px] text-[#444] mb-2 group-focus-within:text-eprx-lime transition-colors">
+                EMAIL ADDRESS
+              </label>
               <input
                 type="email"
-                style={styles.input}
+                className="w-full bg-transparent border-b border-[#222] text-white py-2 text-base outline-none focus:border-eprx-lime transition-colors font-inter"
                 placeholder="runner@eprx.uv1"
                 value={formData.email}
                 onChange={(e) =>
@@ -93,11 +97,13 @@ const LoginForm = () => {
               />
             </div>
 
-            <div style={styles.inputContainer}>
-              <label style={styles.label}>PASSWORD</label>
+            <div className="group">
+              <label className="block text-[0.6rem] tracking-[2px] text-[#444] mb-2 group-focus-within:text-eprx-lime transition-colors">
+                PASSWORD
+              </label>
               <input
                 type="password"
-                style={styles.input}
+                className="w-full bg-transparent border-b border-[#222] text-white py-2 text-base outline-none focus:border-eprx-lime transition-colors font-inter"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) =>
@@ -110,47 +116,54 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={loading}
-              style={{
-                ...styles.loginBtn,
-                backgroundColor: isHovered ? "#fff" : "transparent",
-                color: isHovered ? "#000" : "#fff",
-                borderColor: isHovered ? "#fff" : "#333",
-                opacity: loading ? 0.5 : 1,
-              }}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
+              className="w-full py-4 border border-[#333] text-[0.7rem] tracking-[4px] font-bold transition-all duration-300 hover:bg-white hover:text-black hover:border-white disabled:opacity-50"
             >
               {loading ? "VERIFYING..." : "SIGN IN"}
             </button>
           </form>
 
-          <div style={styles.authExtras}>
-            <label style={styles.checkboxLabel}>
-              <input type="checkbox" style={styles.checkbox} />
-              <span style={styles.checkboxText}>REMEMBER ME</span>
+          <div className="flex justify-between items-center mt-6 text-[0.6rem] text-[#666]">
+            <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+              <input type="checkbox" className="accent-eprx-lime" />
+              <span>REMEMBER ME</span>
             </label>
-            <Link href="/forgot-password" style={styles.forgotLink}>
+            <Link
+              href="/forgot-password"
+              title="Recover Account"
+              className="hover:text-eprx-lime transition-colors"
+            >
               RECOVER ACCOUNT?
             </Link>
           </div>
 
-          <div style={styles.footer}>
-            <p style={styles.footerText}>NEW TO THE CIRCLE?</p>
-            <Link href="/register" style={styles.registerLink}>
+          <div className="mt-10 pt-6 border-t border-[#1a1a1a]">
+            <p className="text-[0.6rem] text-[#444] tracking-[2px] mb-1">
+              NEW TO THE CIRCLE?
+            </p>
+            <Link
+              href="/register"
+              className="text-eprx-lime text-[0.7rem] font-bold hover:underline"
+            >
               CREATE AN ACCOUNT
             </Link>
           </div>
         </div>
       </div>
 
-      <div style={styles.visualSide}>
-        <div style={styles.overlay}>
-          <div style={styles.verticalText}>PRX || LOGIN SECURITY</div>
-          <h2 style={styles.brandingTitle}>
-            THE <br /> <span style={{ color: "#d4ff00" }}>INNER</span> CIRCLE
-          </h2>
+      {/* Visual Side */}
+      {!isMobile && (
+        <div className="flex-1 relative bg-[url('/assets/images/LoginV1Web.jpg')] bg-cover bg-center">
+          <div className="absolute inset-0 bg-black/70 flex flex-col justify-between p-16 text-right">
+            <div className="[writing-mode:vertical-lr] self-start text-[0.6rem] tracking-[8px] text-white/40 font-bold uppercase mt-20"></div>
+            <div className="mb-20">
+              <h2 className="font-bebas text-7xl xl:text-9xl leading-[0.8] tracking-tighter uppercase">
+                THE <br /> <span className="text-eprx-lime">INNER</span> <br />{" "}
+                CIRCLE
+              </h2>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       <Toast
         isVisible={showToast}
@@ -162,132 +175,9 @@ const LoginForm = () => {
   );
 };
 
-// --- Styles remain identical ---
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: "flex",
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "#0f0f0f",
-    color: "#fff",
-    overflow: "hidden",
-  },
-  formSide: {
-    flex: 0.85,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "40px",
-  },
-  formWrapper: { width: "100%", maxWidth: "360px" },
-  header: { marginBottom: "30px" },
-  title: {
-    fontSize: "3rem",
-    letterSpacing: "3px",
-    lineHeight: "1",
-    marginBottom: "10px",
-  },
-  subtitle: { color: "#666", fontSize: "0.85rem" },
-  inputContainer: { marginBottom: "20px" },
-  label: {
-    display: "block",
-    fontSize: "0.65rem",
-    letterSpacing: "2px",
-    color: "#444",
-    marginBottom: "8px",
-  },
-  input: {
-    width: "100%",
-    backgroundColor: "transparent",
-    border: "none",
-    borderBottom: "1px solid #222",
-    color: "#fff",
-    padding: "10px 0",
-    fontSize: "1rem",
-    outline: "none",
-  },
-  loginBtn: {
-    width: "100%",
-    padding: "16px",
-    border: "1px solid",
-    fontSize: "0.75rem",
-    letterSpacing: "4px",
-    cursor: "pointer",
-    transition: "0.4s",
-    marginTop: "10px",
-  },
-  visualSide: {
-    flex: 1.15,
-    backgroundImage: `url("/assets/images/LoginV1Web.jpg")`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    position: "relative",
-  },
-  overlay: {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    padding: "60px",
-    textAlign: "right",
-  },
-  verticalText: {
-    transform: "rotate(90deg)",
-    transformOrigin: "right top",
-    fontSize: "0.7rem",
-    letterSpacing: "5px",
-    color: "#ccc",
-    marginTop: "300px",
-  },
-  brandingTitle: {
-    fontSize: "4.5rem",
-    lineHeight: "0.9",
-    letterSpacing: "2px",
-  },
-  footer: {
-    marginTop: "30px",
-    borderTop: "1px solid #1a1a1a",
-    paddingTop: "20px",
-  },
-  footerText: {
-    fontSize: "0.65rem",
-    color: "#444",
-    letterSpacing: "2px",
-    marginBottom: "5px",
-  },
-  registerLink: {
-    color: "#d4ff00",
-    fontSize: "0.75rem",
-    textDecoration: "none",
-    letterSpacing: "1px",
-    fontWeight: "600",
-  },
-  authExtras: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: "20px",
-    fontSize: "0.65rem",
-  },
-  checkboxLabel: {
-    display: "flex",
-    alignItems: "center",
-    cursor: "pointer",
-    gap: "8px",
-    color: "#666",
-  },
-  checkbox: { accentColor: "#d4ff00", cursor: "pointer" },
-  checkboxText: {},
-  forgotLink: { color: "#666", textDecoration: "none", transition: "0.3s" },
-};
-
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={<div style={{ backgroundColor: "#0f0f0f", height: "100vh" }} />}
-    >
+    <Suspense fallback={<div className="bg-background h-screen" />}>
       <LoginForm />
     </Suspense>
   );

@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 
 export default function ContactPage() {
   const [status, setStatus] = useState("IDLE");
-
-  // 1. Add state to capture form data
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,7 +22,6 @@ export default function ContactPage() {
     setStatus("TRANSMITTING...");
 
     try {
-      // 2. Replace 'YOUR_FORMSPREE_ID' with the ID from formspree.io
       const response = await fetch("https://formspree.io/f/xnjgyprn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,7 +30,7 @@ export default function ContactPage() {
 
       if (response.ok) {
         setStatus("LINK_ESTABLISHED");
-        setFormData({ name: "", email: "", message: "" }); // Reset form
+        setFormData({ name: "", email: "", message: "" });
         setTimeout(() => setStatus("IDLE"), 5000);
       } else {
         setStatus("UPLINK_ERROR");
@@ -46,124 +43,149 @@ export default function ContactPage() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.titleContainer}>
-        <div style={styles.logoContainer}>
+    <div className="bg-background min-h-screen flex flex-col justify-center items-center px-[5%] py-16 text-white font-inter">
+      {/* Brand & Header */}
+      <div className="text-center mb-12">
+        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 mt-10 border-2 border-eprx-lime overflow-hidden shadow-[0_0_20px_rgba(212,255,0,0.3)]">
           <img
             src="/assets/images/eprx-logo.png"
             alt="PRX Logo"
-            style={styles.brandLogo}
+            className="w-full h-full object-contain"
           />
         </div>
         <motion.h1
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          style={styles.title}
+          className="font-bebas text-5xl md:text-6xl tracking-tight mb-8 uppercase"
         >
-          CONTACT <span style={{ color: "#d4ff00" }}>PRX</span>
+          CONTACT <span className="text-eprx-lime">PRX</span>
         </motion.h1>
-        <p style={styles.subtitle}>
+        <p className="text-[0.65rem] tracking-[4px] text-[#444] mt-2 uppercase font-inter">
           ESTABLISH COMMUNICATION LINK ||{" "}
-          <span style={{ color: "#d4ff00" }}>PINOY RUNNER EXTREME</span> || EST
+          <span className="text-eprx-lime">PINOY RUNNER EXTREME</span> || EST
           2013
         </p>
       </div>
 
+      {/* Main Grid Wrapper */}
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        style={styles.wrapper}
+        className="w-full max-w-250 grid grid-cols-1 md:grid-cols-2 bg-[#0a0a0a] border border-[#1a1a1a] overflow-hidden"
       >
-        <div style={styles.infoSection}>
-          <div style={styles.briefingHeader}>
-            <span style={styles.value}>
-              For any concern, inquiry or suggestion, please fill out the form
-              and we will get back to you as soon as possible. Thank you for
-              supporting our website and being part of our community!
-            </span>
-          </div>
-          <div style={styles.details}>
-            <div style={styles.detailItem}>
-              <span style={styles.label}>EMAIL ADDRESS</span>
-              <span style={styles.value}>pinoyrunnerextreme@gmail.com</span>
+        {/* Info Section */}
+        <div className="p-10 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#1a1a1a]">
+          <div>
+            <div className="border-b border-[#1a1a1a] pb-4 mb-8">
+              <p className="text-[0.85rem] leading-relaxed text-[#888] font-light">
+                For any concern, inquiry or suggestion, please fill out the form
+                and we will get back to you as soon as possible. Thank you for
+                supporting the community!
+              </p>
             </div>
-            <div style={styles.detailItem}>
-              <span style={styles.label}>MOBILE NUMBER</span>
-              <span style={styles.value}>+63 (999) 4706868</span>
+
+            <div className="space-y-8">
+              <div className="flex flex-col gap-1">
+                <span className="text-[0.6rem] text-[#444] tracking-[2px] font-bold">
+                  EMAIL ADDRESS
+                </span>
+                <span className="text-sm md:text-base font-bold tracking-tight">
+                  pinoyrunnerextreme@gmail.com
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[0.6rem] text-[#444] tracking-[2px] font-bold">
+                  MOBILE NUMBER
+                </span>
+                <span className="text-sm md:text-base font-bold tracking-tight">
+                  +63 (999) 4706868
+                </span>
+              </div>
             </div>
           </div>
 
-          <div style={styles.statusBox}>
+          <div className="mt-10 flex items-center gap-3 p-4 border border-[#1a1a1a] bg-[#050505]">
             <div
-              style={{
-                ...styles.statusDot,
-                backgroundColor:
-                  status === "IDLE"
-                    ? "#d4ff00"
-                    : status === "LINK ESTABLISHED"
-                      ? "#fff"
-                      : "#ff3e3e",
-              }}
+              className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] transition-colors duration-500 ${
+                status === "IDLE"
+                  ? "text-eprx-lime bg-eprx-lime"
+                  : status === "LINK_ESTABLISHED"
+                    ? "text-blue-400 bg-blue-400"
+                    : "text-red-500 bg-red-500"
+              }`}
             />
-            <span style={styles.statusText}>STATUS: {status}</span>
+            <span className="text-[0.6rem] tracking-[1px] text-[#666] font-mono">
+              STATUS: {status}
+            </span>
           </div>
         </div>
 
-        <div style={styles.formSection}>
-          <div style={styles.formHeader}>
-            <span style={styles.label}>DATA INPUT</span>
-            <span style={{ ...styles.label, color: "#d4ff00" }}>{status}</span>
+        {/* Form Section */}
+        <div className="p-10 bg-[#0d0d0d]">
+          <div className="flex justify-between items-center mb-8 border-b border-[#222] pb-4">
+            <span className="text-[0.6rem] text-[#444] tracking-[2px] font-bold">
+              DATA INPUT
+            </span>
+            <span className="text-[0.6rem] text-eprx-lime tracking-[2px] font-mono animate-pulse">
+              {status}
+            </span>
           </div>
 
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>FULL NAME</label>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2 group">
+              <label className="text-[0.6rem] tracking-[1px] text-eprx-lime opacity-70 group-focus-within:opacity-100 transition-opacity">
+                FULL NAME
+              </label>
               <input
                 type="text"
-                name="name" // Required for Formspree
+                name="name"
                 required
                 value={formData.name}
                 onChange={handleChange}
-                style={styles.input}
-                placeholder="FULL NAME"
+                placeholder="OPERATOR NAME"
+                className="bg-transparent border-b border-[#222] py-2 text-white outline-none focus:border-eprx-lime transition-colors text-sm"
               />
             </div>
 
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>EMAIL ADDRESS</label>
+            <div className="flex flex-col gap-2 group">
+              <label className="text-[0.6rem] tracking-[1px] text-eprx-lime opacity-70 group-focus-within:opacity-100 transition-opacity">
+                EMAIL ADDRESS
+              </label>
               <input
                 type="email"
-                name="email" // Required for Formspree
+                name="email"
                 required
                 value={formData.email}
                 onChange={handleChange}
-                style={styles.input}
-                placeholder="EMAIL ADDRESS"
+                placeholder="UPLINK@DOMAIN.COM"
+                className="bg-transparent border-b border-[#222] py-2 text-white outline-none focus:border-eprx-lime transition-colors text-sm"
               />
             </div>
 
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>MESSAGE</label>
+            <div className="flex flex-col gap-2 group">
+              <label className="text-[0.6rem] tracking-[1px] text-eprx-lime opacity-70 group-focus-within:opacity-100 transition-opacity">
+                MESSAGE
+              </label>
               <textarea
-                name="message" // Required for Formspree
+                name="message"
                 required
                 value={formData.message}
                 onChange={handleChange}
-                style={styles.textarea}
                 placeholder="ENTER MESSAGE..."
                 rows={4}
+                className="bg-[#050505] border border-[#222] p-4 text-white outline-none focus:border-eprx-lime transition-colors text-sm resize-none font-inter"
               />
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.01, backgroundColor: "#fff" }}
+              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              style={{
-                ...styles.button,
-                backgroundColor: status === "EMAIL SENT" ? "#fff" : "#d4ff00",
-                color: "#000",
-              }}
               disabled={status !== "IDLE"}
+              className={`mt-4 py-4 font-bebas text-xl tracking-[4px] transition-all duration-300 disabled:opacity-50 ${
+                status === "LINK_ESTABLISHED"
+                  ? "bg-white text-black"
+                  : "bg-eprx-lime text-black"
+              }`}
             >
               {status === "IDLE" ? "SEND MESSAGE" : status}
             </motion.button>
@@ -173,175 +195,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-// ... styles remain the same as your provided code ...
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    backgroundColor: "#050505",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "60px 5%",
-    color: "#fff",
-    fontFamily: "monospace",
-  },
-  titleContainer: {
-    textAlign: "center",
-    marginBottom: "50px",
-  },
-  logoContainer: {
-    width: "100px",
-    height: "100px",
-    backgroundColor: "#FFFFFF",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto 30px auto",
-    marginTop: "40px",
-    border: "2px solid #d4ff00",
-    overflow: "hidden",
-  },
-  brandLogo: {
-    width: "100%",
-    height: "100%",
-    objectFit: "contain",
-  },
-  title: {
-    fontSize: "clamp(2.5rem, 6vw, 4rem)",
-    letterSpacing: "2px",
-    margin: 0,
-    fontWeight: "900",
-    textTransform: "uppercase",
-  },
-  subtitle: {
-    fontSize: "0.65rem",
-    letterSpacing: "4px",
-    color: "#444",
-    marginTop: "8px",
-  },
-  wrapper: {
-    width: "100%",
-    maxWidth: "1000px",
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-    backgroundColor: "#0a0a0a",
-    border: "1px solid #1a1a1a",
-    overflow: "hidden",
-  },
-  infoSection: {
-    padding: "40px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    borderRight: "1px solid #1a1a1a",
-  },
-  briefingHeader: {
-    borderBottom: "1px solid #1a1a1a",
-    paddingBottom: "15px",
-    marginBottom: "30px",
-  },
-  details: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "30px",
-  },
-  detailItem: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  },
-  label: {
-    fontSize: "0.6rem",
-    color: "#444",
-    letterSpacing: "2px",
-  },
-  value: {
-    fontSize: "0.9rem",
-    letterSpacing: "1px",
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  statusBox: {
-    marginTop: "40px",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "15px",
-    border: "1px solid #1a1a1a",
-    backgroundColor: "#050505",
-  },
-  statusDot: {
-    width: "6px",
-    height: "6px",
-    borderRadius: "50%",
-    boxShadow: "0 0 8px currentColor",
-  },
-  statusText: {
-    fontSize: "0.55rem",
-    letterSpacing: "1px",
-    color: "#666",
-  },
-  formSection: {
-    padding: "40px",
-    backgroundColor: "#0d0d0d",
-  },
-  formHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "30px",
-    borderBottom: "1px solid #222",
-    paddingBottom: "15px",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "25px",
-  },
-  inputGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  inputLabel: {
-    fontSize: "0.6rem",
-    letterSpacing: "1px",
-    color: "#d4ff00",
-    opacity: 0.7,
-  },
-  input: {
-    backgroundColor: "transparent",
-    border: "none",
-    borderBottom: "1px solid #222",
-    padding: "10px 0",
-    color: "#fff",
-    outline: "none",
-    fontSize: "0.9rem",
-    transition: "border-color 0.3s",
-  },
-  textarea: {
-    backgroundColor: "#050505",
-    border: "1px solid #222",
-    padding: "15px",
-    color: "#fff",
-    outline: "none",
-    fontSize: "0.9rem",
-    resize: "none",
-    fontFamily: "monospace",
-  },
-  button: {
-    marginTop: "10px",
-    padding: "18px",
-    border: "none",
-    fontWeight: "bold",
-    letterSpacing: "4px",
-    cursor: "pointer",
-    fontSize: "1rem",
-    transition: "all 0.3s",
-    fontFamily: "var(--font-bebas)",
-    color: "#000",
-    width: "100%",
-  },
-};

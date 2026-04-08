@@ -1,418 +1,254 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
-import axios from "axios";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import Toast from "@/components/Toast";
-
-// --- Types & Interfaces ---
-interface RegisterRequest {
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  password: string;
-  mobile: string;
-}
+import { useRegister } from "./useRegister";
+import api from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const VerifyOTP = ({
-  email,
-  onVerified,
-}: {
-  email: string;
-  onVerified: () => void;
-}) => {
+const FormInput = ({
+  label,
+  name,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  maxLength,
+}: any) => (
+  <div className="group w-full">
+    <label className="block text-[0.6rem] tracking-[1px] text-[#444] mb-1 font-bold uppercase">
+      {label}
+    </label>
+    <input
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+      required
+      placeholder={placeholder}
+      maxLength={maxLength}
+      className="w-full bg-transparent border-b border-[#222] py-2 outline-none focus:border-eprx-lime transition-colors text-sm placeholder:text-[#222] font-inter"
+    />
+  </div>
+);
+
+const RegisterContent = () => {
+  const router = useRouter();
   const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("error");
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
-  const handleVerify = async (e: React.FormEvent) => {
+  const {
+    formData,
+    isVerifying,
+    loading,
+    toast,
+    handleChange,
+    handleSubmit,
+    setToast,
+  } = useRegister(API_URL, () => {});
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setVerifyingOtp(true);
     try {
-      // Endpoint updated to match our logic
-      await axios.post(`${API_URL}/auth/verify-otp`, { email, otp });
-
-      setToastMsg("IDENTITY VERIFIED: UPLINK STABLE.");
-      setToastType("success");
-      setShowToast(true);
-
-      // Give the user time to read success before redirecting to login
-      setTimeout(onVerified, 2000);
+      await api.post("/auth/verify-otp", { email: formData.email, otp });
+      setToast({
+        show: true,
+        msg: "IDENTITY VERIFIED: UPLINK STABLE.",
+        type: "success",
+      });
+      setTimeout(() => router.push("/login"), 2000);
     } catch (error: any) {
       const msg = error.response?.data?.message || "INVALID CODE";
-      setToastMsg(
-        Array.isArray(msg) ? msg[0].toUpperCase() : msg.toUpperCase(),
-      );
-      setToastType("error");
-      setShowToast(true);
+      setToast({
+        show: true,
+        msg: Array.isArray(msg) ? msg[0].toUpperCase() : msg.toUpperCase(),
+        type: "error",
+      });
     } finally {
-      setLoading(false);
+      setVerifyingOtp(false);
     }
   };
 
   return (
-    <div style={styles.formWrapper}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>VERIFY UPLINK</h1>
-        <p style={styles.subtitle}>
-          SECURE CODE DISPATCHED TO: {email.toUpperCase()}
-        </p>
-      </div>
-      <form onSubmit={handleVerify}>
-        <div style={styles.inputContainer}>
-          <label style={styles.label}>OTP CODE</label>
-          <input
-            type="text"
-            placeholder="XXXXXX"
-            style={styles.input}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            required
-            maxLength={6}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            ...styles.submitBtn,
-            backgroundColor: "#d4ff00",
-            color: "#000",
-          }}
-        >
-          {loading ? "VERIFYING..." : "COMPLETE ACTIVATION →"}
-        </button>
-      </form>
-      <Toast
-        isVisible={showToast}
-        message={toastMsg}
-        type={toastType}
-        onClose={() => setShowToast(false)}
-      />
-    </div>
-  );
-};
+    <div className="flex w-full min-h-screen bg-eprx-dark text-white font-inter">
+      {/* Form Side */}
+      <div className="flex-1 flex items-start justify-center p-6 sm:p-10 pt-20 lg:pt-32">
+        <AnimatePresence mode="wait">
+          {isVerifying ? (
+            <motion.div
+              key="otp-step"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="w-full max-w-md"
+            >
+              <header className="mb-8">
+                <h1 className="font-bebas text-5xl tracking-tight mb-2">
+                  VERIFY <span className="text-eprx-lime">UPLINK</span>
+                </h1>
+                <p className="text-[0.7rem] text-[#666] tracking-wider uppercase leading-relaxed">
+                  Secure code dispatched to:{" "}
+                  <span className="text-white">{formData.email}</span>
+                </p>
+              </header>
 
-// --- Main Component: RegisterForm ---
-const RegisterForm = () => {
-  const router = useRouter();
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("error");
-
-  const [formData, setFormData] = useState<RegisterRequest>({
-    firstName: "",
-    lastName: "",
-    username: "",
-    email: "",
-    password: "",
-    mobile: "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      /**
-       * 🛰️ DATA SANITIZATION & DESTRUCTURING
-       * We pull out only the fields defined in our RegisterDto.
-       * This prevents "property confirmPassword should not exist" errors.
-       */
-      const { firstName, lastName, username, email, password, mobile } =
-        formData;
-
-      const sanitizedData = {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        username: username.trim(),
-        email: email.trim().toLowerCase(), // Crucial for @IsEmail()
-        password, // Never trim passwords
-        mobile: mobile.trim(),
-      };
-
-      // Ensure we explicitly wait for the response
-      const response = await axios.post(
-        `${API_URL}/auth/register`,
-        sanitizedData,
-      );
-
-      setToastMsg("RECRUIT SYNC: SUCCESS. OTP DISPATCHED.");
-      setToastType("success");
-      setShowToast(true);
-
-      setTimeout(() => setIsVerifying(true), 1500);
-    } catch (error: any) {
-      /**
-       * 🔍 DEEP ERROR LOGGING
-       * If the backend returns a 400, the details are in error.response.data
-       */
-      const backendError = error.response?.data;
-      console.error("REGISTRATION FAILURE DETAIL:", backendError);
-
-      // Handle NestJS ValidationPipe array messages
-      const rawMsg = backendError?.message || "REGISTRATION FAILED";
-      const displayMsg = Array.isArray(rawMsg) ? rawMsg[0] : rawMsg;
-
-      setToastMsg(displayMsg.toUpperCase());
-      setToastType("error");
-      setShowToast(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.formSide}>
-        {isVerifying ? (
-          <VerifyOTP
-            email={formData.email}
-            onVerified={() => router.push("/login")}
-          />
-        ) : (
-          <div style={styles.formWrapper}>
-            <div style={styles.header}>
-              <h1 style={styles.title}>NEW RECRUIT</h1>
-              <p style={styles.subtitle}>Join the PRX ecosystem.</p>
-            </div>
-            <form onSubmit={handleSubmit}>
-              <div style={styles.row}>
-                <div style={styles.inputContainer}>
-                  <label style={styles.label}>FIRST NAME</label>
+              <form onSubmit={handleVerifyOTP} className="space-y-8">
+                <div className="group w-full">
+                  <label className="block text-[0.6rem] tracking-[2px] text-eprx-lime mb-3 font-bold uppercase">
+                    OTP ACCESS CODE
+                  </label>
                   <input
-                    name="firstName"
                     type="text"
-                    style={styles.input}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    required
+                    placeholder="XXXXXX"
+                    maxLength={6}
+                    className="w-full bg-transparent border-b border-[#222] py-4 outline-none focus:border-eprx-lime transition-colors text-3xl font-mono tracking-[15px] text-center sm:text-left"
+                  />
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  type="submit"
+                  disabled={verifyingOtp || otp.length < 6}
+                  className="w-full py-4 bg-eprx-lime text-black font-bebas text-xl tracking-[4px] hover:bg-white transition-all disabled:opacity-50"
+                >
+                  {verifyingOtp ? "VERIFYING..." : "ACTIVATE ACCOUNT →"}
+                </motion.button>
+              </form>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="reg-step"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full max-w-lg lg:max-w-md xl:max-w-lg"
+            >
+              <header className="mb-8 lg:mb-10">
+                <h1 className="font-bebas text-5xl sm:text-6xl tracking-tight leading-none mb-2">
+                  NEW <span className="text-eprx-lime">RECRUIT</span>
+                </h1>
+                <p className="text-[0.7rem] text-[#666] tracking-wider uppercase leading-relaxed">
+                  Initialize connection to the PRX core ecosystem.
+                </p>
+              </header>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-4">
+                  <FormInput
+                    label="First Name"
+                    name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    required
-                    placeholder="Kyo"
+                    placeholder=""
                   />
-                </div>
-                <div style={styles.inputContainer}>
-                  <label style={styles.label}>LAST NAME</label>
-                  <input
+                  <FormInput
+                    label="Last Name"
                     name="lastName"
-                    type="text"
-                    style={styles.input}
                     value={formData.lastName}
                     onChange={handleChange}
-                    required
-                    placeholder="Evanz"
+                    placeholder=""
                   />
                 </div>
-              </div>
-              <div style={styles.row}>
-                <div style={styles.inputContainer}>
-                  <label style={styles.label}>USER NAME</label>
-                  <input
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-4">
+                  <FormInput
+                    label="User Name"
                     name="username"
-                    type="text"
-                    style={styles.input}
                     value={formData.username}
                     onChange={handleChange}
-                    required
-                    placeholder="kyo.evanz"
+                    placeholder=""
                   />
-                </div>
-                <div style={styles.inputContainer}>
-                  <label style={styles.label}>MOBILE</label>
-                  <input
+                  <FormInput
+                    label="Mobile"
                     name="mobile"
-                    type="text"
-                    style={styles.input}
                     value={formData.mobile}
                     onChange={handleChange}
-                    required
                     placeholder="09XX XXX XXXX"
                   />
                 </div>
-              </div>
-              <div style={styles.inputContainer}>
-                <label style={styles.label}>EMAIL ADDRESS</label>
-                <input
+                <FormInput
+                  label="Email Address"
                   name="email"
                   type="email"
-                  style={styles.input}
                   value={formData.email}
                   onChange={handleChange}
-                  required
-                  placeholder="kyo.evanz@eprx.uv1"
+                  placeholder=""
                 />
-              </div>
-              <div style={styles.inputContainer}>
-                <label style={styles.label}>PASSWORD</label>
-                <input
+                <FormInput
+                  label="Password"
                   name="password"
                   type="password"
-                  style={styles.input}
                   value={formData.password}
                   onChange={handleChange}
-                  required
                   placeholder="******"
                 />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  ...styles.submitBtn,
-                  backgroundColor: isHovered ? "#fff" : "transparent",
-                  color: isHovered ? "#000" : "#fff",
-                  borderColor: isHovered ? "#fff" : "#333",
-                  opacity: loading ? 0.5 : 1,
-                }}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-              >
-                {loading ? "PROCESSING..." : "CREATE ACCOUNT →"}
-              </button>
-            </form>
-            <div style={styles.footer}>
-              <p style={styles.footerText}>ALREADY REGISTERED?</p>
-              <Link href="/login" style={styles.loginLink}>
-                SIGN IN
-              </Link>
-            </div>
-          </div>
-        )}
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 mt-4 border border-[#333] text-white font-bebas text-xl tracking-[4px] hover:bg-white hover:text-black transition-all disabled:opacity-50"
+                >
+                  {loading ? "PROCESSING..." : "CREATE ACCOUNT"}
+                </motion.button>
+              </form>
+
+              <footer className="mt-10 pt-6 border-t border-[#1a1a1a]">
+                <p className="text-[0.6rem] text-[#444] mb-2 font-bold uppercase tracking-widest">
+                  Already Registered?
+                </p>
+                <Link
+                  href="/login"
+                  className="text-eprx-lime text-xs font-bold hover:text-white transition-colors tracking-[2px]"
+                >
+                  SIGN IN
+                </Link>
+              </footer>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div style={styles.visualSide}>
-        <div style={styles.overlay}>
-          <div style={styles.verticalText}> PRX || REGISTER USER</div>
-          <h2 style={styles.brandingTitle}>
-            THE <br />
-            <span style={{ color: "#d4ff00" }}>NEXT</span> GEN
-          </h2>
+      {/* Visual Side */}
+      <div className="hidden lg:flex flex-[1.2] relative bg-[url('/assets/images/register.jpg')] bg-cover bg-center">
+        <div className="absolute inset-0 bg-black/70 flex flex-col justify-between p-12 text-right">
+          <div className="[writing-mode:vertical-lr] self-start text-[0.6rem] tracking-[8px] text-white/40 font-bold uppercase mt-20"></div>
+          <div className="mb-20">
+            <h2 className="font-bebas text-7xl xl:text-9xl leading-[0.8] tracking-tighter uppercase">
+              THE <br /> <span className="text-eprx-lime">NEXT</span> <br /> GEN
+            </h2>
+          </div>
         </div>
       </div>
 
       <Toast
-        isVisible={showToast}
-        message={toastMsg}
-        type={toastType}
-        onClose={() => setShowToast(false)}
+        isVisible={toast.show}
+        message={toast.msg}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
       />
     </div>
   );
 };
 
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: "flex",
-    width: "100%",
-    minHeight: "100vh",
-    backgroundColor: "#0f0f0f",
-    color: "#fff",
-    paddingTop: "80px",
-    boxSizing: "border-box",
-  },
-  formSide: {
-    flex: "1",
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    padding: "20px 40px",
-  },
-  formWrapper: { width: "100%", maxWidth: "380px" },
-  header: { marginBottom: "25px" },
-  title: { fontSize: "2.5rem", letterSpacing: "2px", margin: "5px 0" },
-  subtitle: { color: "#666", fontSize: "0.75rem", lineHeight: "1.4" },
-  row: { display: "flex", gap: "15px" },
-  inputContainer: { marginBottom: "15px", flex: 1 },
-  label: {
-    display: "block",
-    fontSize: "0.6rem",
-    letterSpacing: "1px",
-    color: "#444",
-    marginBottom: "4px",
-  },
-  input: {
-    width: "100%",
-    backgroundColor: "transparent",
-    border: "none",
-    borderBottom: "1px solid #222",
-    color: "#fff",
-    padding: "8px 0",
-    fontSize: "0.9rem",
-    outline: "none",
-  },
-  submitBtn: {
-    width: "100%",
-    padding: "14px",
-    border: "1px solid",
-    fontSize: "0.7rem",
-    letterSpacing: "3px",
-    cursor: "pointer",
-    transition: "0.4s ease",
-    marginTop: "10px",
-  },
-  visualSide: {
-    flex: "1.2",
-    backgroundImage: 'url("/assets/images/register.jpg")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    position: "relative",
-    minHeight: "100vh",
-  },
-  overlay: {
-    position: "absolute",
-    inset: 0,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    padding: "40px",
-    textAlign: "right",
-  },
-  verticalText: {
-    transform: "rotate(90deg)",
-    transformOrigin: "right top",
-    fontSize: "0.6rem",
-    letterSpacing: "5px",
-    color: "#ccc",
-    marginTop: "200px",
-  },
-  brandingTitle: {
-    fontSize: "4rem",
-    lineHeight: "0.9",
-    letterSpacing: "2px",
-    marginBottom: "80px",
-  },
-  footer: {
-    marginTop: "0px",
-    borderTop: "1px solid #1a1a1a",
-    paddingTop: "10px",
-  },
-  footerText: { fontSize: "0.6rem", color: "#444", marginBottom: "5px" },
-  loginLink: { color: "#d4ff00", fontSize: "0.7rem", textDecoration: "none" },
-};
-
-export default function Register() {
+export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div style={{ backgroundColor: "#0f0f0f", height: "100vh" }}>
-          LOADING_INTERFACE...
+        <div className="bg-eprx-dark h-screen flex items-center justify-center text-eprx-lime font-mono">
+          LOADING INTERFACE...
         </div>
       }
     >
-      <RegisterForm />
+      <RegisterContent />
     </Suspense>
   );
 }
