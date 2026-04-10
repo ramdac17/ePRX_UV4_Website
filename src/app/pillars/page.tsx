@@ -6,9 +6,9 @@ import { homeStyles as styles, mobileStyles } from "../../components/styles";
 
 const PillarsPage = () => {
   const pillars = [
-    { name: "FUEL", path: "/assets/images/FUELV2.png" },
-    { name: "GEAR", path: "/assets/images/GEARV2.png" },
-    { name: "MIND", path: "/assets/images/MINDV2.png" },
+    { name: "FUEL", path: "/assets/images/FuelV2.png" },
+    { name: "GEAR", path: "/assets/images/GearV2.png" },
+    { name: "MIND", path: "/assets/images/MindV2.png" },
   ];
 
   return (
