@@ -10,7 +10,7 @@ import Navbar from "@/components/Navbar";
 import NavbarDrawer from "@/components/NavbarDrawer";
 import ActivityChart from "@/components/ActivityChart";
 
-// Refactored Sections (Ensure these point to the right components)
+// Refactored Sections
 import MobileEcosystem from "../mobile-ecosystem/page";
 import Pillar from "../pillars/page";
 import Archive from "../archive/page";
@@ -45,7 +45,7 @@ export default function Home() {
     };
   }, []);
 
-  // 2. Fetch Dashboard Metrics (Only for the Hero Chart)
+  // 2. Fetch Dashboard Metrics
   useEffect(() => {
     if (!user) return;
     const fetchMetrics = async () => {
@@ -115,14 +115,19 @@ export default function Home() {
           flexDirection: isMobile ? "column" : "row",
           height: isMobile ? "auto" : "100vh",
           paddingTop: isMobile ? "120px" : "80px",
-          backgroundPositionY: `${scrollY * 0.3}px`, // Adjusted parallax speed
+          paddingBottom: isMobile ? "60px" : "0", // Added bottom padding for mobile spacing
+          backgroundPositionY: `${scrollY * 0.3}px`,
+          alignItems: "center", // Ensures horizontal centering when in column mode
+          justifyContent: isMobile ? "center" : "space-between",
         }}
       >
+        {/* LEFT BRANDING AREA */}
         <div
           style={{
             ...styles.heroLeft,
             textAlign: isMobile ? "center" : "left",
             alignItems: isMobile ? "center" : "flex-start",
+            marginBottom: isMobile ? "50px" : "0", // Pushes the chart down on mobile
           }}
         >
           <div
@@ -165,7 +170,17 @@ export default function Home() {
           </div>
         </div>
 
-        <div style={styles.heroRight}>
+        {/* RIGHT CHART AREA */}
+        <div
+          style={{
+            ...styles.heroRight,
+            width: isMobile ? "100%" : "auto", // Take full width to allow centering
+            display: "flex",
+            justifyContent: "center", // Centers the chart horizontally
+            alignItems: "center",
+            padding: isMobile ? "0 15px" : "0", // Safe area for smaller mobile screens
+          }}
+        >
           <ActivityChart
             user={user}
             data={activityData}
