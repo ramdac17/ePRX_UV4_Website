@@ -50,7 +50,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
       setArticles(displayData);
     } catch (err) {
       console.error("Direct Fetch Error:", err);
-      setError("SYSTEM_RECOVERY_FAILED: Backend link severed.");
+      setError("SYSTEM RECOVERY FAILED: Backend link severed.");
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
       <section style={styles.archiveSection}>
         <div style={mobileStyles.headerStack}>
           <h2 style={mobileStyles.mobileTitle}>
-            <span style={mobileStyles.sectionNum}>|| ePRX_UV1 REPOSITORY</span>
+            <span style={mobileStyles.sectionNum}>|| PRX REPOSITORY</span>
             THE <span style={{ color: "#d4ff00" }}>ARCHIVE</span>
           </h2>
           <p style={mobileStyles.mobileDesc}>
@@ -86,7 +86,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
 
         <div style={styles.articleGrid}>
           {loading ? (
-            <div style={placeholderStyle}>INITIALIZING_DATA_STREAM...</div>
+            <div style={placeholderStyle}>INITIALIZING DATA STREAM...</div>
           ) : error ? (
             <div style={{ ...placeholderStyle, color: "#ff4444" }}>{error}</div>
           ) : articles.length > 0 ? (
@@ -115,7 +115,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
                 </div>
                 <div style={styles.articleContent}>
                   <span style={styles.volTag}>
-                    MODULE_{post.category.toUpperCase()}
+                    MODULE {post.category.toUpperCase()}
                   </span>
                   <h3 style={styles.articleTitle}>
                     {post.title.toUpperCase()}
@@ -124,7 +124,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
               </Link>
             ))
           ) : (
-            <div style={placeholderStyle}>NO_RECORDS_FOUND_IN_SECTOR.</div>
+            <div style={placeholderStyle}>NO RECORDS FOUND IN SECTOR.</div>
           )}
         </div>
       </section>

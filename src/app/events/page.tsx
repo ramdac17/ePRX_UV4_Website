@@ -125,7 +125,7 @@ export default function LiveEventsPage() {
 
                   {/* Content */}
                   <div className="p-6 flex flex-col flex-1">
-                    <span className="text-eprx-lime text-[0.6rem] md:text-[0.65rem] font-mono tracking-widest mb-4 uppercase">
+                    <span className="text-[#666] text-[0.6rem] font-mono tracking-[2px] mb-4 uppercase font-bold">
                       ORGANIZER: {event.organizer} ||{" "}
                       {new Date(event.date).toLocaleDateString("en-US", {
                         year: "numeric",
@@ -140,8 +140,8 @@ export default function LiveEventsPage() {
                     <p className="text-[#888] text-sm leading-relaxed mb-6 line-clamp-3">
                       {event.description}
                     </p>
-                    <div className="mt-auto pt-4 border-t border-[#1a1a1a]">
-                      <span className="inline-block text-white text-[0.65rem] font-mono tracking-widest border border-[#333] px-3 py-2 transition-all duration-300">
+                    <div className="mt-auto flex justify-between items-center pt-4 border-t border-[#1a1a1a]">
+                      <span className="text-eprx-lime text-[0.7rem] font-mono tracking-widest font-bold uppercase">
                         READ DETAILS
                       </span>
                     </div>

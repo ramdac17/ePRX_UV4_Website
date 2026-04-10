@@ -112,8 +112,8 @@ export default function ArticlesArchivePage() {
                     <p className="text-[#888] text-sm leading-relaxed mb-6 line-clamp-3">
                       {item.content}
                     </p>
-                    <div className="mt-auto pt-4 border-t border-[#1a1a1a]">
-                      <span className="inline-block text-white text-[0.65rem] font-mono tracking-widest border border-[#333] px-3 py-2 transition-all duration-300 group-hover:border-[#555]">
+                    <div className="mt-auto flex justify-between items-center pt-4 border-t border-[#1a1a1a]">
+                      <span className="text-eprx-lime text-[0.7rem] font-mono tracking-widest font-bold uppercase">
                         READ ARTICLE
                       </span>
                     </div>

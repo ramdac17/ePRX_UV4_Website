@@ -111,7 +111,7 @@ const ScreenCard = ({ fileName, index, isHovered, onHover }: any) => (
       />
       <div style={styles.imgOverlay}>
         <div style={styles.placeholderTag}>
-          PRX_MODULE_0{index + 1} || {fileName.split(".")[0].toUpperCase()}
+          PRX_MODULE 0{index + 1} || {fileName.split(".")[0].toUpperCase()}
         </div>
       </div>
       <div style={{ ...styles.glowEffect, opacity: isHovered ? 0.2 : 0.03 }} />
