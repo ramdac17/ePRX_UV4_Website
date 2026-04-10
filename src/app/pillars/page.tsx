@@ -5,7 +5,11 @@ import Link from "next/link";
 import { homeStyles as styles, mobileStyles } from "../../components/styles";
 
 const PillarsPage = () => {
-  const pillarNames = ["FUEL", "GEAR", "MIND"];
+  const pillars = [
+    { name: "FUEL", path: "/assets/images/FUELV2.png" },
+    { name: "GEAR", path: "/assets/images/GEARV2.png" },
+    { name: "MIND", path: "/assets/images/MINDV2.png" },
+  ];
 
   return (
     <main style={styles.pageContainer}>
@@ -24,21 +28,26 @@ const PillarsPage = () => {
 
         {/* GRID SECTION */}
         <div style={styles.pillarGrid}>
-          {pillarNames.map((name, i) => (
+          {pillars.map((pillar, i) => (
             <Link
-              key={name}
-              href={`/${name.toLowerCase()}`}
-              style={styles.pillarCard}
+              key={pillar.name}
+              href={`/${pillar.name.toLowerCase()}`}
+              style={styles.pillarCard} // Hover effects restored from styles.js
             >
               <div
                 style={{
                   ...styles.pillarImageOverlay,
-                  backgroundImage: `url(/assets/images/${name}V2.png)`,
+                  backgroundImage: `url(${pillar.path})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  /* Removed "none" overrides to re-enable 
+                     transitions and filters from the stylesheet 
+                  */
                 }}
               />
               <div style={styles.pillarContent}>
                 <span style={styles.cardNum}>0{i + 1}</span>
-                <h3 style={styles.cardTitle}>{name}</h3>
+                <h3 style={styles.cardTitle}>{pillar.name}</h3>
               </div>
             </Link>
           ))}
