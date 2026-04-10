@@ -11,7 +11,6 @@ interface Article {
   image: string | null;
 }
 
-// Added 'isSection' prop to toggle <main> vs <section> and 'limit' for Home page
 interface ArchiveProps {
   isSection?: boolean;
   limit?: number;
@@ -29,9 +28,6 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
     try {
       setLoading(true);
       setError(null);
-
-      // CHANGE: Point this back to your external NestJS Backend
-      // Using the environment variable you already have defined
       const API_URL = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${API_URL}/article`);
 
@@ -41,11 +37,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
       }
 
       const data = await response.json();
-
-      // NestJS often returns an object or a specific array,
-      // ensure we are getting the array correctly:
       const finalData = Array.isArray(data) ? data : data.articles || [];
-
       const displayData = limit ? finalData.slice(0, limit) : finalData;
       setArticles(displayData);
     } catch (err) {
@@ -63,11 +55,9 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
   const resolveImage = (img: string | null) => {
     if (!img) return FALLBACK_IMAGE;
     if (img.startsWith("http")) return img;
-    // Cleans up potential double slashes from process.env concat
     return `${STATIC_URL}/${img}`.replace(/([^:]\/)\/+/g, "$1");
   };
 
-  // Wrapper logic to maintain semantic HTML
   const Container = isSection ? "section" : "main";
 
   return (
@@ -96,23 +86,37 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
                 href={`/article/${post.id}`}
                 style={styles.articleCard}
               >
+                {/* REFACTORED IMAGE CONTAINER */}
                 <div
                   style={{
                     overflow: "hidden",
                     height: "250px",
                     backgroundColor: "#050505",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "15px", // Internal spacing so the head isn't against the edge
+                    borderBottom: "1px solid #1a1a1a",
                   }}
                 >
                   <img
                     src={resolveImage(post.image)}
                     alt={post.title}
-                    style={styles.articleImg}
+                    style={{
+                      ...styles.articleImg,
+                      objectFit: "contain", // SHOWS ENTIRE IMAGE
+                      width: "100%",
+                      height: "100%",
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                    }}
                     loading="lazy"
                     onError={(e) => {
                       e.currentTarget.src = FALLBACK_IMAGE;
                     }}
                   />
                 </div>
+
                 <div style={styles.articleContent}>
                   <span style={styles.volTag}>
                     MODULE {post.category.toUpperCase()}
