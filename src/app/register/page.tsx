@@ -218,7 +218,7 @@ const RegisterContent = () => {
       </div>
 
       {/* Visual Side */}
-      <div className="hidden lg:flex flex-[1.2] relative bg-[url('/assets/images/register.jpg')] bg-cover bg-center">
+      <div className="hidden lg:flex flex-[1.2] relative bg-[url('/assets/images/registerBGV2.png')] bg-cover bg-center">
         <div className="absolute inset-0 bg-black/70 flex flex-col justify-between p-12 text-right">
           <div className="[writing-mode:vertical-lr] self-start text-[0.6rem] tracking-[8px] text-white/40 font-bold uppercase mt-20"></div>
           <div className="mb-20">

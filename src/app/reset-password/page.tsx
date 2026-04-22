@@ -152,7 +152,7 @@ const ResetForm = () => {
       </div>
 
       {/* Visual Side */}
-      <div className="hidden lg:flex flex-1 relative bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070')] bg-cover bg-center">
+      <div className="hidden lg:flex flex-1 relative bg-[url('/assets/images/resetpasswordBGV2.png')] bg-cover bg-center">
         <div className="absolute inset-0 bg-black/80 flex flex-col justify-between p-16 text-right">
           <div className="[writing-mode:vertical-lr] self-start text-[0.6rem] tracking-[8px] text-white/40 font-bold uppercase mt-20"></div>
           <div className="mb-20">
