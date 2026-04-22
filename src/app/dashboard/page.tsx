@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 // Hooks
 import { useAuth } from "@/context/AuthContext";
@@ -17,12 +17,42 @@ import Archive from "../archive/page";
 
 import { homeStyles as styles } from "../../components/styles";
 
+// Animation Variants
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const itemLeftVariants: Variants = {
+  hidden: { opacity: 0, x: -50 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.8, ease: "easeOut" },
+  },
+};
+
+const itemRightVariants: Variants = {
+  hidden: { opacity: 0, x: 50, filter: "blur(10px)" },
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: { duration: 1, ease: "easeOut" },
+  },
+};
+
 export default function Home() {
   const { logout, user } = useAuth();
   const {
     isDrawerOpen,
     setIsDrawerOpen,
-    isGlitching,
     isMobile,
     scrollY,
     activityData,
@@ -31,7 +61,7 @@ export default function Home() {
     triggerGlitch,
   } = useHomeLogic(user);
 
-  // Main Container Style
+  // Updated Hero Style: Background image left blank (transparent/black)
   const heroDynamicStyle = {
     ...styles.heroSplit,
     display: "flex",
@@ -40,10 +70,14 @@ export default function Home() {
     minHeight: isMobile ? "800px" : "100vh",
     paddingTop: "80px",
     position: "relative" as any,
-    backgroundPositionY: `${scrollY * 0.3}px`,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
+    backgroundColor: "#000", // Blank slate for now
+    backgroundImage: "",
+    backgroundSize: "cover",
+    backgroundRepeat: "no-repeat",
+    backgroundPositionY: `${scrollY * 0.3}px`,
   };
 
   return (
@@ -55,34 +89,38 @@ export default function Home() {
       />
       <Navbar onMenuClick={() => setIsDrawerOpen(true)} />
 
-      {/* HERO SECTION */}
-      <motion.section onViewportEnter={triggerGlitch} style={heroDynamicStyle}>
-        {/* BRAND AREA: Logo + Tagline moved to Upper Left */}
+      {/* HERO SECTION CONTAINER */}
+      <motion.section
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        onViewportEnter={triggerGlitch}
+        style={heroDynamicStyle}
+      >
+        {/* BRAND AREA: Logo + Tagline */}
         <div
           style={{
             zIndex: 2,
             display: "flex",
-            flexDirection: "column", // Stacks tagline on top of logo
+            flexDirection: "column",
             justifyContent: "center",
             alignItems: isMobile ? "center" : "flex-start",
             width: "100%",
             paddingLeft: isMobile ? "0" : "5vw",
             position: isMobile ? "relative" : "absolute",
-            top: isMobile ? "0" : "150px", // Adjusted for Navbar clearance
+            top: isMobile ? "0" : "150px",
             left: 0,
           }}
         >
-          {/* REPOSITIONED TAGLINE */}
+          {/* TAGLINE */}
           <motion.h2
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
+            variants={itemLeftVariants}
             style={{
               ...styles.heroTagline,
               fontSize: isMobile ? "0.7rem" : "3rem",
               letterSpacing: isMobile ? "4px" : "8px",
               textAlign: isMobile ? "center" : "left",
-              margin: isMobile ? "0 0 10px 0" : "0 0 -60px 50px", // Negative margin pulls logo closer
+              margin: isMobile ? "0 0 10px 0" : "0 0 -60px 50px",
               zIndex: 3,
               color: "#fff",
               textTransform: "uppercase",
@@ -92,11 +130,7 @@ export default function Home() {
           </motion.h2>
 
           {/* BRAND LOGO */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
+          <motion.div variants={itemLeftVariants}>
             <img
               src="/assets/images/cyber-punk-prx-logo.png"
               alt="ePRX Cyber-punk Logo"
@@ -110,11 +144,9 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* CHART AREA (Side-pinned) */}
+        {/* CHART AREA (Pops in from the right) */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
+          variants={itemRightVariants}
           style={{
             position: isMobile ? "relative" : ("absolute" as any),
             top: isMobile ? "0" : "220px",
@@ -133,6 +165,21 @@ export default function Home() {
             lastUpdated={lastUpdated}
           />
         </motion.div>
+
+        {/* OPTIONAL: Hero Background Overlay for better text readability later */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              "linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 100%)",
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        />
       </motion.section>
 
       {/* MODULAR SECTIONS */}

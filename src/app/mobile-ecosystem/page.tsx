@@ -70,7 +70,7 @@ const MobileEcosystem = () => {
         {/* HEADER */}
         <div style={styles.headerStack}>
           <h2 className="responsive-header" style={styles.mobileTitle}>
-            <span style={styles.sectionNum}>|| MOBILE APP ON THE</span>
+            <span style={styles.sectionNum}>|| MOBILE APP ON THE GO</span>
             MOBILE <span style={{ color: "#d4ff00" }}>ECOSYSTEM</span>
           </h2>
           <p style={styles.mobileDesc}>
