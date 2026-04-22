@@ -1,15 +1,26 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react"; // Added useCallback
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import imageCompression from "browser-image-compression";
 import Toast from "@/components/Toast";
 import { AuthGuard } from "@/components/AuthGuard";
-import { Ruler, Clock, Zap, ExternalLink } from "lucide-react"; // Install lucide-react
+import ActivityLog from "@/components/ActivityLog";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+type UserProfile = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  mobile: string;
+  password?: string;
+  image?: string;
+};
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -17,28 +28,40 @@ export default function ProfilePage() {
     user: authUser,
     token,
     loading: authLoading,
-    logout,
     login,
+    logout,
   } = useAuth();
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile>({
+    id: "",
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    mobile: "",
+    password: "",
+    image: "",
+  });
+
   const [activities, setActivities] = useState([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Toast State
-  const [toast, setToast] = useState({
-    show: false,
-    msg: "",
-    type: "success" as "success" | "error",
-  });
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
 
-  const notify = (msg: string, type: "success" | "error" = "success") =>
-    setToast({ show: true, msg, type });
-
+  // 1. DATA FETCHING LOGIC
   useEffect(() => {
     if (authLoading) return;
-    if (!authUser || !token) {
+
+    // Create a stable reference to the ID and Token
+    const userId = authUser?.id;
+    const currentToken = token;
+
+    if (!userId || !currentToken) {
       router.push("/login?redirect=/profile");
       return;
     }
@@ -46,306 +69,376 @@ export default function ProfilePage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 🚀 Parallel fetch for Profile and Activity History
         const [profileRes, activityRes] = await Promise.all([
-          axios.get(`${API_URL}/user/profile?id=${authUser.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
+          axios.get(`${API_URL}/user/profile?id=${userId}`, {
+            headers: { Authorization: `Bearer ${currentToken}` },
           }),
-          axios.get(`${API_URL}/activities/user/${authUser.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
+          axios.get(`${API_URL}/activities/user/${userId}`, {
+            headers: { Authorization: `Bearer ${currentToken}` },
           }),
         ]);
 
-        setUser(profileRes.data);
+        const profile = profileRes.data;
+        setUser({
+          ...profile,
+          id: userId,
+          password: "",
+        });
+
+        if (profile.image) setPreviewUrl(profile.image);
         setActivities(activityRes.data);
       } catch (err: any) {
-        if (err.response?.status === 401) {
-          logout();
-          router.push("/login");
-        }
-        notify("SYSTEM_SYNC_ERROR", "error");
+        console.error("DATA_FETCH_ERROR", err);
+        if (err.response?.status === 401) logout();
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [authUser, token, authLoading, router, logout]);
+  }, [authUser?.id, token, authLoading, router, logout]);
+
+  // 2. IMAGE OPTIMIZATION
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 0.2,
+        maxWidthOrHeight: 500,
+      });
+      setSelectedFile(compressed as File);
+      setPreviewUrl(URL.createObjectURL(compressed));
+    } catch {
+      setToastMsg("IMAGE OPTIMIZATION FAILED");
+      setToastType("error");
+      setShowToast(true);
+    }
+  };
+
+  // 3. UPDATE HANDLER
+  const handleUpdate = async () => {
+    if (!user.id || !token) return;
+
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("firstName", user.firstName);
+      formData.append("lastName", user.lastName);
+      formData.append("username", user.username);
+      formData.append("mobile", user.mobile);
+      if (selectedFile) formData.append("file", selectedFile);
+
+      const res = await axios.post(
+        `${API_URL}/user/${user.id}/upload-image`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      login(
+        { ...authUser!, ...user, image: res.data.image || user.image },
+        token,
+      );
+
+      setToastMsg("PROFILE_SYNC_SUCCESSFUL");
+      setToastType("success");
+      setShowToast(true);
+    } catch (err) {
+      setToastMsg("UPDATE_FAILED");
+      setToastType("error");
+      setShowToast(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading || authLoading)
-    return <div style={styles.loader}>INITIALIZING_NEURAL_LINK...</div>;
+    return <div style={styles.loader}>LOADING_ENCRYPTED_PROFILE...</div>;
 
   return (
     <AuthGuard>
       <div style={styles.container}>
-        {/* Header Section */}
-        <div style={styles.header}>
+        <div style={styles.titleContainer}>
           <h1 style={styles.title}>
-            OPERATOR <span style={{ color: "#d4ff00" }}>PROFILE</span>
+            USER <span style={{ color: "#d4ff00" }}>PROFILE</span>
           </h1>
           <p style={styles.subtitle}>
-            ID: {authUser?.id.slice(0, 12)} // LVL: RUNNER
+            MANAGE YOUR PROFILE CREDENTIALS & MISSION HISTORY
           </p>
         </div>
 
-        <div style={styles.contentLayout}>
-          {/* Left Column: Mission History */}
-          <div style={styles.historySection}>
-            <h2 style={styles.sectionTitle}>|| MISSION_LOG_HISTORY</h2>
-            {activities.length === 0 ? (
-              <div style={styles.emptyState}>
-                NO MISSIONS DETECTED. START YOUR FIRST RUN.
-              </div>
-            ) : (
-              <div style={styles.activityGrid}>
-                {activities.map((activity: any) => (
-                  <div
-                    key={activity.id}
-                    style={styles.activityCard}
-                    onClick={() => router.push(`/activities/${activity.id}`)}
-                  >
-                    <img
-                      src={activity.shareImageUrl || activity.mapImageUrl}
-                      alt="Mission Map"
-                      style={styles.activityMap}
-                    />
-                    <div style={styles.activityDetails}>
-                      <div style={styles.activityMainRow}>
-                        <span style={styles.activityName}>
-                          {activity.title || "UNTITLED_MISSION"}
-                        </span>
-                        <ExternalLink size={14} color="#555" />
-                      </div>
-                      <div style={styles.activityStatsRow}>
-                        <StatItem
-                          label="DIST"
-                          value={`${activity.distance}km`}
-                        />
-                        <StatItem label="PACE" value={activity.pace} />
-                        <StatItem
-                          label="TIME"
-                          value={`${Math.floor(activity.duration / 60)}m`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Profile Management */}
-          <div style={styles.managementSection}>
-            <h2 style={styles.sectionTitle}>|| OPERATOR_CONFIG</h2>
+        <div style={styles.mainLayout}>
+          {/* LEFT COLUMN: THE FORM (Config) */}
+          <div style={styles.leftColumn}>
             <div style={styles.card}>
-              {/* Existing Profile Image logic here */}
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>DISPLAY_NAME</label>
-                <input style={styles.input} defaultValue={user?.username} />
+              <div style={styles.imageSection}>
+                <div style={styles.avatarCircle}>
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Profile"
+                      style={styles.preview}
+                    />
+                  ) : (
+                    <div style={styles.placeholder}>
+                      {user.firstName?.[0] || "U"}
+                    </div>
+                  )}
+                </div>
+                <label style={styles.uploadBtn}>
+                  {selectedFile ? "IMAGE_READY" : "CHANGE IMAGE"}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </label>
               </div>
+
               <div style={styles.inputGroup}>
-                <label style={styles.label}>EMAIL_ID (READ_ONLY)</label>
+                <label style={styles.label}>USER NAME</label>
                 <input
-                  style={{ ...styles.input, color: "#444" }}
-                  value={user?.email}
+                  style={styles.input}
+                  value={user.username}
+                  onChange={(e) =>
+                    setUser({ ...user, username: e.target.value })
+                  }
+                />
+              </div>
+
+              <div style={styles.grid}>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>FIRST NAME</label>
+                  <input
+                    style={styles.input}
+                    value={user.firstName}
+                    onChange={(e) =>
+                      setUser({ ...user, firstName: e.target.value })
+                    }
+                  />
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>LAST NAME</label>
+                  <input
+                    style={styles.input}
+                    value={user.lastName}
+                    onChange={(e) =>
+                      setUser({ ...user, lastName: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>EMAIL (PERMANENT ID)</label>
+                <input
+                  value={user.email}
                   disabled
+                  style={{
+                    ...styles.input,
+                    color: "#444",
+                    cursor: "not-allowed",
+                  }}
                 />
               </div>
 
               <button
-                style={styles.saveBtn}
-                onClick={() => notify("RE-SYNCING_DISABLED_IN_DEMO")}
+                onClick={handleUpdate}
+                style={{ ...styles.saveBtn, opacity: saving ? 0.5 : 1 }}
+                disabled={saving}
               >
-                SYNC_CHANGES
+                {saving ? "SYNCING_DATA..." : "UPDATE PROFILE"}
               </button>
 
-              <div style={styles.dangerZone}>
-                <p style={styles.dangerTitle}>CRITICAL_ZONE</p>
-                <button style={styles.gdprBtn} onClick={logout}>
-                  TERMINATE_SESSION
-                </button>
-                <button style={styles.deleteBtn}>PURGE_ACCOUNT</button>
-              </div>
+              <button onClick={() => router.push("/")} style={styles.backBtn}>
+                BACK TO DASHBOARD
+              </button>
             </div>
+          </div>
+
+          {/* RIGHT COLUMN: MISSION LOGS */}
+          <div style={styles.rightColumn}>
+            <h3 style={styles.sectionTitle}>|| MISSION_LOG_HISTORY</h3>
+
+            {/* Mounting the component here */}
+            <ActivityLog activities={activities} />
           </div>
         </div>
 
         <Toast
-          message={toast.msg}
-          isVisible={toast.show}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
+          message={toastMsg}
+          isVisible={showToast}
+          type={toastType}
+          onClose={() => setShowToast(false)}
         />
       </div>
     </AuthGuard>
   );
 }
 
-const StatItem = ({ label, value }: { label: string; value: string }) => (
-  <div style={{ marginRight: "15px" }}>
-    <p
-      style={{
-        margin: 0,
-        fontSize: "0.6rem",
-        color: "#555",
-        fontWeight: "bold",
-      }}
-    >
-      {label}
-    </p>
-    <p
-      style={{
-        margin: 0,
-        fontSize: "0.85rem",
-        color: "#fff",
-        fontFamily: "monospace",
-      }}
-    >
-      {value}
-    </p>
-  </div>
-);
-
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     backgroundColor: "#000",
     minHeight: "100vh",
-    padding: "100px 5% 40px 5%",
+    padding: "100px 40px 40px 40px",
   },
-  header: { marginBottom: "40px" },
+  titleContainer: { textAlign: "center", marginBottom: "50px" },
   title: {
-    fontSize: "3rem",
-    margin: 0,
-    color: "#fff",
     fontFamily: "var(--font-bebas)",
-    letterSpacing: "2px",
-  },
-  subtitle: {
-    color: "#444",
-    fontSize: "0.7rem",
+    fontSize: "3.5rem",
     letterSpacing: "4px",
-    marginTop: "5px",
+    color: "#fff",
+    margin: 0,
   },
-  contentLayout: {
+  subtitle: { fontSize: "0.65rem", color: "#444", letterSpacing: "3px" },
+
+  mainLayout: {
     display: "grid",
-    gridTemplateColumns: "2fr 1fr",
+    gridTemplateColumns: "450px 1fr",
     gap: "40px",
-  },
-  sectionTitle: {
-    color: "#d4ff00",
-    fontSize: "0.8rem",
-    letterSpacing: "2px",
-    marginBottom: "20px",
-    fontWeight: "900",
+    maxWidth: "1400px",
+    margin: "0 auto",
   },
 
-  // History Grid
-  historySection: { minWidth: 0 },
+  // Left Side (Form)
+  leftColumn: { position: "sticky", top: "100px", height: "fit-content" },
+  card: {
+    backgroundColor: "#111",
+    padding: "30px",
+    border: "1px solid #1a1a1a",
+  },
+  imageSection: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: "25px",
+  },
+  avatarCircle: {
+    width: "100px",
+    height: "100px",
+    borderRadius: "50%",
+    overflow: "hidden",
+    border: "2px solid #1a1a1a",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  preview: { width: "100%", height: "100%", objectFit: "cover" },
+  placeholder: { fontSize: "2.5rem", color: "#d4ff00" },
+  uploadBtn: {
+    fontSize: "0.6rem",
+    color: "#d4ff00",
+    cursor: "pointer",
+    border: "1px solid #d4ff00",
+    padding: "6px 14px",
+    marginTop: "10px",
+  },
+  grid: { display: "flex", gap: "20px" },
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    marginBottom: "20px",
+    width: "100%",
+  },
+  label: {
+    fontSize: "0.6rem",
+    color: "#444",
+    letterSpacing: "2px",
+    marginBottom: "5px",
+  },
+  input: {
+    backgroundColor: "transparent",
+    border: "none",
+    borderBottom: "1px solid #222",
+    color: "#fff",
+    padding: "10px 0",
+    outline: "none",
+    width: "100%",
+  },
+  saveBtn: {
+    backgroundColor: "#d4ff00",
+    padding: "12px",
+    fontWeight: "bold",
+    fontFamily: "var(--font-bebas)",
+    fontSize: "1.1rem",
+    color: "#000",
+    cursor: "pointer",
+    letterSpacing: "3px",
+    width: "100%",
+    border: "none",
+    marginBottom: "10px",
+  },
+  backBtn: {
+    width: "100%",
+    backgroundColor: "transparent",
+    color: "#444",
+    border: "none",
+    fontSize: "0.7rem",
+    cursor: "pointer",
+  },
+
+  // Right Side (Activities)
+  rightColumn: { minWidth: 0 },
+  sectionTitle: {
+    fontSize: "0.7rem",
+    color: "#d4ff00",
+    letterSpacing: "2px",
+    marginBottom: "20px",
+  },
   activityGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
     gap: "20px",
   },
   activityCard: {
     backgroundColor: "#111",
-    border: "1px solid #222",
+    border: "1px solid #1a1a1a",
     cursor: "pointer",
+    overflow: "hidden",
     transition: "0.2s",
   },
   activityMap: {
     width: "100%",
     height: "150px",
     objectFit: "cover",
-    opacity: 0.7,
+    opacity: 0.6,
   },
-  activityDetails: { padding: "15px" },
-  activityMainRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "10px",
-  },
-  activityName: {
+  activityInfo: { padding: "15px" },
+  activityTitle: {
     color: "#fff",
+    fontSize: "0.8rem",
     fontWeight: "bold",
-    fontSize: "0.9rem",
+    marginBottom: "5px",
     textTransform: "uppercase",
   },
-  activityStatsRow: { display: "flex" },
-
-  // Management Card
-  managementSection: {},
-  card: {
-    backgroundColor: "#111",
-    padding: "20px",
-    border: "1px solid #1a1a1a",
-  },
-  inputGroup: { marginBottom: "20px" },
-  label: {
-    fontSize: "0.6rem",
-    color: "#d4ff00",
-    letterSpacing: "1px",
-    marginBottom: "5px",
-    display: "block",
-  },
-  input: {
-    backgroundColor: "transparent",
-    border: "none",
-    borderBottom: "1px solid #333",
-    color: "#fff",
-    padding: "8px 0",
-    outline: "none",
-    width: "100%",
-  },
-  saveBtn: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#d4ff00",
-    color: "#000",
-    fontWeight: "bold",
-    border: "none",
-    cursor: "pointer",
-    marginTop: "10px",
-  },
-
-  dangerZone: {
-    marginTop: "30px",
-    borderTop: "1px solid #222",
-    paddingTop: "20px",
-  },
-  dangerTitle: {
-    color: "#ff3e3e",
-    fontSize: "0.6rem",
-    fontWeight: "bold",
-    marginBottom: "10px",
-  },
-  deleteBtn: {
-    width: "100%",
-    backgroundColor: "transparent",
-    color: "#ff3e3e",
-    border: "1px solid #ff3e3e",
-    padding: "10px",
+  statRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    color: "#555",
     fontSize: "0.7rem",
-    cursor: "pointer",
-    marginTop: "10px",
+    fontFamily: "monospace",
   },
-  gdprBtn: {
-    width: "100%",
-    backgroundColor: "transparent",
-    color: "#888",
-    border: "1px solid #333",
-    padding: "10px",
-    fontSize: "0.7rem",
-    cursor: "pointer",
+  emptyState: {
+    color: "#333",
+    fontSize: "0.8rem",
+    letterSpacing: "2px",
+    border: "1px dashed #222",
+    padding: "40px",
+    textAlign: "center",
   },
 
   loader: {
+    color: "#d4ff00",
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#000",
-    color: "#d4ff00",
-    letterSpacing: "5px",
   },
 };
