@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react"; // Added useCallback
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -18,7 +18,6 @@ type UserProfile = {
   username: string;
   email: string;
   mobile: string;
-  password?: string;
   image?: string;
 };
 
@@ -39,34 +38,30 @@ export default function ProfilePage() {
     username: "",
     email: "",
     mobile: "",
-    password: "",
     image: "",
   });
 
+  const [isEditing, setIsEditing] = useState(false);
   const [activities, setActivities] = useState([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
 
-  // 1. DATA FETCHING LOGIC
-  useEffect(() => {
-    if (authLoading) return;
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [passwords, setPasswords] = useState({ old: "", new: "" });
 
-    // Create a stable reference to the ID and Token
-    const userId = authUser?.id;
-    const currentToken = token;
+  const notify = (msg: string, type: "success" | "error" = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+    setShowToast(true);
+  };
 
-    if (!userId || !currentToken) {
-      router.push("/login?redirect=/profile");
-      return;
-    }
-
-    const fetchData = async () => {
+  const fetchData = useCallback(
+    async (userId: string, currentToken: string) => {
       setLoading(true);
       try {
         const [profileRes, activityRes] = await Promise.all([
@@ -78,47 +73,37 @@ export default function ProfilePage() {
           }),
         ]);
 
-        const profile = profileRes.data;
-        setUser({
-          ...profile,
-          id: userId,
-          password: "",
-        });
-
-        if (profile.image) setPreviewUrl(profile.image);
+        setUser({ ...profileRes.data, id: userId });
+        if (profileRes.data.image) setPreviewUrl(profileRes.data.image);
         setActivities(activityRes.data);
       } catch (err: any) {
-        console.error("DATA_FETCH_ERROR", err);
         if (err.response?.status === 401) logout();
       } finally {
         setLoading(false);
       }
-    };
+    },
+    [logout],
+  );
 
-    fetchData();
-  }, [authUser?.id, token, authLoading, router, logout]);
-
-  // 2. IMAGE OPTIMIZATION
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 0.2,
-        maxWidthOrHeight: 500,
-      });
-      setSelectedFile(compressed as File);
-      setPreviewUrl(URL.createObjectURL(compressed));
-    } catch {
-      setToastMsg("IMAGE OPTIMIZATION FAILED");
-      setToastType("error");
-      setShowToast(true);
+  useEffect(() => {
+    if (authLoading) return;
+    const currentToken = token ?? "";
+    const userId = authUser?.id ?? "";
+    if (!userId || !currentToken) {
+      router.push("/login?redirect=/profile");
+      return;
     }
-  };
+    fetchData(userId, currentToken);
+  }, [authUser?.id, token, authLoading, router, fetchData]);
 
-  // 3. UPDATE HANDLER
   const handleUpdate = async () => {
-    if (!user.id || !token) return;
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
+    }
+
+    const currentToken = token ?? "";
+    if (!user.id || !currentToken) return;
 
     setSaving(true);
     try {
@@ -127,14 +112,20 @@ export default function ProfilePage() {
       formData.append("lastName", user.lastName);
       formData.append("username", user.username);
       formData.append("mobile", user.mobile);
-      if (selectedFile) formData.append("file", selectedFile);
+      // Email is usually read-only in many systems, but we append it if your DB allows updates
+      formData.append("email", user.email);
 
+      if (selectedFile) {
+        formData.append("file", selectedFile);
+      }
+
+      // We use the upload-image endpoint because it handles the multipart logic for both text and file
       const res = await axios.post(
         `${API_URL}/user/${user.id}/upload-image`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${currentToken}`,
             "Content-Type": "multipart/form-data",
           },
         },
@@ -142,18 +133,66 @@ export default function ProfilePage() {
 
       login(
         { ...authUser!, ...user, image: res.data.image || user.image },
-        token,
+        currentToken,
       );
-
-      setToastMsg("PROFILE_SYNC_SUCCESSFUL");
-      setToastType("success");
-      setShowToast(true);
-    } catch (err) {
-      setToastMsg("UPDATE_FAILED");
-      setToastType("error");
-      setShowToast(true);
+      notify("PROFILE_SYNC_SUCCESSFUL");
+      setSelectedFile(null);
+      setIsEditing(false);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || "UPDATE_FAILED";
+      notify(msg, "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    const currentToken = token ?? "";
+    if (!passwords.old || !passwords.new)
+      return notify("FILL_ALL_FIELDS", "error");
+    try {
+      await axios.patch(`${API_URL}/user/change-password`, passwords, {
+        headers: { Authorization: `Bearer ${currentToken}` },
+      });
+      notify("PASSWORD_ENCRYPTION_UPDATED");
+      setPasswords({ old: "", new: "" });
+      setShowPasswordFields(false);
+    } catch {
+      notify("PASSWORD_CHANGE_REJECTED", "error");
+    }
+  };
+
+  const downloadData = () => {
+    const data = {
+      profile: user,
+      missions: activities,
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `eprx-data-${user.username}.json`;
+    link.click();
+    notify("DATA_ARCHIVE_EXPORTED");
+  };
+
+  const deleteAccount = async () => {
+    const currentToken = token ?? "";
+    if (
+      window.confirm("CRITICAL_ACTION: Permanently delete your ePRX profile?")
+    ) {
+      try {
+        await axios.delete(`${API_URL}/user/${user.id}`, {
+          headers: { Authorization: `Bearer ${currentToken}` },
+        });
+        logout();
+        router.push("/");
+      } catch {
+        notify("DELETION_FAILED", "error");
+      }
     }
   };
 
@@ -173,7 +212,6 @@ export default function ProfilePage() {
         </div>
 
         <div style={styles.mainLayout}>
-          {/* LEFT COLUMN: THE FORM (Config) */}
           <div style={styles.leftColumn}>
             <div style={styles.card}>
               <div style={styles.imageSection}>
@@ -181,30 +219,42 @@ export default function ProfilePage() {
                   {previewUrl ? (
                     <img
                       src={previewUrl}
-                      alt="Profile"
                       style={styles.preview}
+                      alt="Profile"
                     />
                   ) : (
-                    <div style={styles.placeholder}>
-                      {user.firstName?.[0] || "U"}
-                    </div>
+                    <div style={styles.placeholder}>{user.firstName?.[0]}</div>
                   )}
                 </div>
-                <label style={styles.uploadBtn}>
-                  {selectedFile ? "IMAGE_READY" : "CHANGE IMAGE"}
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
+                {isEditing && (
+                  <label style={styles.uploadBtn}>
+                    CHANGE IMAGE
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const compressed = await imageCompression(file, {
+                            maxSizeMB: 0.2,
+                            maxWidthOrHeight: 500,
+                          });
+                          setSelectedFile(compressed as File);
+                          setPreviewUrl(URL.createObjectURL(compressed));
+                        }
+                      }}
+                    />
+                  </label>
+                )}
               </div>
 
+              {/* Editable Fields */}
               <div style={styles.inputGroup}>
                 <label style={styles.label}>USER NAME</label>
                 <input
                   style={styles.input}
+                  disabled={!isEditing}
                   value={user.username}
                   onChange={(e) =>
                     setUser({ ...user, username: e.target.value })
@@ -217,6 +267,7 @@ export default function ProfilePage() {
                   <label style={styles.label}>FIRST NAME</label>
                   <input
                     style={styles.input}
+                    disabled={!isEditing}
                     value={user.firstName}
                     onChange={(e) =>
                       setUser({ ...user, firstName: e.target.value })
@@ -227,6 +278,7 @@ export default function ProfilePage() {
                   <label style={styles.label}>LAST NAME</label>
                   <input
                     style={styles.input}
+                    disabled={!isEditing}
                     value={user.lastName}
                     onChange={(e) =>
                       setUser({ ...user, lastName: e.target.value })
@@ -235,26 +287,95 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {/* Mobile and Email Fields */}
               <div style={styles.inputGroup}>
-                <label style={styles.label}>EMAIL (PERMANENT ID)</label>
+                <label style={styles.label}>MOBILE NUMBER</label>
                 <input
+                  style={styles.input}
+                  disabled={!isEditing}
+                  value={user.mobile}
+                  onChange={(e) => setUser({ ...user, mobile: e.target.value })}
+                />
+              </div>
+
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>EMAIL ADDRESS</label>
+                <input
+                  style={styles.input}
+                  disabled={true}
                   value={user.email}
-                  disabled
-                  style={{
-                    ...styles.input,
-                    color: "#444",
-                    cursor: "not-allowed",
-                  }}
                 />
               </div>
 
               <button
                 onClick={handleUpdate}
-                style={{ ...styles.saveBtn, opacity: saving ? 0.5 : 1 }}
+                style={{
+                  ...styles.saveBtn,
+                  opacity: saving ? 0.5 : 1,
+                  backgroundColor: isEditing ? "#d4ff00" : "#222",
+                  color: isEditing ? "#000" : "#fff",
+                }}
                 disabled={saving}
               >
-                {saving ? "SYNCING_DATA..." : "UPDATE PROFILE"}
+                {saving
+                  ? "SYNCING..."
+                  : isEditing
+                    ? "UPDATE PROFILE"
+                    : "EDIT PROFILE"}
               </button>
+
+              <div style={styles.divider} />
+
+              <div style={styles.securitySection}>
+                <p style={styles.sectionSmallTitle}>SECURITY & PRIVACY</p>
+                {!showPasswordFields ? (
+                  <button
+                    onClick={() => setShowPasswordFields(true)}
+                    style={styles.secBtn}
+                  >
+                    CHANGE PASSWORD
+                  </button>
+                ) : (
+                  <div style={{ marginBottom: 15 }}>
+                    <input
+                      type="password"
+                      placeholder="OLD PASSWORD"
+                      style={styles.input}
+                      onChange={(e) =>
+                        setPasswords({ ...passwords, old: e.target.value })
+                      }
+                    />
+                    <input
+                      type="password"
+                      placeholder="NEW PASSWORD"
+                      style={styles.input}
+                      onChange={(e) =>
+                        setPasswords({ ...passwords, new: e.target.value })
+                      }
+                    />
+                    <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                      <button
+                        onClick={handlePasswordChange}
+                        style={styles.miniBtn}
+                      >
+                        SAVE
+                      </button>
+                      <button
+                        onClick={() => setShowPasswordFields(false)}
+                        style={styles.cancelBtn}
+                      >
+                        CANCEL
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <button onClick={downloadData} style={styles.secBtn}>
+                  DOWNLOAD MY DATA (JSON)
+                </button>
+                <button onClick={deleteAccount} style={styles.dangerBtn}>
+                  DELETE ACCOUNT
+                </button>
+              </div>
 
               <button onClick={() => router.push("/")} style={styles.backBtn}>
                 BACK TO DASHBOARD
@@ -262,11 +383,8 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: MISSION LOGS */}
           <div style={styles.rightColumn}>
             <h3 style={styles.sectionTitle}>|| MISSION_LOG_HISTORY</h3>
-
-            {/* Mounting the component here */}
             <ActivityLog activities={activities} />
           </div>
         </div>
@@ -297,7 +415,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: 0,
   },
   subtitle: { fontSize: "0.65rem", color: "#444", letterSpacing: "3px" },
-
   mainLayout: {
     display: "grid",
     gridTemplateColumns: "450px 1fr",
@@ -305,8 +422,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     maxWidth: "1400px",
     margin: "0 auto",
   },
-
-  // Left Side (Form)
   leftColumn: { position: "sticky", top: "100px", height: "fit-content" },
   card: {
     backgroundColor: "#111",
@@ -360,19 +475,69 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "10px 0",
     outline: "none",
     width: "100%",
+    fontSize: "0.8rem",
   },
   saveBtn: {
-    backgroundColor: "#d4ff00",
     padding: "12px",
     fontWeight: "bold",
     fontFamily: "var(--font-bebas)",
     fontSize: "1.1rem",
-    color: "#000",
     cursor: "pointer",
     letterSpacing: "3px",
     width: "100%",
     border: "none",
+    marginBottom: "20px",
+    transition: "0.3s",
+  },
+  divider: { height: "1px", backgroundColor: "#222", margin: "20px 0" },
+  securitySection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+    marginBottom: "20px",
+  },
+  sectionSmallTitle: {
+    fontSize: "0.6rem",
+    color: "#d4ff00",
+    letterSpacing: "2px",
     marginBottom: "10px",
+  },
+  secBtn: {
+    backgroundColor: "#1a1a1a",
+    color: "#fff",
+    border: "1px solid #333",
+    padding: "8px",
+    fontSize: "0.65rem",
+    cursor: "pointer",
+    letterSpacing: "1px",
+    textAlign: "left",
+  },
+  dangerBtn: {
+    backgroundColor: "transparent",
+    color: "#ff4444",
+    border: "1px solid #442222",
+    padding: "8px",
+    fontSize: "0.65rem",
+    cursor: "pointer",
+    letterSpacing: "1px",
+    textAlign: "left",
+  },
+  miniBtn: {
+    backgroundColor: "#d4ff00",
+    color: "#000",
+    border: "none",
+    padding: "5px 15px",
+    fontSize: "0.6rem",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+  cancelBtn: {
+    backgroundColor: "transparent",
+    color: "#444",
+    border: "none",
+    padding: "5px",
+    fontSize: "0.6rem",
+    cursor: "pointer",
   },
   backBtn: {
     width: "100%",
@@ -382,8 +547,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "0.7rem",
     cursor: "pointer",
   },
-
-  // Right Side (Activities)
   rightColumn: { minWidth: 0 },
   sectionTitle: {
     fontSize: "0.7rem",
@@ -391,48 +554,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: "2px",
     marginBottom: "20px",
   },
-  activityGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-    gap: "20px",
-  },
-  activityCard: {
-    backgroundColor: "#111",
-    border: "1px solid #1a1a1a",
-    cursor: "pointer",
-    overflow: "hidden",
-    transition: "0.2s",
-  },
-  activityMap: {
-    width: "100%",
-    height: "150px",
-    objectFit: "cover",
-    opacity: 0.6,
-  },
-  activityInfo: { padding: "15px" },
-  activityTitle: {
-    color: "#fff",
-    fontSize: "0.8rem",
-    fontWeight: "bold",
-    marginBottom: "5px",
-    textTransform: "uppercase",
-  },
-  statRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    color: "#555",
-    fontSize: "0.7rem",
-    fontFamily: "monospace",
-  },
-  emptyState: {
-    color: "#333",
-    fontSize: "0.8rem",
-    letterSpacing: "2px",
-    border: "1px dashed #222",
-    padding: "40px",
-    textAlign: "center",
-  },
-
   loader: {
     color: "#d4ff00",
     height: "100vh",
