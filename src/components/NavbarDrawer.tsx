@@ -41,6 +41,7 @@ export default function NavbarDrawer({
 
   const authItems = [
     { name: "DASHBOARD", path: "/" },
+    { name: "ACTIVITIES", path: "/activities" },
     { name: "ARTICLES", path: "/articles" },
     { name: "LIVE EVENTS", path: "/events" },
     { name: "POST EVENT", path: "/post-event" },

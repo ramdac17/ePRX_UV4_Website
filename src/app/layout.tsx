@@ -6,22 +6,25 @@ import NavbarWrapper from "@/components/NavbarWrapper";
 import Footer from "@/components/Footer";
 import "./globals.css";
 
-// Tactical/Header Font
 const bebas = Bebas_Neue({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-bebas",
+  display: "swap", // 1. Added swap to help with the preload warning
 });
 
-// UI/Body Font
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
 });
 
+// 2. If you aren't using Geist right now, you can set preload: false
+// to stop the console warning.
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -29,11 +32,10 @@ export const metadata: Metadata = {
   description:
     "High-performance lifestyle brand for the modern athlete. Engineered for speed, efficiency, and minimalist precision.",
   icons: {
-    icon: "/favicon.ico", // Ensure your new PRX logo is here
+    icon: "/favicon.ico", // Note: Usually starts with / in Next.js
   },
 };
 
-// Prevent mobile horizontal scroll from glitch transforms
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -59,7 +61,10 @@ export default function RootLayout({
       >
         <AuthProvider>
           <NavbarWrapper />
-          {/* Added a relative container to manage glitch artifacts */}
+          {/* 3. Added 'overflow-clip' or 'overflow-x-hidden' on main 
+             is perfect for preventing those mobile "shaking" issues 
+             with the ecosystem slider.
+          */}
           <main className="min-h-screen relative overflow-x-hidden">
             {children}
           </main>

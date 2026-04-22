@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { mobileStyles as styles } from "../../components/styles"; // Moved to separate file
+import { mobileStyles as styles } from "../../components/styles";
 
 const MOBILE_SCREENS = [
   "LoginScreen.jpg",
@@ -28,16 +28,48 @@ const MobileEcosystem = () => {
 
   return (
     <section style={styles.mobileSection} ref={sectionRef}>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* The key is using !important to override the inline styles */
+        @media (max-width: 1024px) {
+          .responsive-flex-container { 
+            justify-content: center !important; 
+            margin: 0 !important;
+            padding: 0 40px !important; 
+          }
+        }
+
+        @media (max-width: 768px) {
+          .responsive-header { font-size: 1.8rem !important; line-height: 1.2 !important; }
+          .responsive-badge-stack { 
+            flex-direction: column !important; 
+            align-items: center !important;
+            gap: 20px !important; 
+          }
+          .responsive-flex-container { 
+            padding: 0 20px !important; 
+            gap: 16px !important;
+          }
+        }
+      `,
+        }}
+      />
+
       <div
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? "translateY(0)" : "translateY(30px)",
           transition: "all 0.8s ease-out",
+          width: "100%",
         }}
       >
         {/* HEADER */}
         <div style={styles.headerStack}>
-          <h2 style={styles.mobileTitle}>
+          <h2 className="responsive-header" style={styles.mobileTitle}>
             <span style={styles.sectionNum}>|| MOBILE APP ON THE</span>
             MOBILE <span style={{ color: "#d4ff00" }}>ECOSYSTEM</span>
           </h2>
@@ -47,26 +79,67 @@ const MobileEcosystem = () => {
           </p>
         </div>
 
-        {/* CARD GRID */}
-        <div style={styles.cardGrid}>
-          {MOBILE_SCREENS.map((fileName, i) => (
-            <ScreenCard
-              key={fileName}
-              index={i}
-              fileName={fileName}
-              isHovered={hoveredCard === fileName}
-              onHover={setHoveredCard}
-            />
-          ))}
+        {/* SINGLE ROW CARD CONTAINER */}
+        <div
+          className="hide-scrollbar"
+          style={{
+            paddingBottom: "60px",
+            WebkitOverflowScrolling: "touch",
+            display: "block", // Ensure block display for overflow
+          }}
+        >
+          <div
+            className="responsive-flex-container"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "16px",
+              width: "100%",
+              padding: "0 20px",
+            }}
+          >
+            {MOBILE_SCREENS.map((fileName, i) => (
+              <ScreenCard
+                key={fileName}
+                index={i}
+                fileName={fileName}
+                isHovered={hoveredCard === fileName}
+                onHover={setHoveredCard}
+              />
+            ))}
+          </div>
         </div>
 
         {/* DOWNLOAD ZONE */}
-        <div style={styles.footerDownload}>
-          <div style={styles.inlineBadgeContainer}>
+        <div
+          style={{
+            ...styles.footerDownload,
+            marginTop: "40px",
+            padding: "0 20px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            className="responsive-badge-stack"
+            style={{
+              ...styles.inlineBadgeContainer,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <span style={styles.badgeLabel}>
               AVAILABLE <span style={{ color: "#d4ff00" }}>SOON</span> ON
             </span>
-            <div style={styles.badgeWrapperRow}>
+            <div
+              style={{
+                ...styles.badgeWrapperRow,
+                display: "flex",
+                gap: "15px",
+              }}
+            >
               <img
                 src="/assets/images/app_store_badge.svg"
                 alt="iOS"
@@ -85,14 +158,21 @@ const MobileEcosystem = () => {
   );
 };
 
-// Sub-component for clarity
 const ScreenCard = ({ fileName, index, isHovered, onHover }: any) => (
   <div
     style={{
       ...styles.mobileCard,
-      transform: isHovered ? "translateY(-8px)" : "translateY(0)",
+      flex: "0 0 auto",
+      /* Smaller cards: reduced from 140-180 to 130-165 */
+      width: "clamp(130px, 14vw, 165px)",
+      transform: isHovered
+        ? "translateY(-15px) scale(1.04)"
+        : "translateY(0) scale(1)",
       borderColor: isHovered ? "#d4ff00" : "#1a1a1a",
-      boxShadow: isHovered ? "0 15px 40px rgba(212, 255, 0, 0.15)" : "none",
+      boxShadow: isHovered ? "0 20px 50px rgba(212, 255, 0, 0.25)" : "none",
+      transition: "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+      cursor: "pointer",
+      zIndex: isHovered ? 10 : 1,
     }}
     onMouseEnter={() => onHover(fileName)}
     onMouseLeave={() => onHover(null)}
@@ -103,18 +183,26 @@ const ScreenCard = ({ fileName, index, isHovered, onHover }: any) => (
         alt={fileName}
         style={{
           ...styles.mockImg,
-          filter: isHovered
-            ? "brightness(1) contrast(1.1)"
-            : "brightness(0.7) contrast(1)",
+          width: "100%",
+          height: "auto",
+          aspectRatio: "9/19",
+          objectFit: "cover",
+          filter: isHovered ? "brightness(1.1)" : "brightness(0.65)",
         }}
         onError={(e) => (e.currentTarget.src = "/assets/images/comingSoon.jpg")}
       />
       <div style={styles.imgOverlay}>
-        <div style={styles.placeholderTag}>
-          PRX_MODULE 0{index + 1} || {fileName.split(".")[0].toUpperCase()}
+        <div
+          style={{
+            ...styles.placeholderTag,
+            fontSize: "0.6rem",
+            opacity: isHovered ? 1 : 0.7,
+          }}
+        >
+          APP SCREEN {index + 1}
         </div>
       </div>
-      <div style={{ ...styles.glowEffect, opacity: isHovered ? 0.2 : 0.03 }} />
+      {/*  <div style={{ ...styles.glowEffect, opacity: isHovered ? 0.4 : 0 }} /> */}
     </div>
   </div>
 );

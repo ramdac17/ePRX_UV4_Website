@@ -34,6 +34,7 @@ export default function ActivityChart({
       <div style={styles.chartBox}>
         {user && data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
+            {/* FIX: Use only ComposedChart here. Remove the nested AreaChart. */}
             <ComposedChart
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -67,6 +68,7 @@ export default function ActivityChart({
                 dataKey="distance"
                 fill="url(#glow)"
                 stroke="none"
+                isAnimationActive={true}
               />
               <Line
                 type="basis"
@@ -74,6 +76,7 @@ export default function ActivityChart({
                 stroke="#d4ff00"
                 strokeWidth={3}
                 dot={false}
+                isAnimationActive={true}
               />
             </ComposedChart>
           </ResponsiveContainer>

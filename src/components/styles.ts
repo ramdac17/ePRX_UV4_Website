@@ -13,8 +13,8 @@ export const homeStyles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     width: "100%",
     backgroundAttachment: "fixed", // Note: Logic for mobile 'scroll' should stay in the component
-    backgroundImage:
-      'linear-gradient(to right, rgba(15,15,15,1) 35%, rgba(15,15,15,0.2) 100%), url("/assets/images/register-sky.jpg")',
+    // backgroundImage:
+    //  'linear-gradient(to right, rgba(15,15,15,1) 35%, rgba(15,15,15,0.2) 100%), url("/assets/images/register-sky.jpg")',
     backgroundSize: "cover",
     boxSizing: "border-box",
   },
@@ -65,10 +65,12 @@ export const homeStyles: { [key: string]: React.CSSProperties } = {
   },
   dataStatus: { fontSize: "0.55rem", color: "#d4ff00", letterSpacing: "1px" },
   chartBox: {
-    height: "180px",
+    height: "220px", // Give it a fixed height instead of 100%
     width: "100%",
     marginBottom: "25px",
     position: "relative",
+    // Adding minWidth helps the library calculation logic
+    minWidth: 0,
   },
   metricRow: {
     display: "grid",
@@ -168,16 +170,21 @@ export const homeStyles: { [key: string]: React.CSSProperties } = {
   archiveTitle: { fontFamily: "var(--font-bebas)", fontSize: "3rem" },
   articleGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "30px",
+    // Standard landscape cards look best in 2 or 3 columns
+    gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+    gap: "40px",
+    width: "100%",
   },
   articleCard: {
     backgroundColor: "#0a0a0a",
-    borderRadius: "12px",
+    borderRadius: "4px", // Sharper edges for terminal look
     overflow: "hidden",
     border: "1px solid #1a1a1a",
     textDecoration: "none",
     color: "inherit",
+    transition: "all 0.3s ease",
+    display: "flex",
+    flexDirection: "column",
   },
   articleImg: {
     width: "100%",
@@ -189,8 +196,10 @@ export const homeStyles: { [key: string]: React.CSSProperties } = {
   volTag: { color: "#d4ff00", fontSize: "0.7rem", letterSpacing: "2px" },
   articleTitle: {
     fontFamily: "var(--font-bebas)",
-    fontSize: "2rem",
+    fontSize: "1.8rem", // Slightly smaller for landscape balance
     margin: "10px 0",
+    lineHeight: "1.1",
+    letterSpacing: "1px",
   },
   lockedChartOverlay: {
     height: "100%",
@@ -209,10 +218,10 @@ export const homeStyles: { [key: string]: React.CSSProperties } = {
 // Add these to your existing homeStyles object in styles.ts
 export const mobileStyles: { [key: string]: React.CSSProperties } = {
   mobileSection: {
-    padding: "100px 20px",
+    padding: "100px 0", // Changed to 0 on sides to allow edge-to-edge swiping
     backgroundColor: "transparent",
-    maxWidth: "1200px",
-    margin: "0 auto",
+    width: "100%",
+    overflow: "hidden", // Prevents the whole page from shaking during horizontal scroll
   },
   headerStack: {
     textAlign: "center",
@@ -220,6 +229,7 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    padding: "0 20px", // Keeps text safe on mobile edges
   },
   mobileTitle: {
     letterSpacing: "2px",
@@ -227,7 +237,7 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
     margin: "0 0 15px 0",
     textTransform: "uppercase",
     fontFamily: "var(--font-bebas)",
-    fontSize: "3rem",
+    fontSize: "clamp(2rem, 5vw, 3.5rem)", // Fluid scaling
   },
   mobileDesc: {
     fontSize: "0.85rem",
@@ -237,6 +247,12 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
     letterSpacing: "1.5px",
     textTransform: "uppercase",
   },
+  mobileRowWrapper: {
+    width: "100%",
+    overflowX: "auto",
+    paddingBottom: "40px",
+    WebkitOverflowScrolling: "touch",
+  },
   cardGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
@@ -245,17 +261,16 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
     padding: "0 20px",
   },
   mobileCard: {
-    aspectRatio: "9/16",
+    /* We remove fixed 'width: 100%' and 'maxWidth' so the 
+       component-level 'clamp' can control the size.
+    */
+    aspectRatio: "9/19", // Matches the native phone screen ratio better
     backgroundColor: "#080808",
     borderRadius: "14px",
     border: "1px solid #1a1a1a",
     overflow: "hidden",
     position: "relative",
-    transition: "all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)",
     cursor: "pointer",
-    width: "100%",
-    maxWidth: "320px",
-    margin: "0 auto",
   },
   cardInternal: {
     width: "100%",
@@ -265,8 +280,7 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
   mockImg: {
     width: "100%",
     height: "100%",
-    objectFit: "cover",
-    filter: "brightness(0.8) contrast(1.1)",
+    objectFit: "cover", // Ensures image fills the 9/19 container
     transition: "all 0.5s ease",
   },
   imgOverlay: {
@@ -276,26 +290,25 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
       "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.9) 100%)",
     display: "flex",
     alignItems: "flex-end",
-    padding: "20px",
+    padding: "15px",
     justifyContent: "center",
   },
   placeholderTag: {
-    fontSize: "0.55rem",
+    fontSize: "0.6rem",
     color: "#d4ff00",
-    letterSpacing: "3px",
-    zIndex: 2,
+    letterSpacing: "2px",
     fontFamily: "monospace",
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(0,0,0,0.8)",
     padding: "4px 8px",
     borderRadius: "2px",
+    border: "1px solid rgba(212, 255, 0, 0.2)",
   },
   footerDownload: {
     display: "flex",
-    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
-    gap: "80px",
     opacity: 0.8,
+    padding: "0 20px",
   },
   inlineBadgeContainer: {
     display: "flex",
@@ -313,7 +326,7 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
     gap: "20px",
   },
   badgeImg: {
-    height: "34px",
+    height: "32px", // Slightly smaller for better mobile fit
     cursor: "pointer",
     filter: "grayscale(1) brightness(0.6)",
     transition: "0.3s",
@@ -324,9 +337,10 @@ export const mobileStyles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     height: "30%",
     backgroundColor: "#d4ff00",
-    filter: "blur(45px)",
+    filter: "blur(40px)",
     transition: "opacity 0.4s ease",
     zIndex: 1,
+    pointerEvents: "none",
   },
   sectionNum: {
     color: "#333",

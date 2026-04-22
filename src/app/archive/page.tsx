@@ -33,7 +33,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
 
       const contentType = response.headers.get("content-type");
       if (!response.ok || !contentType?.includes("application/json")) {
-        throw new Error(`BACKEND_UNREACHABLE: ${response.status}`);
+        throw new Error(`BACKEND_LINK_OFFLINE: ${response.status}`);
       }
 
       const data = await response.json();
@@ -41,8 +41,8 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
       const displayData = limit ? finalData.slice(0, limit) : finalData;
       setArticles(displayData);
     } catch (err) {
-      console.error("Direct Fetch Error:", err);
-      setError("SYSTEM RECOVERY FAILED: Backend link severed.");
+      console.error("Archive Fetch Error:", err);
+      setError("SYSTEM RECOVERY FAILED: Archives currently inaccessible.");
     } finally {
       setLoading(false);
     }
@@ -63,6 +63,7 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
   return (
     <Container style={isSection ? {} : styles.pageContainer}>
       <section style={styles.archiveSection}>
+        {/* SHARED HEADER FROM MOBILE ECOSYSTEM FOR CONSISTENCY */}
         <div style={mobileStyles.headerStack}>
           <h2 style={mobileStyles.mobileTitle}>
             <span style={mobileStyles.sectionNum}>|| PRX REPOSITORY</span>
@@ -85,45 +86,36 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
                 key={post.id}
                 href={`/article/${post.id}`}
                 style={styles.articleCard}
+                className="article-card-hover"
               >
-                {/* REFACTORED IMAGE CONTAINER */}
-                <div
-                  style={{
-                    overflow: "hidden",
-                    height: "250px",
-                    backgroundColor: "#050505",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "15px", // Internal spacing so the head isn't against the edge
-                    borderBottom: "1px solid #1a1a1a",
-                  }}
-                >
+                {/* LANDSCAPE IMAGE CONTAINER */}
+                <div style={landscapeImageWrapper}>
                   <img
                     src={resolveImage(post.image)}
                     alt={post.title}
                     style={{
-                      ...styles.articleImg,
-                      objectFit: "contain", // SHOWS ENTIRE IMAGE
                       width: "100%",
                       height: "100%",
-                      maxWidth: "100%",
-                      maxHeight: "100%",
+                      objectFit: "cover", // Change to "cover" for full landscape impact
+                      transition: "transform 0.6s ease",
                     }}
                     loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.src = FALLBACK_IMAGE;
-                    }}
+                    onError={(e) => (e.currentTarget.src = FALLBACK_IMAGE)}
                   />
+                  <div style={landscapeOverlay} />
                 </div>
 
                 <div style={styles.articleContent}>
                   <span style={styles.volTag}>
-                    MODULE {post.category.toUpperCase()}
+                    {post.category.toUpperCase().slice(0, 10)}
                   </span>
                   <h3 style={styles.articleTitle}>
                     {post.title.toUpperCase()}
                   </h3>
+                  <div style={cardFooterDecoration} />
+                  <div>
+                    <span style={styles.volTag}>READ DETAILS</span>
+                  </div>
                 </div>
               </Link>
             ))
@@ -134,6 +126,32 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
       </section>
     </Container>
   );
+};
+
+// --- INTERNAL STYLES FOR LANDSCAPE REFACTOR ---
+
+const landscapeImageWrapper: React.CSSProperties = {
+  width: "100%",
+  aspectRatio: "16 / 9", // FORCES LANDSCAPE
+  overflow: "hidden",
+  backgroundColor: "#050505",
+  position: "relative",
+  borderBottom: "1px solid #1a1a1a",
+};
+
+const landscapeOverlay: React.CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  background:
+    "linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.4) 100%)",
+  pointerEvents: "none",
+};
+
+const cardFooterDecoration: React.CSSProperties = {
+  width: "30px",
+  height: "2px",
+  backgroundColor: "#d4ff00",
+  marginTop: "15px",
 };
 
 const placeholderStyle: React.CSSProperties = {

@@ -1,102 +1,50 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
+import React from "react";
 import { motion } from "framer-motion";
+
+// Hooks
 import { useAuth } from "@/context/AuthContext";
+import { useHomeLogic } from "../../../hooks/useHomeLogic";
 
 // Components
 import Navbar from "@/components/Navbar";
 import NavbarDrawer from "@/components/NavbarDrawer";
 import ActivityChart from "@/components/ActivityChart";
-
-// Refactored Sections
 import MobileEcosystem from "../mobile-ecosystem/page";
 import Pillar from "../pillars/page";
 import Archive from "../archive/page";
 
 import { homeStyles as styles } from "../../components/styles";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function Home() {
   const { logout, user } = useAuth();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isGlitching, setIsGlitching] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
+  const {
+    isDrawerOpen,
+    setIsDrawerOpen,
+    isGlitching,
+    isMobile,
+    scrollY,
+    activityData,
+    stats,
+    lastUpdated,
+    triggerGlitch,
+  } = useHomeLogic(user);
 
-  // Data States for Dashboard
-  const [activityData, setActivityData] = useState<any[]>([]);
-  const [stats, setStats] = useState({ avgPace: "0.00", totalKm: "0.0" });
-
-  // 1. Initial Listeners
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 968);
-    const handleScroll = () => setScrollY(window.scrollY);
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  // 2. Fetch Dashboard Metrics
-  useEffect(() => {
-    if (!user) return;
-    const fetchMetrics = async () => {
-      try {
-        const stored = localStorage.getItem("eprx_session");
-        const { token } = stored ? JSON.parse(stored) : {};
-        const res = await fetch(`${API_URL}/activities/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-
-        if (data.recent) {
-          setActivityData(
-            data.recent
-              .slice(0, 7)
-              .reverse()
-              .map((act: any) => ({
-                day: new Date(act.createdAt)
-                  .toLocaleDateString("en-US", { weekday: "short" })
-                  .toUpperCase(),
-                distance: Number(act.distance) || 0,
-              })),
-          );
-        }
-        setStats({
-          avgPace: data.summary?.avgPace || "0.00",
-          totalKm: data.summary?.totalDistance || "0.0",
-        });
-      } catch (e) {
-        console.error("METRIC_SYNC_FAILURE", e);
-      }
-    };
-    fetchMetrics();
-  }, [user]);
-
-  const triggerGlitch = () => {
-    setIsGlitching(true);
-    setTimeout(() => setIsGlitching(false), 750);
+  // Main Container Style
+  const heroDynamicStyle = {
+    ...styles.heroSplit,
+    display: "flex",
+    flexDirection: "column" as any,
+    height: "100vh",
+    minHeight: isMobile ? "800px" : "100vh",
+    paddingTop: "80px",
+    position: "relative" as any,
+    backgroundPositionY: `${scrollY * 0.3}px`,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
   };
-
-  const lastUpdated = useMemo(
-    () =>
-      new Date()
-        .toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "2-digit",
-        })
-        .toUpperCase(),
-    [],
-  );
 
   return (
     <div style={styles.pageContainer}>
@@ -108,77 +56,73 @@ export default function Home() {
       <Navbar onMenuClick={() => setIsDrawerOpen(true)} />
 
       {/* HERO SECTION */}
-      <motion.section
-        onViewportEnter={triggerGlitch}
-        style={{
-          ...styles.heroSplit,
-          flexDirection: isMobile ? "column" : "row",
-          height: isMobile ? "auto" : "100vh",
-          paddingTop: isMobile ? "120px" : "80px",
-          paddingBottom: isMobile ? "60px" : "0", // Added bottom padding for mobile spacing
-          backgroundPositionY: `${scrollY * 0.3}px`,
-          alignItems: "center", // Ensures horizontal centering when in column mode
-          justifyContent: isMobile ? "center" : "space-between",
-        }}
-      >
-        {/* LEFT BRANDING AREA */}
+      <motion.section onViewportEnter={triggerGlitch} style={heroDynamicStyle}>
+        {/* BRAND AREA: Logo + Tagline moved to Upper Left */}
         <div
           style={{
-            ...styles.heroLeft,
-            textAlign: isMobile ? "center" : "left",
+            zIndex: 2,
+            display: "flex",
+            flexDirection: "column", // Stacks tagline on top of logo
+            justifyContent: "center",
             alignItems: isMobile ? "center" : "flex-start",
-            marginBottom: isMobile ? "50px" : "0", // Pushes the chart down on mobile
+            width: "100%",
+            paddingLeft: isMobile ? "0" : "5vw",
+            position: isMobile ? "relative" : "absolute",
+            top: isMobile ? "0" : "150px", // Adjusted for Navbar clearance
+            left: 0,
           }}
         >
-          <div
+          {/* REPOSITIONED TAGLINE */}
+          <motion.h2
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6 }}
             style={{
-              ...styles.brandContent,
-              alignItems: isMobile ? "center" : "flex-start",
+              ...styles.heroTagline,
+              fontSize: isMobile ? "0.7rem" : "3rem",
+              letterSpacing: isMobile ? "4px" : "8px",
+              textAlign: isMobile ? "center" : "left",
+              margin: isMobile ? "0 0 10px 0" : "0 0 -60px 50px", // Negative margin pulls logo closer
+              zIndex: 3,
+              color: "#fff",
+              textTransform: "uppercase",
             }}
           >
-            <div style={styles.topHeroLogo} className="logo-glow">
-              <img
-                src="/assets/images/eprx-logo.png"
-                alt="ePRX"
-                style={styles.logoImageStyle}
-              />
-            </div>
-            <h1
+            BEYOND THE <span style={{ color: "#d4ff00" }}>MILE</span>
+          </motion.h2>
+
+          {/* BRAND LOGO */}
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, ease: "easeOut" }}
+          >
+            <img
+              src="/assets/images/cyber-punk-prx-logo.png"
+              alt="ePRX Cyber-punk Logo"
               style={{
-                ...styles.heroTitleLeft,
-                fontSize: isMobile ? "12vw" : "6vw",
+                width: isMobile ? "85vw" : "55vw",
+                maxWidth: "950px",
+                height: "auto",
+                objectFit: "contain",
               }}
-              className={isGlitching ? "glitch-active" : ""}
-            >
-              <span style={{ color: "#d4ff00" }}>P</span>INOY{" "}
-              <span style={{ color: "#d4ff00" }}>R</span>UNNER E
-              <span style={{ color: "#d4ff00" }}>X</span>TREME
-            </h1>
-            <h2
-              style={{
-                ...styles.heroTagline,
-                fontSize: isMobile ? "1.2rem" : "2rem",
-              }}
-            >
-              BEYOND THE <span style={{ color: "#d4ff00" }}>MILE</span>
-            </h2>
-            <Link href={user ? "/dashboard" : "/login"}>
-              <button style={styles.ctaBtn}>
-                {user ? "ACCESS DASHBOARD" : "GET STARTED"}
-              </button>
-            </Link>
-          </div>
+            />
+          </motion.div>
         </div>
 
-        {/* RIGHT CHART AREA */}
-        <div
+        {/* CHART AREA (Side-pinned) */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
           style={{
-            ...styles.heroRight,
-            width: isMobile ? "100%" : "auto", // Take full width to allow centering
-            display: "flex",
-            justifyContent: "center", // Centers the chart horizontally
-            alignItems: "center",
-            padding: isMobile ? "0 15px" : "0", // Safe area for smaller mobile screens
+            position: isMobile ? "relative" : ("absolute" as any),
+            top: isMobile ? "0" : "220px",
+            right: isMobile ? "0" : "12vw",
+            width: isMobile ? "90%" : "22vw",
+            maxWidth: isMobile ? "100%" : "380px",
+            zIndex: 3,
+            marginTop: isMobile ? "40px" : "0",
           }}
         >
           <ActivityChart
@@ -188,7 +132,7 @@ export default function Home() {
             isMobile={isMobile}
             lastUpdated={lastUpdated}
           />
-        </div>
+        </motion.div>
       </motion.section>
 
       {/* MODULAR SECTIONS */}

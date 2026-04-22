@@ -7,19 +7,9 @@ import { useAuth } from "@/context/AuthContext";
 import imageCompression from "browser-image-compression";
 import Toast from "@/components/Toast";
 import { AuthGuard } from "@/components/AuthGuard";
+import { Ruler, Clock, Zap, ExternalLink } from "lucide-react"; // Install lucide-react
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-type UserProfile = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  mobile: string;
-  password?: string;
-  image?: string;
-};
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -27,536 +17,335 @@ export default function ProfilePage() {
     user: authUser,
     token,
     loading: authLoading,
-    login,
     logout,
+    login,
   } = useAuth();
 
-  const [user, setUser] = useState<UserProfile>({
-    id: "",
-    firstName: "",
-    lastName: "",
-    username: "",
-    email: "",
-    mobile: "",
-    password: "",
-    image: "",
-  });
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-
+  const [user, setUser] = useState<any>(null);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [showToast, setShowToast] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error">("success");
+  // Toast State
+  const [toast, setToast] = useState({
+    show: false,
+    msg: "",
+    type: "success" as "success" | "error",
+  });
 
-  /*
-  ==================================
-  FETCH PROFILE
-  ==================================
-  */
+  const notify = (msg: string, type: "success" | "error" = "success") =>
+    setToast({ show: true, msg, type });
+
   useEffect(() => {
     if (authLoading) return;
-
     if (!authUser || !token) {
       router.push("/login?redirect=/profile");
       return;
     }
 
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `${API_URL}/user/profile?id=${authUser.id}`,
-          {
+        // 🚀 Parallel fetch for Profile and Activity History
+        const [profileRes, activityRes] = await Promise.all([
+          axios.get(`${API_URL}/user/profile?id=${authUser.id}`, {
             headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+          }),
+          axios.get(`${API_URL}/activities/user/${authUser.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        const profile = response.data;
-
-        setUser({
-          id: authUser.id,
-          firstName: profile.firstName || "",
-          lastName: profile.lastName || "",
-          username: profile.username || "",
-          email: profile.email || "",
-          mobile: profile.mobile || "",
-          password: "",
-          image: profile.image || "",
-        });
-
-        if (profile.image) setPreviewUrl(profile.image);
+        setUser(profileRes.data);
+        setActivities(activityRes.data);
       } catch (err: any) {
-        console.error("FETCH PROFILE ERROR:", err);
-
-        // Handle 401 explicitly
         if (err.response?.status === 401) {
-          setToastMsg("SESSION EXPIRED. PLEASE LOGIN AGAIN.");
-          setToastType("error");
-          setShowToast(true);
           logout();
-          router.push("/login?redirect=/profile");
-        } else {
-          setToastMsg("FAILED TO FETCH PROFILE");
-          setToastType("error");
-          setShowToast(true);
+          router.push("/login");
         }
+        notify("SYSTEM_SYNC_ERROR", "error");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchData();
   }, [authUser, token, authLoading, router, logout]);
 
-  /*
-  ==================================
-  EXPORT USER DATA
-  ==================================
-  */
-  const handleExportData = () => {
-    const dataStr =
-      "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(user, null, 2));
-    const anchor = document.createElement("a");
-    anchor.href = dataStr;
-    anchor.download = `ePRX_UV1_DATA_${user.username}.json`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    setToastMsg("DATA PORTABILITY EXPORTED");
-    setToastType("success");
-    setShowToast(true);
-  };
-
-  /*
-  ==================================
-  DELETE ACCOUNT
-  ==================================
-  */
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      "CRITICAL_ACTION: This will permanently purge your runner credentials. Proceed?",
-    );
-    if (!confirmed) return;
-
-    try {
-      if (!token) throw new Error("SESSION EXPIRED");
-
-      await axios.delete(`${API_URL}/user/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setToastMsg("DELETE ACCOUNT SUCCESSFULLY");
-      setToastType("success");
-      setShowToast(true);
-
-      setTimeout(() => {
-        logout();
-        router.push("/");
-      }, 2000);
-    } catch (err: any) {
-      setToastMsg(err.response?.data?.message || "DELETE ACCOUNT FAILED");
-      setToastType("error");
-      setShowToast(true);
-    }
-  };
-
-  /*
-  ==================================
-  PASSWORD RESET
-  ==================================
-  */
-  const handleRequestReset = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API_URL}/auth/forgot-password`, {
-        email: user.email,
-      });
-      setToastMsg("RECOVERY LINK TRANSMITTED");
-      setToastType("success");
-      setShowToast(true);
-    } catch {
-      setToastMsg("TRANSMISSION ERROR");
-      setToastType("error");
-      setShowToast(true);
-    }
-  };
-
-  /*
-  ==================================
-  IMAGE CHANGE
-  ==================================
-  */
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (previewUrl?.startsWith("blob:")) URL.revokeObjectURL(previewUrl);
-    if (!file) return;
-
-    const options = {
-      maxSizeMB: 0.2,
-      maxWidthOrHeight: 500,
-      useWebWorker: true,
-    };
-
-    try {
-      const compressed = await imageCompression(file, options);
-      setSelectedFile(compressed as File);
-      setPreviewUrl(URL.createObjectURL(compressed));
-    } catch {
-      setToastMsg("IMAGE OPTIMIZATION FAILED");
-      setToastType("error");
-      setShowToast(true);
-    }
-  };
-
-  /*
-  ==================================
-  UPDATE PROFILE
-  ==================================
-  */
-  const handleUpdate = async () => {
-    setSaving(true);
-    try {
-      if (!token) throw new Error("SESSION EXPIRED");
-
-      const formData = new FormData();
-      formData.append("firstName", user.firstName);
-      formData.append("lastName", user.lastName);
-      formData.append("username", user.username);
-      formData.append("mobile", user.mobile);
-      if (user.password) formData.append("password", user.password);
-      if (selectedFile) formData.append("file", selectedFile);
-
-      const response = await axios.post(
-        `${API_URL}/user/${user.id}/upload-image`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-
-      const updatedUser = {
-        ...authUser!,
-        ...user,
-        image: response.data.image || user.image,
-      };
-      login(updatedUser, token);
-
-      setToastMsg("PROFILE UPDATE SUCCESSFUL");
-      setToastType("success");
-      setShowToast(true);
-    } catch (err: any) {
-      const message = err.response?.data?.message || "UPDATE FAILED";
-      setToastMsg(
-        Array.isArray(message)
-          ? message[0].toUpperCase()
-          : message.toUpperCase(),
-      );
-      setToastType("error");
-      setShowToast(true);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  /*
-  ==================================
-  LOADING STATE
-  ==================================
-  */
   if (loading || authLoading)
-    return <div style={styles.loader}>LOADING PROFILE...</div>;
+    return <div style={styles.loader}>INITIALIZING_NEURAL_LINK...</div>;
 
   return (
     <AuthGuard>
       <div style={styles.container}>
-        {/* Title */}
-        <div style={styles.titleContainer}>
+        {/* Header Section */}
+        <div style={styles.header}>
           <h1 style={styles.title}>
-            USER <span style={{ color: "#d4ff00" }}>PROFILE</span>
+            OPERATOR <span style={{ color: "#d4ff00" }}>PROFILE</span>
           </h1>
           <p style={styles.subtitle}>
-            MANAGE YOUR PROFILE CREDENTIALS & PRIVACY
+            ID: {authUser?.id.slice(0, 12)} // LVL: RUNNER
           </p>
         </div>
 
-        {/* Profile Card */}
-        <div style={styles.card}>
-          {/* Avatar Section */}
-          <div style={styles.imageSection}>
-            <div style={styles.avatarCircle}>
-              {previewUrl ? (
-                <img src={previewUrl} alt="Profile" style={styles.preview} />
-              ) : (
-                <div style={styles.placeholder}>
-                  {user.firstName?.[0] || "U"}
-                </div>
-              )}
-            </div>
-            <label style={styles.uploadBtn}>
-              {selectedFile ? "IMAGE_READY" : "CHANGE IMAGE"}
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-            </label>
-          </div>
-
-          {/* Username */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>USER NAME</label>
-            <input
-              style={styles.input}
-              value={user.username}
-              onChange={(e) => setUser({ ...user, username: e.target.value })}
-            />
-          </div>
-
-          {/* First / Last Name */}
-          <div style={styles.grid}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>FIRST NAME</label>
-              <input
-                style={styles.input}
-                value={user.firstName}
-                onChange={(e) =>
-                  setUser({ ...user, firstName: e.target.value })
-                }
-              />
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>LAST NAME</label>
-              <input
-                style={styles.input}
-                value={user.lastName}
-                onChange={(e) => setUser({ ...user, lastName: e.target.value })}
-              />
-            </div>
-          </div>
-
-          {/* Email */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>EMAIL (PERMANENT ID)</label>
-            <input
-              value={user.email}
-              disabled
-              style={{ ...styles.input, color: "#444", cursor: "not-allowed" }}
-            />
-          </div>
-
-          {/* Save */}
-          <button
-            onClick={handleUpdate}
-            style={{ ...styles.saveBtn, opacity: saving ? 0.5 : 1 }}
-            disabled={saving}
-          >
-            {saving ? "SYNCING_DATA..." : "UPDATE PROFILE"}
-          </button>
-
-          {/* GDPR / Security */}
-          <div style={styles.gdprSection}>
-            <h3 style={styles.gdprTitle}>|| SYSTEM SECURITY PROTOCOLS</h3>
-
-            <div style={styles.protocolBox}>
-              <div style={styles.protocolInfo}>
-                <p style={styles.protocolLabel}>CREDENTIAL RECOVERY</p>
-                <p style={styles.protocolDesc}>
-                  Trigger a secure password reset handshake via email.
-                </p>
+        <div style={styles.contentLayout}>
+          {/* Left Column: Mission History */}
+          <div style={styles.historySection}>
+            <h2 style={styles.sectionTitle}>|| MISSION_LOG_HISTORY</h2>
+            {activities.length === 0 ? (
+              <div style={styles.emptyState}>
+                NO MISSIONS DETECTED. START YOUR FIRST RUN.
               </div>
-              <button onClick={handleRequestReset} style={styles.protocolBtn}>
-                RECOVER
-              </button>
-            </div>
-
-            <div style={styles.gdprGrid}>
-              <button onClick={handleExportData} style={styles.gdprBtn}>
-                EXPORT PROFILE DATA
-              </button>
-              <button onClick={handleDeleteAccount} style={styles.deleteBtn}>
-                DELETE ACCOUNT
-              </button>
-            </div>
+            ) : (
+              <div style={styles.activityGrid}>
+                {activities.map((activity: any) => (
+                  <div
+                    key={activity.id}
+                    style={styles.activityCard}
+                    onClick={() => router.push(`/activities/${activity.id}`)}
+                  >
+                    <img
+                      src={activity.shareImageUrl || activity.mapImageUrl}
+                      alt="Mission Map"
+                      style={styles.activityMap}
+                    />
+                    <div style={styles.activityDetails}>
+                      <div style={styles.activityMainRow}>
+                        <span style={styles.activityName}>
+                          {activity.title || "UNTITLED_MISSION"}
+                        </span>
+                        <ExternalLink size={14} color="#555" />
+                      </div>
+                      <div style={styles.activityStatsRow}>
+                        <StatItem
+                          label="DIST"
+                          value={`${activity.distance}km`}
+                        />
+                        <StatItem label="PACE" value={activity.pace} />
+                        <StatItem
+                          label="TIME"
+                          value={`${Math.floor(activity.duration / 60)}m`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <button onClick={() => router.push("/")} style={styles.backBtn}>
-            BACK TO DASHBOARD
-          </button>
+          {/* Right Column: Profile Management */}
+          <div style={styles.managementSection}>
+            <h2 style={styles.sectionTitle}>|| OPERATOR_CONFIG</h2>
+            <div style={styles.card}>
+              {/* Existing Profile Image logic here */}
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>DISPLAY_NAME</label>
+                <input style={styles.input} defaultValue={user?.username} />
+              </div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>EMAIL_ID (READ_ONLY)</label>
+                <input
+                  style={{ ...styles.input, color: "#444" }}
+                  value={user?.email}
+                  disabled
+                />
+              </div>
+
+              <button
+                style={styles.saveBtn}
+                onClick={() => notify("RE-SYNCING_DISABLED_IN_DEMO")}
+              >
+                SYNC_CHANGES
+              </button>
+
+              <div style={styles.dangerZone}>
+                <p style={styles.dangerTitle}>CRITICAL_ZONE</p>
+                <button style={styles.gdprBtn} onClick={logout}>
+                  TERMINATE_SESSION
+                </button>
+                <button style={styles.deleteBtn}>PURGE_ACCOUNT</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <Toast
-          message={toastMsg}
-          isVisible={showToast}
-          type={toastType}
-          onClose={() => setShowToast(false)}
+          message={toast.msg}
+          isVisible={toast.show}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, show: false })}
         />
       </div>
     </AuthGuard>
   );
 }
 
+const StatItem = ({ label, value }: { label: string; value: string }) => (
+  <div style={{ marginRight: "15px" }}>
+    <p
+      style={{
+        margin: 0,
+        fontSize: "0.6rem",
+        color: "#555",
+        fontWeight: "bold",
+      }}
+    >
+      {label}
+    </p>
+    <p
+      style={{
+        margin: 0,
+        fontSize: "0.85rem",
+        color: "#fff",
+        fontFamily: "monospace",
+      }}
+    >
+      {value}
+    </p>
+  </div>
+);
+
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#000",
     minHeight: "100vh",
-    padding: "120px 20px 40px 20px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
+    padding: "100px 5% 40px 5%",
   },
-  titleContainer: { textAlign: "center", marginBottom: "30px" },
-  card: {
-    width: "100%",
-    maxWidth: "450px",
-    backgroundColor: "#111",
-    padding: "30px",
-    border: "1px solid #1a1a1a",
-  },
+  header: { marginBottom: "40px" },
   title: {
-    fontFamily: "var(--font-bebas)",
-    fontSize: "3.5rem",
-    letterSpacing: "4px",
+    fontSize: "3rem",
     margin: 0,
     color: "#fff",
+    fontFamily: "var(--font-bebas)",
+    letterSpacing: "2px",
   },
-  subtitle: { fontSize: "0.65rem", color: "#444", letterSpacing: "3px" },
-  imageSection: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginBottom: "25px",
+  subtitle: {
+    color: "#444",
+    fontSize: "0.7rem",
+    letterSpacing: "4px",
+    marginTop: "5px",
   },
-  avatarCircle: {
-    width: "100px",
-    height: "100px",
-    borderRadius: "50%",
-    overflow: "hidden",
-    border: "2px solid #1a1a1a",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+  contentLayout: {
+    display: "grid",
+    gridTemplateColumns: "2fr 1fr",
+    gap: "40px",
   },
-  preview: { width: "100%", height: "100%", objectFit: "cover" },
-  placeholder: { fontSize: "2.5rem", color: "#d4ff00" },
-  uploadBtn: {
-    fontSize: "0.6rem",
+  sectionTitle: {
     color: "#d4ff00",
-    cursor: "pointer",
-    border: "1px solid #d4ff00",
-    padding: "6px 14px",
-    marginTop: "10px",
-  },
-  grid: { display: "flex", gap: "20px" },
-  inputGroup: {
-    display: "flex",
-    flexDirection: "column",
+    fontSize: "0.8rem",
+    letterSpacing: "2px",
     marginBottom: "20px",
-    width: "100%",
+    fontWeight: "900",
   },
+
+  // History Grid
+  historySection: { minWidth: 0 },
+  activityGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "20px",
+  },
+  activityCard: {
+    backgroundColor: "#111",
+    border: "1px solid #222",
+    cursor: "pointer",
+    transition: "0.2s",
+  },
+  activityMap: {
+    width: "100%",
+    height: "150px",
+    objectFit: "cover",
+    opacity: 0.7,
+  },
+  activityDetails: { padding: "15px" },
+  activityMainRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "10px",
+  },
+  activityName: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: "0.9rem",
+    textTransform: "uppercase",
+  },
+  activityStatsRow: { display: "flex" },
+
+  // Management Card
+  managementSection: {},
+  card: {
+    backgroundColor: "#111",
+    padding: "20px",
+    border: "1px solid #1a1a1a",
+  },
+  inputGroup: { marginBottom: "20px" },
   label: {
     fontSize: "0.6rem",
-    color: "#444",
-    letterSpacing: "2px",
+    color: "#d4ff00",
+    letterSpacing: "1px",
     marginBottom: "5px",
+    display: "block",
   },
   input: {
     backgroundColor: "transparent",
     border: "none",
-    borderBottom: "1px solid #222",
+    borderBottom: "1px solid #333",
     color: "#fff",
-    padding: "10px 0",
+    padding: "8px 0",
     outline: "none",
     width: "100%",
   },
   saveBtn: {
-    backgroundColor: "#d4ff00",
-    padding: "12px",
-    fontWeight: "bold",
-    fontFamily: "var(--font-bebas)",
-    fontSize: "1.1rem",
-    color: "#000",
-    cursor: "pointer",
-    letterSpacing: "3px",
     width: "100%",
+    padding: "12px",
+    backgroundColor: "#d4ff00",
+    color: "#000",
+    fontWeight: "bold",
     border: "none",
-    marginBottom: "10px",
+    cursor: "pointer",
+    marginTop: "10px",
   },
 
-  // Protocol Styles
-  gdprSection: {
+  dangerZone: {
     marginTop: "30px",
-    borderTop: "1px solid #1a1a1a",
+    borderTop: "1px solid #222",
     paddingTop: "20px",
   },
-  gdprTitle: {
-    fontSize: "0.65rem",
-    color: "#d4ff00",
-    letterSpacing: "2px",
-    marginBottom: "15px",
-    fontWeight: "bold",
-  },
-  protocolBox: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "15px",
-    border: "1px solid #1a1a1a",
-    marginBottom: "15px",
-  },
-  protocolInfo: { flex: 1 },
-  protocolLabel: { color: "#fff", fontSize: "0.75rem", margin: 0 },
-  protocolDesc: { color: "#555", fontSize: "0.6rem", margin: "2px 0 0 0" },
-  protocolBtn: {
-    backgroundColor: "transparent",
-    border: "1px solid #d4ff00",
-    color: "#d4ff00",
-    fontSize: "0.6rem",
-    padding: "8px 12px",
-    cursor: "pointer",
-  },
-
-  gdprGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
-  gdprBtn: {
-    backgroundColor: "transparent",
-    border: "1px solid #333",
-    color: "#888",
-    fontSize: "0.6rem",
-    padding: "10px",
-    cursor: "pointer",
-  },
-  deleteBtn: {
-    backgroundColor: "transparent",
-    border: "1px solid #ff3e3e",
+  dangerTitle: {
     color: "#ff3e3e",
     fontSize: "0.6rem",
-    padding: "10px",
-    cursor: "pointer",
+    fontWeight: "bold",
+    marginBottom: "10px",
   },
-
-  backBtn: {
+  deleteBtn: {
     width: "100%",
     backgroundColor: "transparent",
-    color: "#444",
-    border: "none",
-    marginTop: "20px",
+    color: "#ff3e3e",
+    border: "1px solid #ff3e3e",
+    padding: "10px",
+    fontSize: "0.7rem",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+  gdprBtn: {
+    width: "100%",
+    backgroundColor: "transparent",
+    color: "#888",
+    border: "1px solid #333",
+    padding: "10px",
     fontSize: "0.7rem",
     cursor: "pointer",
   },
+
   loader: {
-    color: "#d4ff00",
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f0f",
+    backgroundColor: "#000",
+    color: "#d4ff00",
+    letterSpacing: "5px",
   },
 };
