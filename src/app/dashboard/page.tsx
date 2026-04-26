@@ -22,10 +22,7 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-      delayChildren: 0.3,
-    },
+    transition: { staggerChildren: 0.2, delayChildren: 0.3 },
   },
 };
 
@@ -59,9 +56,9 @@ export default function Home() {
     stats,
     lastUpdated,
     triggerGlitch,
+    isGlitching, // 👈 Ensure your useHomeLogic hook exports this boolean
   } = useHomeLogic(user);
 
-  // Updated Hero Style: Background image left blank (transparent/black)
   const heroDynamicStyle = {
     ...styles.heroSplit,
     display: "flex",
@@ -73,11 +70,7 @@ export default function Home() {
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    backgroundColor: "#000", // Blank slate for now
-    backgroundImage: "",
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
-    backgroundPositionY: `${scrollY * 0.3}px`,
+    backgroundColor: "#000",
   };
 
   return (
@@ -89,7 +82,6 @@ export default function Home() {
       />
       <Navbar onMenuClick={() => setIsDrawerOpen(true)} />
 
-      {/* HERO SECTION CONTAINER */}
       <motion.section
         variants={containerVariants}
         initial="hidden"
@@ -97,7 +89,39 @@ export default function Home() {
         onViewportEnter={triggerGlitch}
         style={heroDynamicStyle}
       >
-        {/* BRAND AREA: Logo + Tagline */}
+        {/* ⚡ GLITCH BACKGROUND IMAGE */}
+        <motion.div
+          animate={
+            isGlitching
+              ? {
+                  x: [-2, 2, -1, 3, 0],
+                  skewX: [0, -10, 10, -5, 0],
+                  filter: [
+                    "hue-rotate(0deg) brightness(1)",
+                    "hue-rotate(90deg) brightness(1.5)",
+                    "hue-rotate(-90deg) brightness(1.2)",
+                    "hue-rotate(0deg) brightness(1)",
+                  ],
+                }
+              : { x: 0, skewX: 0, filter: "hue-rotate(0deg) brightness(1)" }
+          }
+          transition={{ duration: 0.2, repeat: isGlitching ? Infinity : 0 }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundImage: "url('/assets/images/cyber-punk-prx-logo.png')", // 👈 Your Hero Image path
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundPositionY: `${scrollY * 0.3}px`,
+            zIndex: 0,
+            opacity: 1.6, // Slight transparency for the "cyber" look
+          }}
+        />
+
+        {/* BRAND AREA */}
         <div
           style={{
             zIndex: 2,
@@ -108,11 +132,10 @@ export default function Home() {
             width: "100%",
             paddingLeft: isMobile ? "0" : "5vw",
             position: isMobile ? "relative" : "absolute",
-            top: isMobile ? "0" : "150px",
+            top: isMobile ? "0" : "100px",
             left: 0,
           }}
         >
-          {/* TAGLINE */}
           <motion.h2
             variants={itemLeftVariants}
             style={{
@@ -129,28 +152,27 @@ export default function Home() {
             BEYOND THE <span style={{ color: "#d4ff00" }}>MILE</span>
           </motion.h2>
 
-          {/* BRAND LOGO */}
           <motion.div variants={itemLeftVariants}>
-            <img
+            {/*  <img
               src="/assets/images/cyber-punk-prx-logo.png"
-              alt="ePRX Cyber-punk Logo"
+              alt="ePRX Logo"
               style={{
                 width: isMobile ? "85vw" : "55vw",
                 maxWidth: "950px",
                 height: "auto",
                 objectFit: "contain",
               }}
-            />
+            /> */}
           </motion.div>
         </div>
 
-        {/* CHART AREA (Pops in from the right) */}
+        {/* CHART AREA */}
         <motion.div
           variants={itemRightVariants}
           style={{
             position: isMobile ? "relative" : ("absolute" as any),
-            top: isMobile ? "0" : "220px",
-            right: isMobile ? "0" : "12vw",
+            top: isMobile ? "0" : "100px",
+            right: isMobile ? "0" : "4vw",
             width: isMobile ? "90%" : "22vw",
             maxWidth: isMobile ? "100%" : "380px",
             zIndex: 3,
@@ -166,7 +188,7 @@ export default function Home() {
           />
         </motion.div>
 
-        {/* OPTIONAL: Hero Background Overlay for better text readability later */}
+        {/* OVERLAY */}
         <div
           style={{
             position: "absolute",
@@ -175,14 +197,13 @@ export default function Home() {
             right: 0,
             bottom: 0,
             background:
-              "linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 100%)",
+              "linear-gradient(to right, rgba(0,0,0,0.9) 0%, transparent 100%)",
             zIndex: 1,
             pointerEvents: "none",
           }}
         />
       </motion.section>
 
-      {/* MODULAR SECTIONS */}
       <Pillar />
       <MobileEcosystem />
       <Archive />
