@@ -426,7 +426,7 @@ export default function ProfilePage() {
               marginTop: isMobile ? "20px" : "0",
             }}
           >
-            <h3 style={styles.sectionTitle}>|| MISSION_LOG_HISTORY</h3>
+            <h3 style={styles.sectionTitle}>|| LOG HISTORY</h3>
             <ActivityLog activities={activities} />
           </div>
         </div>

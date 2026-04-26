@@ -56,7 +56,7 @@ export default function Home() {
     stats,
     lastUpdated,
     triggerGlitch,
-    isGlitching, // 👈 Ensure your useHomeLogic hook exports this boolean
+    isGlitching,
   } = useHomeLogic(user);
 
   const heroDynamicStyle = {
@@ -89,35 +89,39 @@ export default function Home() {
         onViewportEnter={triggerGlitch}
         style={heroDynamicStyle}
       >
-        {/* ⚡ GLITCH BACKGROUND IMAGE */}
+        {/* ⚡ ONE-TIME GLITCH BACKGROUND IMAGE */}
         <motion.div
           animate={
             isGlitching
               ? {
-                  x: [-2, 2, -1, 3, 0],
-                  skewX: [0, -10, 10, -5, 0],
+                  x: [-10, 10, -5, 5, 0],
+                  skewX: [0, -15, 15, -5, 0],
                   filter: [
-                    "hue-rotate(0deg) brightness(1)",
-                    "hue-rotate(90deg) brightness(1.5)",
-                    "hue-rotate(-90deg) brightness(1.2)",
-                    "hue-rotate(0deg) brightness(1)",
+                    "hue-rotate(0deg) brightness(1) contrast(1)",
+                    "hue-rotate(90deg) brightness(1.5) contrast(1.2)",
+                    "hue-rotate(-90deg) brightness(1.2) contrast(1.1)",
+                    "hue-rotate(0deg) brightness(1) contrast(1)",
                   ],
                 }
               : { x: 0, skewX: 0, filter: "hue-rotate(0deg) brightness(1)" }
           }
-          transition={{ duration: 0.2, repeat: isGlitching ? Infinity : 0 }}
+          transition={{
+            duration: 0.4,
+            repeat: 0, // Strictly non-looping
+            ease: "linear",
+          }}
           style={{
             position: "absolute",
             top: 0,
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundImage: "url('/assets/images/cyber-punk-prx-logo.png')", // 👈 Your Hero Image path
+            backgroundImage: "url('/assets/images/cyber-punk-prx-logo.png')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundPositionY: `${scrollY * 0.3}px`,
             zIndex: 0,
-            opacity: 1.6, // Slight transparency for the "cyber" look
+            opacity: 1.6, // Reduced from 1.6 to maintain background status
           }}
         />
 
@@ -140,10 +144,10 @@ export default function Home() {
             variants={itemLeftVariants}
             style={{
               ...styles.heroTagline,
-              fontSize: isMobile ? "0.7rem" : "3rem",
+              fontSize: isMobile ? "0.8rem" : "3rem",
               letterSpacing: isMobile ? "4px" : "8px",
               textAlign: isMobile ? "center" : "left",
-              margin: isMobile ? "0 0 10px 0" : "0 0 -60px 50px",
+              margin: isMobile ? "0 0 10px 0" : "0 0 -40px 50px",
               zIndex: 3,
               color: "#fff",
               textTransform: "uppercase",
@@ -152,17 +156,14 @@ export default function Home() {
             BEYOND THE <span style={{ color: "#d4ff00" }}>MILE</span>
           </motion.h2>
 
-          <motion.div variants={itemLeftVariants}>
-            {/*  <img
-              src="/assets/images/cyber-punk-prx-logo.png"
-              alt="ePRX Logo"
-              style={{
-                width: isMobile ? "85vw" : "55vw",
-                maxWidth: "950px",
-                height: "auto",
-                objectFit: "contain",
-              }}
-            /> */}
+          <motion.div
+            variants={itemLeftVariants}
+            style={{
+              opacity: isGlitching ? 0.8 : 1, // Subtle interaction with the glitch
+              transition: "opacity 0.2s",
+            }}
+          >
+            {/* Logo image can be restored here if needed outside the background */}
           </motion.div>
         </div>
 
@@ -170,11 +171,11 @@ export default function Home() {
         <motion.div
           variants={itemRightVariants}
           style={{
-            position: isMobile ? "relative" : ("absolute" as any),
-            top: isMobile ? "0" : "100px",
-            right: isMobile ? "0" : "4vw",
-            width: isMobile ? "90%" : "22vw",
-            maxWidth: isMobile ? "100%" : "380px",
+            position: isMobile ? "relative" : "absolute",
+            top: isMobile ? "0" : "110px",
+            right: isMobile ? "0" : "3vw",
+            width: isMobile ? "90%" : "25vw",
+            maxWidth: "400px",
             zIndex: 3,
             marginTop: isMobile ? "40px" : "0",
           }}
@@ -188,7 +189,7 @@ export default function Home() {
           />
         </motion.div>
 
-        {/* OVERLAY */}
+        {/* OVERLAY: Gradients for depth */}
         <div
           style={{
             position: "absolute",
@@ -197,7 +198,7 @@ export default function Home() {
             right: 0,
             bottom: 0,
             background:
-              "linear-gradient(to right, rgba(0,0,0,0.9) 0%, transparent 100%)",
+              "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 100%)",
             zIndex: 1,
             pointerEvents: "none",
           }}

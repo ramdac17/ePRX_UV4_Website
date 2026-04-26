@@ -41,7 +41,7 @@ export default function CentralArchivePage() {
           <h1 style={styles.title}>
             CENTRAL <span style={{ color: "#d4ff00" }}>ARCHIVE</span>
           </h1>
-          <p style={styles.subtitle}>HISTORY_OF_ALL_ACTIVE_MISSIONS</p>
+          <p style={styles.subtitle}>HISTORY OF ALL ACTIVITIES</p>
         </div>
 
         <ActivityLog activities={activities} />
