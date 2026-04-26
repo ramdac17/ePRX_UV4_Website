@@ -21,8 +21,21 @@ type UserProfile = {
   image?: string;
 };
 
+// 🛰️ Hook for Responsive Inline Styles
+function useWindowSize() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  return isMobile;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
+  const isMobile = useWindowSize();
   const {
     user: authUser,
     token,
@@ -52,7 +65,10 @@ export default function ProfilePage() {
   const [toastType, setToastType] = useState<"success" | "error">("success");
 
   const [showPasswordFields, setShowPasswordFields] = useState(false);
-  const [passwords, setPasswords] = useState({ old: "", new: "" });
+  const [passwords, setPasswords] = useState({
+    currentPassword: "",
+    newPassword: "",
+  });
 
   const notify = (msg: string, type: "success" | "error" = "success") => {
     setToastMsg(msg);
@@ -65,7 +81,8 @@ export default function ProfilePage() {
       setLoading(true);
       try {
         const [profileRes, activityRes] = await Promise.all([
-          axios.get(`${API_URL}/user/profile?id=${userId}`, {
+          axios.get(`${API_URL}/auth/profile`, {
+            // 👈 Aligned with AuthController
             headers: { Authorization: `Bearer ${currentToken}` },
           }),
           axios.get(`${API_URL}/activities/user/${userId}`, {
@@ -101,10 +118,7 @@ export default function ProfilePage() {
       setIsEditing(true);
       return;
     }
-
     const currentToken = token ?? "";
-    if (!user.id || !currentToken) return;
-
     setSaving(true);
     try {
       const formData = new FormData();
@@ -112,24 +126,15 @@ export default function ProfilePage() {
       formData.append("lastName", user.lastName);
       formData.append("username", user.username);
       formData.append("mobile", user.mobile);
-      // Email is usually read-only in many systems, but we append it if your DB allows updates
-      formData.append("email", user.email);
+      if (selectedFile) formData.append("file", selectedFile);
 
-      if (selectedFile) {
-        formData.append("file", selectedFile);
-      }
-
-      // We use the upload-image endpoint because it handles the multipart logic for both text and file
-      const res = await axios.post(
-        `${API_URL}/user/${user.id}/upload-image`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-            "Content-Type": "multipart/form-data",
-          },
+      // 🛰️ Hit upload-avatar in Auth Controller
+      const res = await axios.post(`${API_URL}/auth/upload-avatar`, formData, {
+        headers: {
+          Authorization: `Bearer ${currentToken}`,
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
 
       login(
         { ...authUser!, ...user, image: res.data.image || user.image },
@@ -139,8 +144,7 @@ export default function ProfilePage() {
       setSelectedFile(null);
       setIsEditing(false);
     } catch (err: any) {
-      const msg = err.response?.data?.message || "UPDATE_FAILED";
-      notify(msg, "error");
+      notify(err.response?.data?.message || "UPDATE_FAILED", "error");
     } finally {
       setSaving(false);
     }
@@ -148,17 +152,20 @@ export default function ProfilePage() {
 
   const handlePasswordChange = async () => {
     const currentToken = token ?? "";
-    if (!passwords.old || !passwords.new)
+    if (!passwords.currentPassword || !passwords.newPassword)
       return notify("FILL_ALL_FIELDS", "error");
+
     try {
-      await axios.patch(`${API_URL}/user/change-password`, passwords, {
+      // 🛡️ Aligned with AuthController POST /auth/change-password
+      await axios.post(`${API_URL}/auth/change-password`, passwords, {
         headers: { Authorization: `Bearer ${currentToken}` },
       });
       notify("PASSWORD_ENCRYPTION_UPDATED");
-      setPasswords({ old: "", new: "" });
+      setPasswords({ currentPassword: "", newPassword: "" });
       setShowPasswordFields(false);
-    } catch {
-      notify("PASSWORD_CHANGE_REJECTED", "error");
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || "CHANGE_REJECTED";
+      notify(errorMsg, "error");
     }
   };
 
@@ -201,9 +208,19 @@ export default function ProfilePage() {
 
   return (
     <AuthGuard>
-      <div style={styles.container}>
+      <div
+        style={{
+          ...styles.container,
+          padding: isMobile ? "80px 20px" : "100px 40px",
+        }}
+      >
         <div style={styles.titleContainer}>
-          <h1 style={styles.title}>
+          <h1
+            style={{
+              ...styles.title,
+              fontSize: isMobile ? "2.5rem" : "3.5rem",
+            }}
+          >
             USER <span style={{ color: "#d4ff00" }}>PROFILE</span>
           </h1>
           <p style={styles.subtitle}>
@@ -211,8 +228,18 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <div style={styles.mainLayout}>
-          <div style={styles.leftColumn}>
+        <div
+          style={{
+            ...styles.mainLayout,
+            gridTemplateColumns: isMobile ? "1fr" : "450px 1fr",
+          }}
+        >
+          <div
+            style={{
+              ...styles.leftColumn,
+              position: isMobile ? "static" : "sticky",
+            }}
+          >
             <div style={styles.card}>
               <div style={styles.imageSection}>
                 <div style={styles.avatarCircle}>
@@ -249,7 +276,6 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {/* Editable Fields */}
               <div style={styles.inputGroup}>
                 <label style={styles.label}>USER NAME</label>
                 <input
@@ -262,7 +288,13 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div style={styles.grid}>
+              <div
+                style={{
+                  ...styles.grid,
+                  flexDirection: isMobile ? "column" : "row",
+                  gap: isMobile ? "0" : "20px",
+                }}
+              >
                 <div style={styles.inputGroup}>
                   <label style={styles.label}>FIRST NAME</label>
                   <input
@@ -287,7 +319,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Mobile and Email Fields */}
               <div style={styles.inputGroup}>
                 <label style={styles.label}>MOBILE NUMBER</label>
                 <input
@@ -339,10 +370,13 @@ export default function ProfilePage() {
                   <div style={{ marginBottom: 15 }}>
                     <input
                       type="password"
-                      placeholder="OLD PASSWORD"
+                      placeholder="CURRENT PASSWORD"
                       style={styles.input}
                       onChange={(e) =>
-                        setPasswords({ ...passwords, old: e.target.value })
+                        setPasswords({
+                          ...passwords,
+                          currentPassword: e.target.value,
+                        })
                       }
                     />
                     <input
@@ -350,7 +384,10 @@ export default function ProfilePage() {
                       placeholder="NEW PASSWORD"
                       style={styles.input}
                       onChange={(e) =>
-                        setPasswords({ ...passwords, new: e.target.value })
+                        setPasswords({
+                          ...passwords,
+                          newPassword: e.target.value,
+                        })
                       }
                     />
                     <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
@@ -370,7 +407,7 @@ export default function ProfilePage() {
                   </div>
                 )}
                 <button onClick={downloadData} style={styles.secBtn}>
-                  DOWNLOAD MY DATA (JSON)
+                  DOWNLOAD DATA (JSON)
                 </button>
                 <button onClick={deleteAccount} style={styles.dangerBtn}>
                   DELETE ACCOUNT
@@ -383,7 +420,12 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div style={styles.rightColumn}>
+          <div
+            style={{
+              ...styles.rightColumn,
+              marginTop: isMobile ? "20px" : "0",
+            }}
+          >
             <h3 style={styles.sectionTitle}>|| MISSION_LOG_HISTORY</h3>
             <ActivityLog activities={activities} />
           </div>
@@ -401,15 +443,10 @@ export default function ProfilePage() {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    backgroundColor: "#000",
-    minHeight: "100vh",
-    padding: "100px 40px 40px 40px",
-  },
+  container: { backgroundColor: "#000", minHeight: "100vh" },
   titleContainer: { textAlign: "center", marginBottom: "50px" },
   title: {
     fontFamily: "var(--font-bebas)",
-    fontSize: "3.5rem",
     letterSpacing: "4px",
     color: "#fff",
     margin: 0,
@@ -417,12 +454,11 @@ const styles: { [key: string]: React.CSSProperties } = {
   subtitle: { fontSize: "0.65rem", color: "#444", letterSpacing: "3px" },
   mainLayout: {
     display: "grid",
-    gridTemplateColumns: "450px 1fr",
     gap: "40px",
     maxWidth: "1400px",
     margin: "0 auto",
   },
-  leftColumn: { position: "sticky", top: "100px", height: "fit-content" },
+  leftColumn: { top: "100px", height: "fit-content" },
   card: {
     backgroundColor: "#111",
     padding: "30px",
@@ -454,7 +490,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "6px 14px",
     marginTop: "10px",
   },
-  grid: { display: "flex", gap: "20px" },
+  grid: { display: "flex" },
   inputGroup: {
     display: "flex",
     flexDirection: "column",
