@@ -43,8 +43,8 @@ const ResetForm = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      triggerToast("SECURITY ERROR: PASSWORD TOO WEAK (MIN 6 CHARS)");
+    if (newPassword.length < 8) {
+      triggerToast("SECURITY ERROR: PASSWORD TOO WEAK (MIN 8 CHARS)");
       return;
     }
 
@@ -57,7 +57,6 @@ const ResetForm = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email, // AuthService expects this
             token,
             newPassword,
           }),
@@ -96,7 +95,7 @@ const ResetForm = () => {
               OVERRIDE <span className="text-eprx-lime">SECURITY</span>
             </h1>
             <p className="text-[0.7rem] text-[#666] tracking-wider uppercase leading-relaxed font-inter">
-              Establishing new encrypted credentials for {email || "RUNNER_ID"}.
+              Establishing new encrypted credentials for {email || "RUNNER ID"}.
             </p>
           </header>
 
