@@ -46,6 +46,7 @@ const PillarsPage = () => {
                   border: isHovered ? "1px solid #d4ff00" : "1px solid #1a1a1a",
                   overflow: "hidden",
                   textDecoration: "none",
+                  backgroundColor: "#000", // Solid base for image depth
                 }}
               >
                 <div
@@ -56,16 +57,17 @@ const PillarsPage = () => {
                     backgroundPosition: "center",
                     transition: "all 0.6s ease",
                     transform: isHovered ? "scale(1.1)" : "scale(1)",
+                    /* REMOVED GRAYSCALE: Initial state is now full color */
                     filter: isHovered
-                      ? "grayscale(0%) brightness(1)"
-                      : "grayscale(100%) brightness(0.6)",
+                      ? "brightness(1.1)" // Slight pop on hover
+                      : "brightness(0.8)", // Clean, high-contrast look
                   }}
                 />
                 <div style={styles.pillarContent}>
                   <span
                     style={{
                       ...styles.cardNum,
-                      color: isHovered ? "#d4ff00" : "#444",
+                      color: isHovered ? "#d4ff00" : "#666", // Slightly brighter base for readability
                       transition: "color 0.3s ease",
                     }}
                   >
@@ -76,6 +78,7 @@ const PillarsPage = () => {
                       ...styles.cardTitle,
                       color: isHovered ? "#d4ff00" : "#fff",
                       transition: "color 0.3s ease",
+                      textShadow: "0px 2px 10px rgba(0,0,0,0.8)", // Better legibility over colored images
                     }}
                   >
                     {pillar.name}

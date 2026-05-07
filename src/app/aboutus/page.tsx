@@ -9,13 +9,13 @@ export default function AboutPage() {
       id: "01",
       title: "THE MISSION",
       content:
-        "PRX.com (PINOY RUNNER EXTREME) IS ENGINEERED TO BRIDGE THE GAP BETWEEN ARCHAIZED DATA SYSTEMS AND THE FUTURE OF SECURE DIGITAL INTERACTION.",
+        "PRXph.com (PINOY RUNNER EXTREME) IS ENGINEERED TO BRIDGE THE GAP BETWEEN ARCHAIZED DATA SYSTEMS AND THE FUTURE OF SECURE DIGITAL INTERACTION.",
     },
     {
       id: "02",
       title: "THE TECH",
       content:
-        "BUILT ON A FOUNDATION OF NEXT-GEN REACT ARCHITECTURE AND POSTGRESQL CORE, PRX.com SYSTEM ENSURES SUB-MILLISECOND LATENCY.",
+        "BUILT ON A FOUNDATION OF NEXT-GEN REACT ARCHITECTURE AND POSTGRESQL CORE, PRXph.com SYSTEM ENSURES SUB-MILLISECOND LATENCY.",
     },
     {
       id: "03",
@@ -34,10 +34,41 @@ export default function AboutPage() {
     },
   ];
 
+  const history = [
+    {
+      year: "2013",
+      title: "OUR HUMBLE BEGINNING",
+      content:
+        "PRX (or formerly known as PRE) was officially founded in 2013. The idea and foundation were built on the pavement of UP Diliman where admins decided to pursue the project. In these early days, the mission was simple: movement, community, and the burning desire to reach the 'extra mile.'",
+    },
+    {
+      year: "2014",
+      title: "THE 'FUN RUN' ERA",
+      content:
+        "The group quickly moved beyond local training sessions and began joining various fun runs across different locations, spanning the metro and beyond. This active participation wasn't just about medals—it was about establishing a presence and testing the limits of the collective.",
+    },
+    {
+      year: "2015",
+      title: "DIGITAL GROWTH & THE FB COMMUNITY",
+      content:
+        "As the group’s reputation grew, so did its digital footprint. The community expanded gradually, attracting individuals to join the official Facebook page, pinoyrunnerextreme. This platform served as the primary repository for race photos, training tips, and community engagement, solidifying the group as a small player in the local running community.",
+    },
+    {
+      year: "2000",
+      title: "THE IDENTITY SHIFT: FROM PRE TO PRX",
+      content:
+        "For many years, the group was known by the acronym PRE (Pinoy Runner Extreme). However, as the vision for the brand evolved toward a more sophisticated, tech-driven aesthetic, the administration made a strategic decision to pivot. The shift to PRX was implemented to align with the cyber-minimalist design of the main website. This wasn't just a name change—it was a total rebranding to match a future-facing philosophy where athletic performance meets digital precision.",
+    },
+    {
+      year: "2026",
+      title: "HIATUS & THE VISTA REBIRTH",
+      content:
+        "Every great project requires a period of recalibration. PRX entered a hiatus for a significant period, stepping back from the public eye to restructure and innovate. Today, the brand has returned with the PRX structure fully realized—headlined by the ePRX UV (Unified Version) framework. The new era of PRX is no longer just about running; it is about an integrated lifestyle of FUEL, GEAR, and MIND, optimized for peak performance in the modern age.",
+    },
+  ];
+
   return (
-    /* Use the global background variable and Inter font */
     <div className="bg-background min-h-screen flex flex-col justify-center items-center px-[5%] py-16 text-white font-inter">
-      {/* Brand & Header */}
       <div className="text-center mb-12">
         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 mt-10 border-2 border-eprx-lime overflow-hidden shadow-[0_0_20px_rgba(212,255,0,0.3)]">
           <img
@@ -47,7 +78,6 @@ export default function AboutPage() {
           />
         </div>
 
-        {/* Header Section */}
         <header className="mb-20 flex flex-col items-center text-center">
           <motion.span
             initial={{ opacity: 0 }}
@@ -70,7 +100,7 @@ export default function AboutPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-3xl"
+            className="w-full max-w-3xl mb-16"
           >
             <div className="relative border border-[#1a1a1a] p-1 bg-[#080808]">
               <img
@@ -80,18 +110,43 @@ export default function AboutPage() {
               />
               <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-[#050505] pointer-events-none" />
             </div>
-            <p className="text-[0.75rem] leading-relaxed text-[#666] mt-8 text-left tracking-wide border-l border-eprx-lime pl-4">
-              <span className="text-eprx-lime font-bold">
-                PINOY RUNNER EXTREME
-              </span>{" "}
-              - A proactive community dedicated to fostering consistency,
-              discipline, and wellness. Keep running, stay strong!
-            </p>
           </motion.div>
+
+          {/* NEW HISTORY SECTION */}
+          <div className="w-full max-w-3xl text-left">
+            <h2 className="font-bebas text-3xl text-eprx-lime mb-4 tracking-wider">
+              THE EVOLUTION OF PERFORMANCE: A HISTORY OF PRX
+            </h2>
+            <p className="text-[0.9rem] leading-relaxed text-[#888] mb-12 border-l border-eprx-lime pl-6 italic">
+              The trajectory of PRX is a journey from local grassroots running
+              to a high-tech, cyber-minimalist ecosystem. What started as a
+              collective of athletes in the northern district of Manila has
+              transformed into the digital-first architecture you see today.
+            </p>
+
+            <div className="space-y-12">
+              {history.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="relative pl-8 border-l border-[#1a1a1a]"
+                >
+                  <div className="absolute -left-1.25 top-0 w-2 h-2 bg-eprx-lime rounded-full shadow-[0_0_8px_#d4ff00]" />
+                  <span className="text-[0.6rem] font-bold text-eprx-lime tracking-[3px] block mb-2 opacity-50">
+                    {item.year}
+                  </span>
+                  <h3 className="font-bebas text-2xl text-white tracking-widest mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-[0.85rem] leading-relaxed text-[#666]">
+                    {item.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </header>
 
-        {/* Grid Section - Using our 'reveal' class from globals.css */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-24 max-w-6xl">
           {sections.map((section, i) => (
             <div
               key={section.id}
@@ -110,8 +165,7 @@ export default function AboutPage() {
           ))}
         </div>
 
-        {/* Admin Section */}
-        <section className="border-t border-[#111] pt-20 mb-24">
+        <section className="border-t border-[#111] pt-20 mb-24 max-w-6xl mx-auto">
           <h2 className="text-[0.65rem] tracking-[4px] text-[#333] text-center mb-16">
             <span className="text-eprx-lime">|</span> OPERATOR LOGS || MEET THE
             ADMINS
@@ -154,26 +208,6 @@ export default function AboutPage() {
             ))}
           </div>
         </section>
-
-        {/* Footer Specs */}
-        <footer className="flex flex-wrap justify-between border-t border-[#111] pt-8 gap-5 pb-10">
-          {["UPTIME", "PROTOCOL", "STATUS"].map((label) => (
-            <div key={label} className="flex flex-col gap-1">
-              <span className="text-[0.5rem] text-[#333] tracking-[2px]">
-                {label}
-              </span>
-              <span
-                className={`text-[0.7rem] tracking-widest font-bold ${label === "STATUS" ? "text-eprx-lime" : "text-white"}`}
-              >
-                {label === "UPTIME"
-                  ? "99.99%"
-                  : label === "PROTOCOL"
-                    ? "SECURE/UPLINK"
-                    : "OPERATIONAL"}
-              </span>
-            </div>
-          ))}
-        </footer>
       </div>
     </div>
   );

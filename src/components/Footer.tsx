@@ -33,8 +33,12 @@ export default function Footer() {
         {/* Left: Branding */}
         <div style={dynamicContainer as any}>
           <div style={styles.brandSection}>
-            <span style={styles.brand}>PRX - PINOY RUNNER EXTREME</span>
-            <span style={styles.copyright}>© 2026 || ALL RIGHTS RESERVED</span>
+            <span style={styles.brand}>
+              PRX - PINOY RUNNER EXTREME{" "}
+              <span style={styles.copyright}>
+                © 2026 || ALL RIGHTS RESERVED
+              </span>
+            </span>
           </div>
 
           {/* Center: Navigation Links */}
@@ -84,16 +88,6 @@ export default function Footer() {
             </button>
 
             <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.socialLink}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4ff00")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#888")}
-            >
-              <Twitter size={18} />
-            </a>
-            <a
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
@@ -106,16 +100,6 @@ export default function Footer() {
           </div>
 
           {/* Right: System Status */}
-          <div style={styles.statusSection}>
-            <div style={styles.statusGroup}>
-              <span style={styles.statusLabel}>LATENCY</span>
-              <span style={styles.statusValue}>12MS</span>
-            </div>
-            <div style={styles.statusGroup}>
-              <span style={styles.statusLabel}>ENCRYPTION</span>
-              <span style={styles.statusValue}>ACTIVE</span>
-            </div>
-          </div>
         </div>
       </div>
     </footer>

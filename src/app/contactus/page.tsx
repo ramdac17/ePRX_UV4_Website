@@ -80,7 +80,7 @@ export default function ContactPage() {
               <p className="text-[0.85rem] leading-relaxed text-[#888] font-light">
                 For any concern, inquiry or suggestion, please fill out the form
                 and we will get back to you as soon as possible. Thank you for
-                supporting the community!
+                supporting PRX community!
               </p>
             </div>
 
@@ -142,7 +142,7 @@ export default function ContactPage() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="OPERATOR NAME"
+                placeholder="YOUR NAME"
                 className="bg-transparent border-b border-[#222] py-2 text-white outline-none focus:border-eprx-lime transition-colors text-sm"
               />
             </div>
@@ -157,7 +157,7 @@ export default function ContactPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="UPLINK@DOMAIN.COM"
+                placeholder="USEREMAIL@DOMAIN.COM"
                 className="bg-transparent border-b border-[#222] py-2 text-white outline-none focus:border-eprx-lime transition-colors text-sm"
               />
             </div>
@@ -171,7 +171,7 @@ export default function ContactPage() {
                 required
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="ENTER MESSAGE..."
+                placeholder="PLEASE TYPE YOUR MESSAGE..."
                 rows={4}
                 className="bg-[#050505] border border-[#222] p-4 text-white outline-none focus:border-eprx-lime transition-colors text-sm resize-none font-inter"
               />
@@ -182,7 +182,7 @@ export default function ContactPage() {
               whileTap={{ scale: 0.98 }}
               disabled={status !== "IDLE"}
               className={`mt-4 py-4 font-bebas text-xl tracking-[4px] transition-all duration-300 disabled:opacity-50 ${
-                status === "LINK_ESTABLISHED"
+                status === "LINK ESTABLISHED"
                   ? "bg-white text-black"
                   : "bg-eprx-lime text-black"
               }`}

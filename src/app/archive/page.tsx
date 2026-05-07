@@ -20,6 +20,8 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /* Added hover state tracking */
+  const [hoveredIndex, setHoveredIndex] = useState<string | null>(null);
 
   const STATIC_URL = process.env.NEXT_PUBLIC_STATIC_URL || "";
   const FALLBACK_IMAGE = "/assets/images/comingSoon.jpg";
@@ -63,7 +65,6 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
   return (
     <Container style={isSection ? {} : styles.pageContainer}>
       <section style={styles.archiveSection}>
-        {/* SHARED HEADER FROM MOBILE ECOSYSTEM FOR CONSISTENCY */}
         <div style={mobileStyles.headerStack}>
           <h2 style={mobileStyles.mobileTitle}>
             <span style={mobileStyles.sectionNum}>|| PRX REPOSITORY</span>
@@ -81,44 +82,88 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
           ) : error ? (
             <div style={{ ...placeholderStyle, color: "#ff4444" }}>{error}</div>
           ) : articles.length > 0 ? (
-            articles.map((post) => (
-              <Link
-                key={post.id}
-                href={`/article/${post.id}`}
-                style={styles.articleCard}
-                className="article-card-hover"
-              >
-                {/* LANDSCAPE IMAGE CONTAINER */}
-                <div style={landscapeImageWrapper}>
-                  <img
-                    src={resolveImage(post.image)}
-                    alt={post.title}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover", // Change to "cover" for full landscape impact
-                      transition: "transform 0.6s ease",
-                    }}
-                    loading="lazy"
-                    onError={(e) => (e.currentTarget.src = FALLBACK_IMAGE)}
-                  />
-                  <div style={landscapeOverlay} />
-                </div>
+            articles.map((post) => {
+              const isHovered = hoveredIndex === post.id;
 
-                <div style={styles.articleContent}>
-                  <span style={styles.volTag}>
-                    {post.category.toUpperCase().slice(0, 10)}
-                  </span>
-                  <h3 style={styles.articleTitle}>
-                    {post.title.toUpperCase()}
-                  </h3>
-                  <div style={cardFooterDecoration} />
-                  <div>
-                    <span style={styles.volTag}>READ DETAILS</span>
+              return (
+                <Link
+                  key={post.id}
+                  href={`/article/${post.id}`}
+                  onMouseEnter={() => setHoveredIndex(post.id)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  style={{
+                    ...styles.articleCard,
+                    transition: "all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)",
+                    transform: isHovered ? "translateY(-8px)" : "translateY(0)",
+                    border: isHovered
+                      ? "1px solid #d4ff00"
+                      : "1px solid #1a1a1a",
+                    textDecoration: "none",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div style={landscapeImageWrapper}>
+                    <img
+                      src={resolveImage(post.image)}
+                      alt={post.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transition: "all 0.6s ease",
+                        /* REMOVED GRAYSCALE - Using brightness shift for depth */
+                        filter: isHovered
+                          ? "brightness(1.1)"
+                          : "brightness(0.8)",
+                        transform: isHovered ? "scale(1.05)" : "scale(1)",
+                      }}
+                      loading="lazy"
+                      onError={(e) => (e.currentTarget.src = FALLBACK_IMAGE)}
+                    />
+                    <div style={landscapeOverlay} />
                   </div>
-                </div>
-              </Link>
-            ))
+
+                  <div style={styles.articleContent}>
+                    <span
+                      style={{
+                        ...styles.volTag,
+                        color: isHovered ? "#d4ff00" : "#666",
+                        transition: "color 0.3s ease",
+                      }}
+                    >
+                      {post.category.toUpperCase().slice(0, 10)}
+                    </span>
+                    <h3
+                      style={{
+                        ...styles.articleTitle,
+                        color: isHovered ? "#d4ff00" : "#fff",
+                        transition: "color 0.3s ease",
+                      }}
+                    >
+                      {post.title.toUpperCase()}
+                    </h3>
+                    <div
+                      style={{
+                        ...cardFooterDecoration,
+                        backgroundColor: isHovered ? "#d4ff00" : "#333",
+                        width: isHovered ? "45px" : "30px",
+                        transition: "all 0.3s ease",
+                      }}
+                    />
+                    <div style={{ marginTop: "15px" }}>
+                      <span
+                        style={{
+                          ...styles.volTag,
+                          color: isHovered ? "#fff" : "#444",
+                        }}
+                      >
+                        READ DETAILS
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })
           ) : (
             <div style={placeholderStyle}>NO RECORDS FOUND IN SECTOR.</div>
           )}
@@ -128,11 +173,11 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
   );
 };
 
-// --- INTERNAL STYLES FOR LANDSCAPE REFACTOR ---
+// --- STYLES RETAINED FROM YOUR CONFIG ---
 
 const landscapeImageWrapper: React.CSSProperties = {
   width: "100%",
-  aspectRatio: "16 / 9", // FORCES LANDSCAPE
+  aspectRatio: "16 / 9",
   overflow: "hidden",
   backgroundColor: "#050505",
   position: "relative",
@@ -148,9 +193,7 @@ const landscapeOverlay: React.CSSProperties = {
 };
 
 const cardFooterDecoration: React.CSSProperties = {
-  width: "30px",
   height: "2px",
-  backgroundColor: "#d4ff00",
   marginTop: "15px",
 };
 

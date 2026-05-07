@@ -35,12 +35,12 @@ const itemLeftVariants: Variants = {
   },
 };
 
+// Cleaned up: Removed blur(10px) and blur(0px)
 const itemRightVariants: Variants = {
-  hidden: { opacity: 0, x: 50, filter: "blur(10px)" },
+  hidden: { opacity: 0, x: 50 },
   visible: {
     opacity: 1,
     x: 0,
-    filter: "blur(0px)",
     transition: { duration: 1, ease: "easeOut" },
   },
 };
@@ -59,14 +59,14 @@ export default function Home() {
     isGlitching,
   } = useHomeLogic(user);
 
-  const heroDynamicStyle = {
+  const heroDynamicStyle: React.CSSProperties = {
     ...styles.heroSplit,
     display: "flex",
-    flexDirection: "column" as any,
+    flexDirection: "column",
     height: "100vh",
     minHeight: isMobile ? "800px" : "100vh",
     paddingTop: "80px",
-    position: "relative" as any,
+    position: "relative",
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -107,7 +107,7 @@ export default function Home() {
           }
           transition={{
             duration: 0.4,
-            repeat: 0, // Strictly non-looping
+            repeat: 0,
             ease: "linear",
           }}
           style={{
@@ -121,7 +121,7 @@ export default function Home() {
             backgroundPosition: "center",
             backgroundPositionY: `${scrollY * 0.3}px`,
             zIndex: 0,
-            opacity: 1.6, // Reduced from 1.6 to maintain background status
+            opacity: 1.6,
           }}
         />
 
@@ -159,12 +159,10 @@ export default function Home() {
           <motion.div
             variants={itemLeftVariants}
             style={{
-              opacity: isGlitching ? 0.8 : 1, // Subtle interaction with the glitch
+              opacity: isGlitching ? 0.8 : 1,
               transition: "opacity 0.2s",
             }}
-          >
-            {/* Logo image can be restored here if needed outside the background */}
-          </motion.div>
+          />
         </div>
 
         {/* CHART AREA */}
