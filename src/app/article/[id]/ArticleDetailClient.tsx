@@ -27,11 +27,32 @@ export default function ArticleDetailClient({ id }: { id: string }) {
   const STATIC_URL =
     BACKEND_API?.replace("/api", "") || "http://localhost:3001";
 
-  const shareToFacebook = () => {
+  const shareToFacebook = async () => {
     if (!article) return;
     const url = window.location.href;
+    const title = article.title;
+
+    // 1. Check if the browser supports the native Share API (Works on iOS Chrome/Safari)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          url: url,
+        });
+        return; // Exit if successful
+      } catch (err) {
+        // If user cancels, we don't need to do anything
+        if (err instanceof Error && err.name === "AbortError") return;
+        // Otherwise, fall back to the old method below
+      }
+    }
+
+    // 2. Fallback for Desktop or browsers that don't support navigator.share
     const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-    window.open(fbUrl, "_blank", "width=600,height=400");
+
+    // On iOS Chrome, window.open with dimensions (width/height) often triggers the flicker.
+    // Using a simple _blank target is much safer.
+    window.open(fbUrl, "_blank");
   };
 
   useEffect(() => {
