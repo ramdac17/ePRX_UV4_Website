@@ -27,32 +27,34 @@ export default function ArticleDetailClient({ id }: { id: string }) {
   const STATIC_URL =
     BACKEND_API?.replace("/api", "") || "http://localhost:3001";
 
-  const shareToFacebook = async () => {
+  // Refactored Share Logic
+  const handleShare = async (e: React.MouseEvent) => {
     if (!article) return;
     const url = window.location.href;
     const title = article.title;
 
-    // 1. Check if the browser supports the native Share API (Works on iOS Chrome/Safari)
+    // 1. Priority: Use Native Share API for iOS (Chrome/Safari) and Android
     if (navigator.share) {
+      e.preventDefault(); // Stop the <a> tag from opening a new tab
       try {
         await navigator.share({
           title: title,
           url: url,
         });
-        return; // Exit if successful
       } catch (err) {
-        // If user cancels, we don't need to do anything
-        if (err instanceof Error && err.name === "AbortError") return;
-        // Otherwise, fall back to the old method below
+        if (err instanceof Error && err.name === "AbortError") {
+          console.log("Share aborted by user");
+        } else {
+          // If native share fails for some other reason, allow the fallback
+          window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+            "_blank",
+          );
+        }
       }
     }
-
-    // 2. Fallback for Desktop or browsers that don't support navigator.share
-    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-
-    // On iOS Chrome, window.open with dimensions (width/height) often triggers the flicker.
-    // Using a simple _blank target is much safer.
-    window.open(fbUrl, "_blank");
+    // 2. Fallback: If navigator.share is NOT supported (Desktop),
+    // the <a> tag will naturally follow its href.
   };
 
   useEffect(() => {
@@ -116,7 +118,6 @@ export default function ArticleDetailClient({ id }: { id: string }) {
         transition={{ duration: 0.6 }}
         className="max-w-4xl mx-auto"
       >
-        {/* Header Section */}
         <header className="mb-12">
           <div className="flex items-center gap-3 font-mono text-[0.65rem] md:text-xs text-eprx-lime tracking-[3px] mb-6 uppercase">
             <span>{article.category}</span>
@@ -149,6 +150,7 @@ export default function ArticleDetailClient({ id }: { id: string }) {
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleShare}
               className="flex items-center gap-2 text-[#666] hover:text-eprx-lime transition-colors font-mono text-[0.6rem] tracking-[2px] uppercase group"
             >
               <svg
@@ -165,7 +167,6 @@ export default function ArticleDetailClient({ id }: { id: string }) {
           </div>
         </header>
 
-        {/* Hero Image */}
         {article.image && (
           <div className="w-full mb-12 border border-[#1a1a1a] bg-[#0a0a0a] overflow-hidden rounded-sm">
             <img
@@ -180,7 +181,6 @@ export default function ArticleDetailClient({ id }: { id: string }) {
           </div>
         )}
 
-        {/* Content Body */}
         <main className="prose prose-invert prose-p:text-[#ccc] prose-p:leading-relaxed prose-p:text-lg max-w-none">
           <div className="space-y-6">
             {article.content.split("\n").map((paragraph, index) =>
@@ -193,7 +193,6 @@ export default function ArticleDetailClient({ id }: { id: string }) {
           </div>
         </main>
 
-        {/* Footer Signature */}
         <footer className="mt-20 pt-10 border-t border-[#1a1a1a] text-center">
           <p className="font-mono text-[0.6rem] text-[#333] tracking-[5px] uppercase">
             PRX ARTICLE ARCHIVE || {new Date().getFullYear()}
