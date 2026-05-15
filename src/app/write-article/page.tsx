@@ -102,29 +102,29 @@ export default function WriteArticlePage() {
 
   if (loading || checkingAuth)
     return (
-      <div style={styles.loadingContainer}>
-        <h2 style={styles.loadingText}>INITIALIZING EDITOR...</h2>
+      <div style={localStyles.loadingContainer}>
+        <h2 style={localStyles.loadingText}>INITIALIZING EDITOR...</h2>
       </div>
     );
 
   return (
-    <div style={styles.pageContainer}>
-      <header style={styles.header}>
-        <h1 style={styles.mainTitle}>
+    <div style={localStyles.pageContainer}>
+      <header style={localStyles.header}>
+        <h1 className="responsive-title" style={localStyles.mainTitle}>
           WRITE <span style={{ color: "#d4ff00" }}>ARTICLES</span>
         </h1>
-        <p style={styles.subtitle}>EDITORIAL || WRITE ARTICLES</p>
+        <p style={localStyles.subtitle}>PRXph.com || CREATE ARTICLE</p>
       </header>
 
-      <form onSubmit={handleSubmit} style={styles.formContainer}>
-        <h3 style={styles.sectionTitle}>ARTICLE</h3>
+      <form onSubmit={handleSubmit} style={localStyles.formContainer}>
+        <h3 style={localStyles.sectionTitle}>ARTICLE CREATION</h3>
 
-        <div style={styles.column}>
+        <div style={localStyles.column}>
           {/* IMAGE UPLOAD */}
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>UPLOAD IMAGE</label>
+          <div style={localStyles.fieldGroup}>
+            <label style={localStyles.label}>UPLOAD IMAGE (LANDSCAPE)</label>
             <div
-              style={styles.thumbnailBox}
+              style={localStyles.thumbnailBox}
               onClick={() => fileInputRef.current?.click()}
             >
               {imagePreview ? (
@@ -132,19 +132,24 @@ export default function WriteArticlePage() {
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    style={styles.previewImg}
+                    style={localStyles.previewImg}
                   />
-                  <div style={styles.removeOverlay} onClick={handleRemoveImage}>
-                    REMOVE IMAGE
+                  <div
+                    style={localStyles.removeOverlay}
+                    onClick={handleRemoveImage}
+                  >
+                    REMOVE FILE
                   </div>
                   {isCompressing && (
-                    <div style={styles.compressionOverlay}>OPTIMIZING...</div>
+                    <div style={localStyles.compressionOverlay}>
+                      OPTIMIZING BITRATE...
+                    </div>
                   )}
                 </>
               ) : (
-                <div style={styles.uploadPlaceholder}>
+                <div style={localStyles.uploadPlaceholder}>
                   <span style={{ fontSize: "2rem", color: "#d4ff00" }}>+</span>
-                  <span>UPLOAD IMAGE</span>
+                  <span>SELECT IMAGE FILE</span>
                 </div>
               )}
             </div>
@@ -159,20 +164,20 @@ export default function WriteArticlePage() {
           </div>
 
           {/* TITLE */}
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>ARTICLE TITLE</label>
+          <div style={localStyles.fieldGroup}>
+            <label style={localStyles.label}>ARTICLE TITLE</label>
             <input
               name="title"
               required
-              style={styles.input}
-              placeholder="ENTER AN ARTICLE TITLE..."
+              style={localStyles.input}
+              placeholder="ENTER ARTICLE TITLE..."
             />
           </div>
 
           {/* CLASSIFICATION */}
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>CLASSIFICATION</label>
-            <select name="category" required style={styles.select}>
+          <div style={localStyles.fieldGroup}>
+            <label style={localStyles.label}>CATEGORY</label>
+            <select name="category" required style={localStyles.select}>
               <option value="GEAR">GEAR</option>
               <option value="FUEL">FUEL</option>
               <option value="MIND">MIND</option>
@@ -181,13 +186,13 @@ export default function WriteArticlePage() {
           </div>
 
           {/* CONTENT */}
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>ARTICLE CONTENT</label>
+          <div style={localStyles.fieldGroup}>
+            <label style={localStyles.label}>WRITE ARTICLE</label>
             <textarea
               name="content"
               required
-              style={styles.textarea}
-              placeholder="INPUT ARTICLE CONTENT..."
+              style={localStyles.textarea}
+              placeholder="INPUT ARTICLE CONTENT HERE..."
             />
           </div>
 
@@ -196,7 +201,7 @@ export default function WriteArticlePage() {
             type="submit"
             disabled={isSubmitting || isCompressing}
             style={{
-              ...styles.submitBtn,
+              ...localStyles.submitBtn,
               opacity: isSubmitting || isCompressing ? 0.5 : 1,
             }}
           >
@@ -204,11 +209,30 @@ export default function WriteArticlePage() {
           </button>
         </div>
       </form>
+
+      <style jsx>{`
+        .responsive-title {
+          font-size: 4rem;
+          letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+          .responsive-title {
+            font-size: 2.5rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .responsive-title {
+            font-size: 2rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
+const localStyles: { [key: string]: React.CSSProperties } = {
   pageContainer: {
     backgroundColor: "#050505",
     minHeight: "100vh",
@@ -217,40 +241,45 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontFamily: "monospace",
   },
   header: { textAlign: "center", marginBottom: "40px" },
-  mainTitle: { fontFamily: "var(--font-bebas)", fontSize: "4rem", margin: 0 },
-  subtitle: { color: "#444", fontSize: "0.7rem", letterSpacing: "2px" },
-  formContainer: { maxWidth: "700px", margin: "0 auto" },
+  mainTitle: {
+    fontFamily: "var(--font-bebas)",
+    margin: 0,
+    textTransform: "uppercase",
+  },
+  subtitle: { color: "#444", fontSize: "0.6rem", letterSpacing: "3px" },
+  formContainer: { maxWidth: "800px", margin: "0 auto" },
   column: { display: "flex", flexDirection: "column", gap: "25px" },
   sectionTitle: {
-    fontSize: "0.75rem",
+    fontSize: "0.7rem",
     color: "#d4ff00",
     letterSpacing: "3px",
-    borderLeft: "3px solid #d4ff00",
+    borderLeft: "2px solid #d4ff00",
     paddingLeft: "10px",
     marginBottom: "25px",
   },
   fieldGroup: { display: "flex", flexDirection: "column", gap: "8px" },
-  label: { fontSize: "0.6rem", color: "#666" },
+  label: { fontSize: "0.55rem", color: "#666", textTransform: "uppercase" },
   input: {
     backgroundColor: "#0a0a0a",
-    border: "1px solid #222",
-    padding: "12px",
+    border: "1px solid #1a1a1a",
+    padding: "14px",
     color: "#fff",
     outline: "none",
     fontSize: "0.85rem",
   },
   select: {
     backgroundColor: "#0a0a0a",
-    border: "1px solid #222",
-    padding: "12px",
+    border: "1px solid #1a1a1a",
+    padding: "14px",
     color: "#fff",
     outline: "none",
     fontSize: "0.85rem",
+    cursor: "pointer",
   },
   textarea: {
     backgroundColor: "#0a0a0a",
-    border: "1px solid #222",
-    padding: "12px",
+    border: "1px solid #1a1a1a",
+    padding: "14px",
     color: "#fff",
     minHeight: "400px",
     outline: "none",
@@ -262,7 +291,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     aspectRatio: "16/9",
     backgroundColor: "#0a0a0a",
-    border: "1px dashed #333",
+    border: "1px dashed #222",
     display: "flex",
     position: "relative",
     alignItems: "center",
@@ -277,8 +306,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     right: "10px",
     backgroundColor: "rgba(255,0,0,0.8)",
     padding: "5px 10px",
-    fontSize: "0.6rem",
+    fontSize: "0.5rem",
     cursor: "pointer",
+    fontWeight: "bold",
   },
   uploadPlaceholder: {
     textAlign: "center",
@@ -286,29 +316,32 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "column",
     gap: "5px",
     color: "#444",
-    fontSize: "0.7rem",
+    fontSize: "0.6rem",
+    textTransform: "uppercase",
   },
   compressionOverlay: {
     position: "absolute",
     inset: 0,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(0,0,0,0.8)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     color: "#d4ff00",
-    fontSize: "0.7rem",
+    fontSize: "0.6rem",
+    letterSpacing: "2px",
   },
   submitBtn: {
     backgroundColor: "#d4ff00",
     color: "#000",
     border: "none",
-    padding: "18px",
+    padding: "20px",
     fontFamily: "var(--font-bebas)",
     fontSize: "1.5rem",
     fontWeight: "bold",
     cursor: "pointer",
     width: "100%",
     marginTop: "10px",
+    letterSpacing: "1px",
   },
   loadingContainer: {
     backgroundColor: "#050505",
@@ -321,5 +354,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#d4ff00",
     letterSpacing: "4px",
     fontFamily: "monospace",
+    fontSize: "0.8rem",
   },
 };

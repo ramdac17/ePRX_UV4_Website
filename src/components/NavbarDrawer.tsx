@@ -44,7 +44,8 @@ export default function NavbarDrawer({
     { name: "ACTIVITIES", path: "/activities" },
     { name: "ARTICLES", path: "/articles" },
     { name: "LIVE EVENTS", path: "/events" },
-    { name: "POST EVENT", path: "/post-event" },
+    { name: "MY STORY", path: "/write-article" },
+    { name: "PUBLISH EVENT", path: "/post-event" },
     { name: "WRITE ARTICLE", path: "/write-article" },
     { name: "ABOUT US", path: "/aboutus" },
     { name: "CONTACT US", path: "/contactus" },
@@ -116,7 +117,8 @@ export default function NavbarDrawer({
               {menuItems.map((item, index) => {
                 const isActive = pathname === item.path;
                 const showDivider =
-                  (item.name === "POST EVENT" && user) ||
+                  (item.name === "MY STORY" && user) ||
+                  (item.name === "ARTICLES" && user) ||
                   item.name === "ABOUT US";
 
                 return (
@@ -156,7 +158,13 @@ export default function NavbarDrawer({
                     }}
                     style={{ cursor: "pointer" }}
                   >
-                    <div style={{ ...styles.link, color: "#ff4444" }}>
+                    <div
+                      style={{
+                        ...styles.link,
+                        color: "#ff4444",
+                        marginBottom: "20px",
+                      }}
+                    >
                       LOGOUT
                     </div>
                   </motion.div>
@@ -179,17 +187,6 @@ export default function NavbarDrawer({
                 </button>
 
                 <a
-                  href="https://twitter.com"
-                  target="_blank"
-                  style={styles.socialLink}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.color = "#d4ff00")
-                  }
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
-                >
-                  <Twitter size={16} />
-                </a>
-                <a
                   href="https://instagram.com"
                   target="_blank"
                   style={styles.socialLink}
@@ -201,7 +198,7 @@ export default function NavbarDrawer({
                   <Instagram size={16} />
                 </a>
               </div>
-              <p style={styles.version}>PRX || SYSTEM ACTIVE</p>
+              <p style={styles.version}>PRXph.com || PINOY RUNNER EXTREME</p>
             </div>
           </motion.div>
         </>

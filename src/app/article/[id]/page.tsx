@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title: article.title,
         description: article.content.substring(0, 160),
+        url: `https://prxph.com/articles/${id}`, // Explicitly set your production domain
         images: [{ url: imageUrl }],
         type: "article",
       },

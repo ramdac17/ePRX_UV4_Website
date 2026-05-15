@@ -68,31 +68,33 @@ export default function PostEventPage() {
 
   if (loading || checkingAuth) {
     return (
-      <div style={styles.loadingContainer}>
-        <h2 style={styles.loadingText}>INITIALIZING EVENT SESSION...</h2>
+      <div style={localStyles.loadingContainer}>
+        <h2 style={localStyles.loadingText}>INITIALIZING EVENT SESSION...</h2>
       </div>
     );
   }
 
   return (
-    <div style={styles.pageContainer}>
-      <header style={styles.header}>
-        <h1 style={styles.mainTitle}>
+    <div style={localStyles.pageContainer}>
+      <header style={localStyles.header}>
+        <h1 className="responsive-title" style={localStyles.mainTitle}>
           POST <span style={{ color: "#d4ff00" }}>EVENT</span>
         </h1>
-        <p style={styles.subtitle}>PRX CONTROL || POST EVENT</p>
+        <p style={localStyles.subtitle}>PRXPH.COM || SECURE_UPLINK_PROTOCOL</p>
       </header>
 
-      <form onSubmit={handleSubmit} style={styles.formContainer}>
-        <div style={styles.gridMain}>
+      <form onSubmit={handleSubmit} style={localStyles.formContainer}>
+        <div className="form-grid">
           {/* LEFT COLUMN: VISUALS & BRIEFING */}
-          <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>EVENT DETAILS</h3>
+          <div style={localStyles.column}>
+            <h3 style={localStyles.sectionTitle}>EVENT DETAILS</h3>
 
-            <div style={styles.imageSection}>
-              <label style={styles.label}>UPLOAD EVENT BANNER</label>
+            <div style={localStyles.imageSection}>
+              <label style={localStyles.label}>
+                UPLOAD EVENT BANNER (16:9 RECOMMENDED)
+              </label>
               <div
-                style={styles.thumbnailBox}
+                style={localStyles.thumbnailBox}
                 onClick={() => fileInputRef.current?.click()}
               >
                 {imagePreview ? (
@@ -100,18 +102,21 @@ export default function PostEventPage() {
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      style={styles.previewImg}
+                      style={localStyles.previewImg}
                     />
-                    <div style={styles.removeOverlay} onClick={removeImage}>
+                    <div
+                      style={localStyles.removeOverlay}
+                      onClick={removeImage}
+                    >
                       REMOVE IMAGE
                     </div>
                   </>
                 ) : (
-                  <div style={styles.uploadPlaceholder}>
+                  <div style={localStyles.uploadPlaceholder}>
                     <span style={{ fontSize: "2rem", color: "#d4ff00" }}>
                       +
                     </span>
-                    <span>UPLOAD IMAGE</span>
+                    <span style={{ fontSize: "0.6rem" }}>UPLOAD_ASSET</span>
                   </div>
                 )}
               </div>
@@ -125,103 +130,105 @@ export default function PostEventPage() {
               />
             </div>
 
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>EVENT BRIEFING (DESCRIPTION)</label>
+            <div style={localStyles.fieldGroup}>
+              <label style={localStyles.label}>
+                EVENT BRIEFING (DESCRIPTION)
+              </label>
               <textarea
                 name="description"
                 required
-                style={styles.textarea}
-                placeholder="INPUT EVENT DETAILS..."
+                style={localStyles.textarea}
+                placeholder="INPUT EVENT DESCRIPTION..."
               />
             </div>
           </div>
 
           {/* RIGHT COLUMN: DATA & INTEL */}
-          <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>CORE DATA</h3>
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>EVENT TITLE</label>
+          <div style={localStyles.column}>
+            <h3 style={localStyles.sectionTitle}>CORE DATA</h3>
+            <div style={localStyles.fieldGroup}>
+              <label style={localStyles.label}>EVENT TITLE</label>
               <input
                 name="title"
                 required
-                style={styles.input}
+                style={localStyles.input}
                 placeholder="EVENT TITLE"
               />
             </div>
 
-            <div style={styles.fieldRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>DATE</label>
+            <div className="input-row">
+              <div style={localStyles.fieldGroup}>
+                <label style={localStyles.label}>EVENT DATE</label>
                 <input
                   name="date"
                   type="datetime-local"
                   required
-                  style={styles.input}
+                  style={localStyles.input}
                 />
               </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>EVENT URL</label>
+              <div style={localStyles.fieldGroup}>
+                <label style={localStyles.label}>EVENT LINK (IMPORTANT)</label>
                 <input
                   name="link"
                   type="url"
-                  style={styles.input}
-                  placeholder="EVENT URL"
+                  style={localStyles.input}
+                  placeholder="https://..."
                 />
               </div>
             </div>
 
-            <div style={styles.fieldRow}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>LOCATION</label>
+            <div className="input-row">
+              <div style={localStyles.fieldGroup}>
+                <label style={localStyles.label}>EVENT LOCATION</label>
                 <input
                   name="location"
                   required
-                  style={styles.input}
-                  placeholder="EVENT LOCATION"
+                  style={localStyles.input}
+                  placeholder="LOCATION"
                 />
               </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>ORGANIZER</label>
+              <div style={localStyles.fieldGroup}>
+                <label style={localStyles.label}>EVENT ORGANIZER</label>
                 <input
                   name="organizer"
                   required
-                  style={styles.input}
+                  style={localStyles.input}
                   placeholder="ORGANIZER"
                 />
               </div>
             </div>
 
-            <h3 style={{ ...styles.sectionTitle, marginTop: "20px" }}>
-              CONTACT DETAILS
+            <h3 style={{ ...localStyles.sectionTitle, marginTop: "20px" }}>
+              CONTACT INFO
             </h3>
-            <div style={styles.fieldRow}>
+            <div className="input-row">
               <input
                 name="firstName"
                 required
-                style={styles.input}
+                style={localStyles.input}
                 placeholder="FIRST NAME"
               />
               <input
                 name="lastName"
                 required
-                style={styles.input}
+                style={localStyles.input}
                 placeholder="LAST NAME"
               />
             </div>
-            <div style={styles.fieldRow}>
+            <div className="input-row">
               <input
                 name="email"
                 type="email"
                 required
-                style={styles.input}
-                placeholder="EMAIL ADDRESS"
+                style={localStyles.input}
+                placeholder="EMAIL"
               />
               <input
                 name="mobile"
                 type="tel"
                 required
-                style={styles.input}
-                placeholder="MOBILE NUMBER"
+                style={localStyles.input}
+                placeholder="MOBILE"
               />
             </div>
 
@@ -229,7 +236,7 @@ export default function PostEventPage() {
               type="submit"
               disabled={isSubmitting}
               style={{
-                ...styles.submitBtn,
+                ...localStyles.submitBtn,
                 opacity: isSubmitting ? 0.5 : 1,
               }}
             >
@@ -238,11 +245,42 @@ export default function PostEventPage() {
           </div>
         </div>
       </form>
+
+      {/* INLINE CSS FOR RESPONSIVENESS */}
+      <style jsx>{`
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
+        }
+        .input-row {
+          display: flex;
+          gap: 10px;
+        }
+        .responsive-title {
+          font-size: 4rem;
+        }
+
+        @media (max-width: 900px) {
+          .form-grid {
+            grid-template-columns: 1fr;
+          }
+          .responsive-title {
+            font-size: 2.5rem;
+          }
+        }
+        @media (max-width: 600px) {
+          .input-row {
+            flex-direction: column;
+            gap: 20px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
+const localStyles: { [key: string]: React.CSSProperties } = {
   pageContainer: {
     backgroundColor: "#050505",
     minHeight: "100vh",
@@ -251,30 +289,28 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontFamily: "monospace",
   },
   header: { textAlign: "center", marginBottom: "40px" },
-  mainTitle: { fontFamily: "var(--font-bebas)", fontSize: "4rem", margin: 0 },
-  subtitle: { color: "#444", fontSize: "0.7rem", letterSpacing: "2px" },
-  formContainer: { maxWidth: "1100px", margin: "0 auto" },
-  gridMain: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
-    gap: "40px",
+  mainTitle: {
+    fontFamily: "var(--font-bebas)",
+    margin: 0,
+    letterSpacing: "2px",
   },
+  subtitle: { color: "#444", fontSize: "0.6rem", letterSpacing: "3px" },
+  formContainer: { maxWidth: "1100px", margin: "0 auto" },
   column: { display: "flex", flexDirection: "column", gap: "20px" },
   sectionTitle: {
-    fontSize: "0.75rem",
+    fontSize: "0.7rem",
     color: "#d4ff00",
     letterSpacing: "3px",
-    borderLeft: "3px solid #d4ff00",
+    borderLeft: "2px solid #d4ff00",
     paddingLeft: "10px",
     margin: "0 0 10px 0",
   },
-  fieldRow: { display: "flex", gap: "10px" },
   fieldGroup: { display: "flex", flexDirection: "column", gap: "8px", flex: 1 },
-  label: { fontSize: "0.6rem", color: "#666", textTransform: "uppercase" },
+  label: { fontSize: "0.55rem", color: "#666", textTransform: "uppercase" },
   input: {
     backgroundColor: "#0a0a0a",
-    border: "1px solid #222",
-    padding: "12px",
+    border: "1px solid #1a1a1a",
+    padding: "14px",
     color: "#fff",
     outline: "none",
     fontSize: "0.8rem",
@@ -282,8 +318,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   textarea: {
     backgroundColor: "#0a0a0a",
-    border: "1px solid #222",
-    padding: "12px",
+    border: "1px solid #1a1a1a",
+    padding: "14px",
     color: "#fff",
     minHeight: "220px",
     outline: "none",
@@ -294,23 +330,23 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
     aspectRatio: "16/9",
     backgroundColor: "#0a0a0a",
-    border: "1px dashed #333",
+    border: "1px dashed #222",
     display: "flex",
     position: "relative",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    transition: "0.3s",
   },
   previewImg: { width: "100%", height: "100%", objectFit: "cover" },
   removeOverlay: {
     position: "absolute",
     top: "10px",
     right: "10px",
-    backgroundColor: "rgba(255,0,0,0.7)",
-    padding: "5px 10px",
-    fontSize: "0.6rem",
-    borderRadius: "2px",
+    backgroundColor: "rgba(255,0,0,0.8)",
+    padding: "4px 8px",
+    fontSize: "0.5rem",
+    borderRadius: "1px",
+    fontWeight: "bold",
   },
   uploadPlaceholder: {
     textAlign: "center",
@@ -322,12 +358,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#d4ff00",
     color: "#000",
     border: "none",
-    padding: "16px",
+    padding: "18px",
     fontFamily: "var(--font-bebas)",
     fontSize: "1.4rem",
     fontWeight: "bold",
     cursor: "pointer",
-    marginTop: "auto",
+    marginTop: "20px",
+    letterSpacing: "1px",
   },
   loadingContainer: {
     backgroundColor: "#050505",
@@ -336,5 +373,5 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "center",
     alignItems: "center",
   },
-  loadingText: { color: "#d4ff00", letterSpacing: "4px" },
+  loadingText: { color: "#d4ff00", letterSpacing: "4px", fontSize: "0.8rem" },
 };

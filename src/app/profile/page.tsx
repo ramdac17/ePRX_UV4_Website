@@ -204,7 +204,7 @@ export default function ProfilePage() {
   };
 
   if (loading || authLoading)
-    return <div style={styles.loader}>LOADING_ENCRYPTED_PROFILE...</div>;
+    return <div style={styles.loader}>LOADING USER PROFILE...</div>;
 
   return (
     <AuthGuard>
@@ -224,7 +224,7 @@ export default function ProfilePage() {
             USER <span style={{ color: "#d4ff00" }}>PROFILE</span>
           </h1>
           <p style={styles.subtitle}>
-            MANAGE YOUR PROFILE CREDENTIALS & MISSION HISTORY
+            MANAGE YOUR PROFILE CREDENTIALS & REVIEW ACTIVTY HISTORY
           </p>
         </div>
 

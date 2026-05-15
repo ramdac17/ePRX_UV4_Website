@@ -40,7 +40,7 @@ const LoginForm = () => {
       if (!token) throw new Error("TOKEN MISSING");
 
       login(user, token);
-      setToastMsg("ACCESS GRANTED: INITIALIZING...");
+      setToastMsg("ACCESS GRANTED: LOADING DASHBOARD...");
       setToastType("success");
       setShowToast(true);
 
@@ -49,7 +49,7 @@ const LoginForm = () => {
         router.refresh();
       }, 1200);
     } catch (err: any) {
-      const rawMessage = err.response?.data?.message || "TRANSMISSION ERROR";
+      const rawMessage = err.response?.data?.message || "ERROR LOADING";
       setToastMsg(
         Array.isArray(rawMessage)
           ? rawMessage[0].toUpperCase()
