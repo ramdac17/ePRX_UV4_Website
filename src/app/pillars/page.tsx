@@ -22,6 +22,26 @@ const PillarsPage = () => {
             <span style={mobileStyles.sectionNum}>|| THE CORE FOUNDATION</span>
             THE <span style={{ color: "#d4ff00" }}>PILLARS</span>
           </h2>
+
+          {/* BRAND LOGO */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              margin: "15px 0 20px 0",
+            }}
+          >
+            <img
+              src="/assets/images/cyber-punk-prx-logo.png"
+              alt="Cyberpunk PRX Logo"
+              style={{
+                height: "auto",
+                width: "clamp(80px, 10vw, 120px)", // Scales beautifully across viewports
+                objectFit: "contain",
+              }}
+            />
+          </div>
+
           <p style={mobileStyles.mobileDesc}>
             The fundamental architecture of your progress. Optimize your output
             through specialized modules designed for peak performance.
