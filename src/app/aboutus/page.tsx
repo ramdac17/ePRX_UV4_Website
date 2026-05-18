@@ -167,8 +167,7 @@ export default function AboutPage() {
 
         <section className="border-t border-[#111] pt-20 mb-24 max-w-6xl mx-auto">
           <h2 className="text-[0.65rem] tracking-[4px] text-[#333] text-center mb-16">
-            <span className="text-eprx-lime">|</span> OPERATOR LOGS || MEET THE
-            ADMINS
+            <span className="text-eprx-lime">|</span> DEVELOPER || ADMIN
           </h2>
 
           <div className="flex flex-col gap-20">
