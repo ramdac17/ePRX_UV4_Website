@@ -34,7 +34,6 @@ const MobileEcosystem = () => {
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* The key is using !important to override the inline styles */
         @media (max-width: 1024px) {
           .responsive-flex-container { 
             justify-content: center !important; 
@@ -87,7 +86,7 @@ const MobileEcosystem = () => {
               alt="Cyberpunk PRX Logo"
               style={{
                 height: "auto",
-                width: "clamp(80px, 10vw, 120px)", // Scales beautifully across viewports
+                width: "clamp(80px, 10vw, 120px)",
                 objectFit: "contain",
               }}
             />
@@ -103,9 +102,9 @@ const MobileEcosystem = () => {
         <div
           className="hide-scrollbar"
           style={{
-            paddingBottom: "60px",
+            paddingBottom: "40px",
             WebkitOverflowScrolling: "touch",
-            display: "block", // Ensure block display for overflow
+            display: "block",
           }}
         >
           <div
@@ -131,11 +130,89 @@ const MobileEcosystem = () => {
           </div>
         </div>
 
+        {/* BETA DOWNLOAD & QR ZONE */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "20px auto 40px auto",
+            padding: "0 20px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              padding: "12px",
+              backgroundColor: "#111",
+              border: "1px solid #222",
+              borderRadius: "12px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.5)",
+              display: "inline-block",
+              transition: "border-color 0.3s ease",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.borderColor = "#d4ff00")
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#222")}
+          >
+            {/* If the QR image itself should be clickable to download, wrap this img in an <a> tag */}
+            <a
+              href="https://expo.dev/accounts/ramdac17/projects/eprx-uv1-monorepo/builds/d6997ccb-efef-4de6-8600-f5500893d572"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "block" }}
+            >
+              <img
+                src="/assets/images/PRXQRV2.jpg"
+                alt="Download ePRX Beta QR Code"
+                style={{
+                  width: "140px",
+                  height: "140px",
+                  objectFit: "cover",
+                  display: "block",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              />
+            </a>
+          </div>
+          <p
+            style={{
+              marginTop: "16px",
+              color: "#aaa",
+              fontSize: "0.9rem",
+              letterSpacing: "1px",
+              maxWidth: "400px",
+              lineHeight: "1.5",
+            }}
+          >
+            Download the Android Beta version. Scan the QR code or click{" "}
+            <a
+              href="https://expo.dev/accounts/ramdac17/projects/eprx-uv1-monorepo/builds/d6997ccb-efef-4de6-8600-f5500893d572"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#d4ff00",
+                textDecoration: "underline",
+                fontWeight: "bold",
+                transition: "opacity 0.2s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              HERE
+            </a>{" "}
+            to get the app.
+          </p>
+        </div>
+
         {/* DOWNLOAD ZONE */}
         <div
           style={{
             ...styles.footerDownload,
-            marginTop: "40px",
+            marginTop: "20px",
             padding: "0 20px",
             display: "flex",
             justifyContent: "center",
@@ -183,7 +260,6 @@ const ScreenCard = ({ fileName, index, isHovered, onHover }: any) => (
     style={{
       ...styles.mobileCard,
       flex: "0 0 auto",
-      /* Smaller cards: reduced from 140-180 to 130-165 */
       width: "clamp(130px, 14vw, 165px)",
       transform: isHovered
         ? "translateY(-15px) scale(1.04)"
@@ -222,7 +298,6 @@ const ScreenCard = ({ fileName, index, isHovered, onHover }: any) => (
           APP SCREEN {index + 1}
         </div>
       </div>
-      {/*  <div style={{ ...styles.glowEffect, opacity: isHovered ? 0.4 : 0 }} /> */}
     </div>
   </div>
 );

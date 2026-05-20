@@ -8,9 +8,24 @@ const PillarsPage = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const pillars = [
-    { name: "FUEL", path: "/assets/images/FuelV2.png" },
-    { name: "GEAR", path: "/assets/images/GearV2.png" },
-    { name: "MIND", path: "/assets/images/MindV2.png" },
+    {
+      name: "FUEL",
+      path: "/assets/images/FuelV2.png",
+      description:
+        "Optimize nutritional intake, hydration tracking, and metabolic efficiency.",
+    },
+    {
+      name: "GEAR",
+      path: "/assets/images/GearV2.png",
+      description:
+        "Manage physical equipment states, telemetry maintenance, and comfort.",
+    },
+    {
+      name: "MIND",
+      path: "/assets/images/MindV2.png",
+      description:
+        "Calibrate mental endurance, strategic thinking and physical recovery.",
+    },
   ];
 
   return (
@@ -83,26 +98,38 @@ const PillarsPage = () => {
                       : "brightness(0.8)", // Clean, high-contrast look
                   }}
                 />
-                <div style={styles.pillarContent}>
-                  <span
-                    style={{
-                      ...styles.cardNum,
-                      color: isHovered ? "#d4ff00" : "#666", // Slightly brighter base for readability
-                      transition: "color 0.3s ease",
-                    }}
-                  >
-                    0{i + 1}
-                  </span>
+                <div
+                  style={{
+                    ...styles.pillarContent,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
                   <h3
                     style={{
                       ...styles.cardTitle,
                       color: isHovered ? "#d4ff00" : "#fff",
                       transition: "color 0.3s ease",
                       textShadow: "0px 2px 10px rgba(0,0,0,0.8)", // Better legibility over colored images
+                      marginBottom: "6px",
                     }}
                   >
                     {pillar.name}
                   </h3>
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      fontFamily: "monospace",
+                      lineHeight: "1.4",
+                      color: isHovered ? "#bbb" : "#888",
+                      transition: "color 0.3s ease",
+                      margin: 0,
+                      textShadow: "0px 1px 8px rgba(0,0,0,0.9)",
+                      maxWidth: "90%",
+                    }}
+                  >
+                    {pillar.description}
+                  </p>
                 </div>
               </Link>
             );
