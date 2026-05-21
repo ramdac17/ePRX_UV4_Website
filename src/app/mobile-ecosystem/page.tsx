@@ -159,13 +159,13 @@ const MobileEcosystem = () => {
           >
             {/* If the QR image itself should be clickable to download, wrap this img in an <a> tag */}
             <a
-              href="https://expo.dev/accounts/ramdac17/projects/eprx-uv1-monorepo/builds/d6997ccb-efef-4de6-8600-f5500893d572"
+              href="https://expo.dev/accounts/ramdac17/projects/eprx-uv1-monorepo/builds/8f09f1f5-8e29-4af9-b1e3-878f73755c0b"
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: "block" }}
             >
               <img
-                src="/assets/images/PRXQRV2.jpg"
+                src="/assets/images/PRXQRV3.jpg"
                 alt="Download ePRX Beta QR Code"
                 style={{
                   width: "140px",
@@ -190,7 +190,7 @@ const MobileEcosystem = () => {
           >
             Download the Android Beta version. Scan the QR code or click{" "}
             <a
-              href="https://expo.dev/accounts/ramdac17/projects/eprx-uv1-monorepo/builds/d6997ccb-efef-4de6-8600-f5500893d572"
+              href="https://expo.dev/accounts/ramdac17/projects/eprx-uv1-monorepo/builds/8f09f1f5-8e29-4af9-b1e3-878f73755c0b"
               target="_blank"
               rel="noopener noreferrer"
               style={{
