@@ -4,7 +4,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Facebook, Twitter, Instagram } from "lucide-react";
+import { Facebook, Instagram } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const STATIC_URL = process.env.NEXT_PUBLIC_STATIC_URL;
@@ -15,6 +15,36 @@ interface NavbarDrawerProps {
   onLogout: () => void;
 }
 
+// Nav item type
+interface NavItem {
+  name: string;
+  path: string;
+}
+
+// Guest nav items
+const guestItems: NavItem[] = [
+  { name: "LIVE EVENTS", path: "/events" },
+  { name: "ARTICLES", path: "/articles" },
+  { name: "ABOUT US", path: "/aboutus" },
+  { name: "CONTACT US", path: "/contactus" },
+  { name: "LOGIN", path: "/login" },
+];
+
+const authItems: NavItem[] = [
+  { name: "DASHBOARD", path: "/" },
+  { name: "ACTIVITIES", path: "/activities" },
+  { name: "ARTICLES", path: "/articles" },
+  { name: "LIVE EVENTS", path: "/events" },
+  { name: "MY STORY", path: "/my-story" }, // confirm this route exists
+  { name: "PUBLISH EVENT", path: "/post-event" },
+  { name: "WRITE ARTICLE", path: "/write-article" },
+  { name: "ABOUT US", path: "/aboutus" },
+  { name: "CONTACT US", path: "/contactus" },
+];
+
+// Items that get a divider rendered above them
+const DIVIDER_BEFORE = new Set(["MY STORY", "ABOUT US"]);
+
 export default function NavbarDrawer({
   isOpen,
   onClose,
@@ -23,7 +53,8 @@ export default function NavbarDrawer({
   const { user } = useAuth();
   const pathname = usePathname();
 
-  // 🛰️ Share Protocol: Consistent with Footer logic
+  const menuItems = user ? authItems : guestItems;
+
   const shareToFacebook = (e: React.MouseEvent) => {
     e.preventDefault();
     const siteUrl = window.location.origin;
@@ -31,38 +62,11 @@ export default function NavbarDrawer({
     window.open(fbUrl, "_blank", "width=600,height=400");
   };
 
-  const guestItems = [
-    { name: "DASHBOARD", path: "/" },
-    { name: "LIVE EVENTS", path: "/events" },
-    { name: "ARTICLES", path: "/articles" },
-    { name: "ABOUT US", path: "/aboutus" },
-    { name: "CONTACT US", path: "/contactus" },
-    { name: "LOGIN", path: "/login" },
-  ];
-
-  const authItems = [
-    { name: "DASHBOARD", path: "/" },
-    { name: "ACTIVITIES", path: "/activities" },
-    { name: "ARTICLES", path: "/articles" },
-    { name: "LIVE EVENTS", path: "/events" },
-    { name: "MY STORY", path: "/write-article" },
-    { name: "PUBLISH EVENT", path: "/post-event" },
-    { name: "WRITE ARTICLE", path: "/write-article" },
-    { name: "ABOUT US", path: "/aboutus" },
-    { name: "CONTACT US", path: "/contactus" },
-  ];
-
-  const menuItems = user ? authItems : guestItems;
-
-  const linkVariants = {
-    initial: { x: 0, color: "#fff" },
-    hover: { x: 10, color: "#d4ff00" },
-  } as const;
-
   return (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -71,6 +75,7 @@ export default function NavbarDrawer({
             style={styles.backdrop}
           />
 
+          {/* Drawer */}
           <motion.div
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
@@ -78,6 +83,7 @@ export default function NavbarDrawer({
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             style={styles.drawer}
           >
+            {/* Header / Profile */}
             <div style={styles.header}>
               <Link
                 href="/profile"
@@ -92,19 +98,19 @@ export default function NavbarDrawer({
                           ? user.image
                           : `${STATIC_URL}/${user.image}`
                       }
-                      alt="User"
+                      alt="User avatar"
                       style={styles.avatarImg}
                     />
                   ) : (
                     <span style={styles.avatarInitial}>
-                      {user?.firstName?.[0] || "G"}
+                      {user?.firstName?.[0] ?? "G"}
                     </span>
                   )}
                 </div>
                 <div style={styles.userInfo}>
                   <p style={styles.userName}>
                     {user?.firstName
-                      ? `${user.firstName} ${user.lastName || ""}`
+                      ? `${user.firstName} ${user.lastName ?? ""}`.trim()
                       : "GUEST RUNNER"}
                   </p>
                   <p style={styles.viewProfile}>
@@ -114,24 +120,30 @@ export default function NavbarDrawer({
               </Link>
             </div>
 
+            {/* Nav Links */}
             <nav style={styles.navLinks}>
-              {menuItems.map((item, index) => {
+              {menuItems.map((item) => {
                 const isActive = pathname === item.path;
-                const showDivider =
-                  (item.name === "MY STORY" && user) ||
-                  (item.name === "ARTICLES" && user) ||
-                  item.name === "ABOUT US";
 
                 return (
-                  <React.Fragment key={index}>
-                    {showDivider && <hr style={styles.divider} />}
+                  <React.Fragment key={item.path + item.name}>
+                    {DIVIDER_BEFORE.has(item.name) && (
+                      <hr style={styles.divider} />
+                    )}
+
+                    {/*
+                     * Fix: use a single variant key string for `animate`
+                     * instead of mixing variant strings with inline objects.
+                     */}
                     <motion.div
-                      variants={linkVariants}
-                      initial="initial"
+                      variants={{
+                        inactive: { x: 0, color: "#fff" },
+                        active: { x: 0, color: "#d4ff00" },
+                        hover: { x: 10, color: "#d4ff00" },
+                      }}
+                      initial={isActive ? "active" : "inactive"}
+                      animate={isActive ? "active" : "inactive"}
                       whileHover="hover"
-                      animate={
-                        isActive ? { color: "#d4ff00" } : { color: "#fff" }
-                      }
                     >
                       <Link
                         href={item.path}
@@ -146,26 +158,20 @@ export default function NavbarDrawer({
                 );
               })}
 
+              {/* Logout — only for authenticated users */}
               {user && (
                 <>
                   <hr style={styles.divider} />
                   <motion.div
-                    variants={linkVariants}
-                    initial="initial"
-                    whileHover={{ x: 10, color: "#ff4444" }}
+                    initial={{ x: 0, color: "#ff4444" }}
+                    whileHover={{ x: 10, color: "#ff6666" }}
                     onClick={() => {
                       onLogout();
                       onClose();
                     }}
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer", marginBottom: "20px" }}
                   >
-                    <div
-                      style={{
-                        ...styles.link,
-                        color: "#ff4444",
-                        marginBottom: "20px",
-                      }}
-                    >
+                    <div style={{ ...styles.link, color: "inherit" }}>
                       LOGOUT
                     </div>
                   </motion.div>
@@ -173,9 +179,9 @@ export default function NavbarDrawer({
               )}
             </nav>
 
+            {/* Footer */}
             <div style={styles.footer}>
               <div style={styles.socialIcons}>
-                {/* ⚡ FB Icon triggers site share */}
                 <button
                   onClick={shareToFacebook}
                   style={styles.socialBtn}
@@ -183,6 +189,7 @@ export default function NavbarDrawer({
                     (e.currentTarget.style.color = "#d4ff00")
                   }
                   onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                  aria-label="Share on Facebook"
                 >
                   <Facebook size={16} />
                 </button>
@@ -190,11 +197,13 @@ export default function NavbarDrawer({
                 <a
                   href="https://instagram.com"
                   target="_blank"
+                  rel="noopener noreferrer"
                   style={styles.socialLink}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.color = "#d4ff00")
                   }
                   onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                  aria-label="Visit Instagram"
                 >
                   <Instagram size={16} />
                 </a>
@@ -209,7 +218,6 @@ export default function NavbarDrawer({
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  // ... (Existing styles remain the same)
   backdrop: {
     position: "fixed",
     inset: 0,
@@ -251,6 +259,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#111",
+    flexShrink: 0,
   },
   avatarImg: { width: "100%", height: "100%", objectFit: "cover" },
   avatarInitial: {
@@ -304,6 +313,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#666",
     transition: "all 0.2s ease",
     textDecoration: "none",
+    display: "flex",
+    alignItems: "center",
   },
   socialBtn: {
     background: "none",

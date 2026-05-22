@@ -2,27 +2,33 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import NavbarDrawer from "./NavbarDrawer";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
-// ✅ FIXED: Points to STATIC_URL for images
 const STATIC_URL = process.env.NEXT_PUBLIC_STATIC_URL;
+
+interface NavItem {
+  name: string;
+  path: string;
+  children?: { name: string; path: string }[];
+}
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user: authUser, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false); // Mobile responsiveness state
+  const [isMobile, setIsMobile] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [imgError, setImgError] = useState(false);
+
   const router = useRouter();
   const pathname = usePathname();
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
-
-    // Check screen size for UI adaptation
     const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -35,57 +41,51 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     router.push("/login");
   };
 
-  const navItems = authUser
-    ? [
-        { name: "DASHBOARD", path: "/dashboard" },
-        {
-          name: "RUNNERS GUIDE",
-          path: "#",
-          children: [
-            { name: "GEARS", path: "/gear" },
-            { name: "FUEL", path: "/fuel" },
-            { name: "MIND", path: "/mind" },
-          ],
-        },
-        {
-          name: "ARCHIVES",
-          path: "#",
-          children: [
-            { name: "ARTICLES", path: "/articles" },
-            { name: "STORIES", path: "/stories" },
-          ],
-        },
-        { name: "LIVE EVENTS", path: "/events" },
-        { name: "CONTACT PRX", path: "/contactus" },
-        { name: "ABOUT PRX", path: "/aboutus" },
-      ]
-    : [
-        { name: "DASHBOARD", path: "/dashboard" },
-        {
-          name: "RUNNERS GUIDE",
-          path: "#",
-          children: [
-            { name: "GEARS", path: "/gear" },
-            { name: "FUEL", path: "/fuel" },
-            { name: "MIND", path: "/mind" },
-          ],
-        },
-        {
-          name: "ARCHIVES",
-          path: "#",
-          children: [
-            { name: "ARTICLES", path: "/articles" },
-            { name: "STORIES", path: "/stories" },
-          ],
-        },
-        { name: "DASHBOARD", path: "/dashboard" },
-        { name: "LIVE EVENTS", path: "/events" },
-        { name: "ABOUT PRX", path: "/aboutus" },
-        { name: "CONTACT PRX", path: "/contactus" },
-        { name: "JOIN PRX", path: "/register" },
-      ];
+  const coreNavItems: NavItem[] = [
+    { name: "DASHBOARD", path: "/" },
+    {
+      name: "RUNNERS GUIDE",
+      path: "#",
+      children: [
+        { name: "GEARS", path: "/gear" },
+        { name: "FUEL", path: "/fuel" },
+        { name: "MIND", path: "/mind" },
+      ],
+    },
+    {
+      name: "ARCHIVES",
+      path: "#",
+      children: [
+        { name: "ARTICLES", path: "/articles" },
+        { name: "STORIES", path: "/stories" },
+      ],
+    },
+    { name: "LIVE EVENTS", path: "/events" },
+    { name: "ABOUT PRX", path: "/aboutus" },
+    { name: "CONTACT PRX", path: "/contactus" },
+  ];
+
+  const navItems: NavItem[] = authUser
+    ? coreNavItems
+    : [...coreNavItems, { name: "JOIN PRX", path: "/register" }];
+
+  const isActiveLink = (path: string) => {
+    if (path === "#") return false;
+    if (path === "/") return pathname === "/";
+    return pathname.startsWith(path);
+  };
+
+  // Determine avatar src securely
+  const getAvatarSrc = () => {
+    if (!authUser?.image) return null;
+    return authUser.image.startsWith("http")
+      ? authUser.image
+      : `${STATIC_URL}/${authUser.image}`;
+  };
 
   if (!mounted) return null;
+
+  const avatarSrc = getAvatarSrc();
 
   return (
     <>
@@ -95,15 +95,19 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         onLogout={handleSignOut}
       />
 
-      <nav style={styles.navContainer}>
-        {/* LEFT SECTION: Hamburger menu */}
+      <nav style={styles.navContainer} aria-label="Main Navigation">
+        {/* LEFT: Hamburger Menu Trigger */}
         <div style={styles.leftSection}>
           {(isMobile || authUser) && (
-            <motion.div
+            <motion.button
               style={styles.hamburger}
-              onClick={() => setIsMenuOpen(true)}
+              onClick={() => {
+                setIsMenuOpen(true);
+                if (onMenuClick) onMenuClick();
+              }}
               whileHover="hover"
               whileTap={{ scale: 0.95 }}
+              aria-label="Open menu navigation drawer"
             >
               <motion.div
                 variants={{ hover: { width: "24px" } }}
@@ -117,89 +121,110 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 variants={{ hover: { width: "24px" } }}
                 style={{ ...styles.line, width: "14px" }}
               />
-            </motion.div>
+            </motion.button>
           )}
         </div>
 
-        {/* CENTER SECTION: Desktop Links OR Mobile Brand */}
+        {/* CENTER: Desktop Links or Mobile Identity */}
         <div style={styles.centerSection}>
           {isMobile ? (
             <Link href="/" style={styles.mobileBrand}>
               ePRX <span style={{ color: "#d4ff00" }}>UV</span>
             </Link>
           ) : (
-            navItems.map((item) => (
-              <div
-                key={item.name}
-                style={{ position: "relative" }}
-                onMouseEnter={() => item.children && setOpenDropdown(item.name)}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
-                <Link
-                  href={item.path}
-                  style={{
-                    ...styles.logo,
-                    color:
-                      (item.path === "/"
-                        ? pathname === "/"
-                        : pathname.startsWith(item.path)) && item.path !== "#"
-                        ? "#d4ff00"
-                        : "#ffffff",
-                  }}
-                >
-                  {item.name} {item.children && "▾"}
-                </Link>
+            navItems.map((item) => {
+              const isPlaceholder = item.path === "#";
+              const active = isActiveLink(item.path);
+              const linkStyle = {
+                ...styles.navLink,
+                color: active ? "#d4ff00" : "#ffffff",
+              };
 
-                <AnimatePresence>
-                  {item.children && openDropdown === item.name && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      style={styles.dropdown}
+              return (
+                <div
+                  key={item.name}
+                  style={{ position: "relative" }}
+                  onMouseEnter={() =>
+                    item.children && setOpenDropdown(item.name)
+                  }
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
+                  {isPlaceholder ? (
+                    <button
+                      style={{
+                        ...linkStyle,
+                        background: "none",
+                        border: "none",
+                        cursor: "default",
+                      }}
+                      aria-expanded={openDropdown === item.name}
+                      aria-haspopup="true"
                     >
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.path}
-                          href={child.path}
-                          style={styles.dropdownItem}
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
-                    </motion.div>
+                      {item.name} {item.children && "▾"}
+                    </button>
+                  ) : (
+                    <Link href={item.path} style={linkStyle}>
+                      {item.name} {item.children && "▾"}
+                    </Link>
                   )}
-                </AnimatePresence>
-              </div>
-            ))
+
+                  <AnimatePresence>
+                    {item.children && openDropdown === item.name && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        style={styles.dropdown}
+                      >
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.path}
+                            href={child.path}
+                            style={{
+                              ...styles.dropdownItem,
+                              color: isActiveLink(child.path)
+                                ? "#d4ff00"
+                                : "#888",
+                            }}
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })
           )}
         </div>
 
-        {/* RIGHT SECTION: Auth and Profile */}
+        {/* RIGHT: User Profile Status Area */}
         <div style={styles.authSection}>
           {authUser ? (
             <div style={styles.profileArea}>
               {!isMobile && (
                 <span style={styles.userName}>{authUser.firstName}</span>
               )}
-              <Link href="/profile" style={styles.avatarLink}>
+              <Link
+                href="/profile"
+                style={styles.avatarLink}
+                aria-label="View Profile"
+              >
                 <div style={styles.avatarCircle}>
-                  {authUser.image ? (
-                    <img
-                      src={
-                        authUser.image.startsWith("http")
-                          ? authUser.image
-                          : `${STATIC_URL}/${authUser.image}?t=${Date.now()}`
-                      }
-                      alt="User Avatar"
+                  {avatarSrc && !imgError ? (
+                    <Image
+                      src={avatarSrc}
+                      alt="User Profile Avatar"
+                      width={32}
+                      height={32}
                       style={styles.avatarImg}
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
+                      onError={() => setImgError(true)}
+                      unoptimized={avatarSrc.startsWith("http")}
                     />
                   ) : (
                     <span style={styles.avatarInitial}>
-                      {authUser.firstName?.[0] || "U"}
+                      {authUser.firstName?.[0] ?? "U"}
                     </span>
                   )}
                 </div>
@@ -253,7 +278,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#ffffff",
     textDecoration: "none",
   },
-  logo: {
+  navLink: {
     fontFamily: "var(--font-bebas), sans-serif",
     fontSize: "0.75rem",
     fontWeight: "bold",
@@ -262,6 +287,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textDecoration: "none",
     padding: "10px 0",
     transition: "color 0.2s ease",
+    userSelect: "none",
   },
   dropdown: {
     position: "absolute",
@@ -278,7 +304,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   dropdownItem: {
     padding: "12px 20px",
-    color: "#888",
     fontSize: "0.7rem",
     textDecoration: "none",
     letterSpacing: "3px",
@@ -299,6 +324,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textTransform: "uppercase",
     letterSpacing: "1px",
   },
+  avatarLink: { textDecoration: "none" },
   avatarCircle: {
     width: "32px",
     height: "32px",
@@ -322,8 +348,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "6px 14px",
     cursor: "pointer",
     transition: "all 0.2s ease",
+    textDecoration: "none",
   },
   hamburger: {
+    background: "none",
+    border: "none",
     cursor: "pointer",
     display: "flex",
     flexDirection: "column",
