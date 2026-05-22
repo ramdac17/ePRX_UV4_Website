@@ -8,6 +8,7 @@ interface Article {
   id: string;
   title: string;
   category: string;
+  description?: string; // Made dynamic to support incoming backend descriptions
   image: string | null;
 }
 
@@ -20,7 +21,6 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  /* Added hover state tracking */
   const [hoveredIndex, setHoveredIndex] = useState<string | null>(null);
 
   const STATIC_URL = process.env.NEXT_PUBLIC_STATIC_URL || "";
@@ -46,9 +46,9 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
       console.error("Archive Fetch Error:", err);
       setError("SYSTEM RECOVERY FAILED: Archives currently inaccessible.");
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
-  }, [limit]);
+  }, [limit, loading]);
 
   useEffect(() => {
     fetchArticles();
@@ -72,21 +72,11 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
           </h2>
 
           {/* BRAND LOGO */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: "15px 0 20px 0",
-            }}
-          >
+          <div style={logoContainerStyle}>
             <img
               src="/assets/images/cyber-punk-prx-logo.png"
               alt="Cyberpunk PRX Logo"
-              style={{
-                height: "auto",
-                width: "clamp(80px, 10vw, 120px)", // Scales beautifully across viewports
-                objectFit: "contain",
-              }}
+              style={logoImageStyle}
             />
           </div>
 
@@ -131,7 +121,6 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
                         height: "100%",
                         objectFit: "cover",
                         transition: "all 0.6s ease",
-                        /* REMOVED GRAYSCALE - Using brightness shift for depth */
                         filter: isHovered
                           ? "brightness(1.1)"
                           : "brightness(0.8)",
@@ -143,7 +132,13 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
                     <div style={landscapeOverlay} />
                   </div>
 
-                  <div style={styles.articleContent}>
+                  <div
+                    style={{
+                      ...styles.articleContent,
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
                     <span
                       style={{
                         ...styles.volTag,
@@ -153,15 +148,34 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
                     >
                       {post.category.toUpperCase().slice(0, 10)}
                     </span>
+
                     <h3
                       style={{
                         ...styles.articleTitle,
                         color: isHovered ? "#d4ff00" : "#fff",
                         transition: "color 0.3s ease",
+                        marginBottom: post.description ? "6px" : "15px",
                       }}
                     >
                       {post.title.toUpperCase()}
                     </h3>
+
+                    {post.description && (
+                      <p
+                        style={{
+                          fontSize: "0.75rem",
+                          fontFamily: "monospace",
+                          lineHeight: "1.4",
+                          color: isHovered ? "#bbb" : "#777",
+                          transition: "color 0.3s ease",
+                          margin: "0 0 10px 0",
+                          maxWidth: "95%",
+                        }}
+                      >
+                        {post.description}
+                      </p>
+                    )}
+
                     <div
                       style={{
                         ...cardFooterDecoration,
@@ -170,11 +184,13 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
                         transition: "all 0.3s ease",
                       }}
                     />
+
                     <div style={{ marginTop: "15px" }}>
                       <span
                         style={{
                           ...styles.volTag,
                           color: isHovered ? "#fff" : "#444",
+                          transition: "color 0.3s ease",
                         }}
                       >
                         READ DETAILS
@@ -193,7 +209,19 @@ const ArchivePage = ({ isSection = false, limit }: ArchiveProps) => {
   );
 };
 
-// --- STYLES RETAINED FROM YOUR CONFIG ---
+// --- STYLES CONFIG ---
+
+const logoContainerStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "center",
+  margin: "15px 0 20px 0",
+};
+
+const logoImageStyle: React.CSSProperties = {
+  height: "auto",
+  width: "clamp(80px, 10vw, 120px)",
+  objectFit: "contain",
+};
 
 const landscapeImageWrapper: React.CSSProperties = {
   width: "100%",
@@ -214,7 +242,7 @@ const landscapeOverlay: React.CSSProperties = {
 
 const cardFooterDecoration: React.CSSProperties = {
   height: "2px",
-  marginTop: "15px",
+  marginTop: "5px",
 };
 
 const placeholderStyle: React.CSSProperties = {
