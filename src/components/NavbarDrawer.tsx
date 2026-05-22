@@ -32,6 +32,7 @@ export default function NavbarDrawer({
   };
 
   const guestItems = [
+    { name: "DASHBOARD", path: "/" },
     { name: "LIVE EVENTS", path: "/events" },
     { name: "ARTICLES", path: "/articles" },
     { name: "ABOUT US", path: "/aboutus" },
