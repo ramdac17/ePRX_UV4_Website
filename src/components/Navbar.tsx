@@ -101,9 +101,17 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           {(isMobile || authUser) && (
             <motion.button
               style={styles.hamburger}
-              onClick={() => {
-                setIsMenuOpen(true);
-                if (onMenuClick) onMenuClick();
+              onClick={(e) => {
+                // 1. Prevent click from bleeding upward or firing multiple touch device triggers
+                e.preventDefault();
+                e.stopPropagation();
+
+                // 2. Safely manage state sequence
+                if (onMenuClick) {
+                  onMenuClick();
+                } else {
+                  setIsMenuOpen(true);
+                }
               }}
               whileHover="hover"
               whileTap={{ scale: 0.95 }}

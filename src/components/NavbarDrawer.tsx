@@ -63,7 +63,7 @@ export default function NavbarDrawer({
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <>
           {/* Backdrop */}
@@ -82,6 +82,9 @@ export default function NavbarDrawer({
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             style={styles.drawer}
+            // Stop propagation here to prevent clicks inside the drawer
+            // from bubbling out into the backdrop container.
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header / Profile */}
             <div style={styles.header}>
@@ -126,15 +129,11 @@ export default function NavbarDrawer({
                 const isActive = pathname === item.path;
 
                 return (
-                  <React.Fragment key={item.path + item.name}>
+                  <React.Fragment key={`${item.path}-${item.name}`}>
                     {DIVIDER_BEFORE.has(item.name) && (
                       <hr style={styles.divider} />
                     )}
 
-                    {/*
-                     * Fix: use a single variant key string for `animate`
-                     * instead of mixing variant strings with inline objects.
-                     */}
                     <motion.div
                       variants={{
                         inactive: { x: 0, color: "#fff" },
@@ -165,7 +164,8 @@ export default function NavbarDrawer({
                   <motion.div
                     initial={{ x: 0, color: "#ff4444" }}
                     whileHover={{ x: 10, color: "#ff6666" }}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       onLogout();
                       onClose();
                     }}
@@ -230,13 +230,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     top: 0,
     left: 0,
     width: "300px",
-    height: "100%",
+    // 1. Use 100dvh (Dynamic Viewport Height) so it respects mobile browser address bars
+    height: "100dvh",
     backgroundColor: "#0a0a0a",
     zIndex: 2001,
-    padding: "40px",
+    // 2. Reduce the padding slightly to gain back precious vertical screen estate
+    padding: "32px 32px 24px 32px", // Top, Right, Bottom, Left
     display: "flex",
     flexDirection: "column",
     borderRight: "1px solid #1a1a1a",
+
+    // 3. THE CRITICAL FIX: Allow content to scroll vertically if it overflows
+    overflowY: "auto",
+    WebkitOverflowScrolling: "touch", // Smooth physics scrolling for iOS touch targets
   },
   header: {
     marginBottom: "40px",
@@ -303,10 +309,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: "100%",
   },
   footer: {
+    // 4. Keeps pushing to bottom when space allows, but turns into a safety margin on short screens
     marginTop: "auto",
+    paddingTop: "32px",
     display: "flex",
     flexDirection: "column",
     gap: "20px",
+    flexShrink: 0, // Prevents the footer elements from being crushed or deformed
   },
   socialIcons: { display: "flex", gap: "20px" },
   socialLink: {
