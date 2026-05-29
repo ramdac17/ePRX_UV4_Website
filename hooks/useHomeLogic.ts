@@ -24,36 +24,59 @@ export function useHomeLogic(user: any) {
 
   useEffect(() => {
     if (!user) return;
+
     const fetchMetrics = async () => {
       try {
         const stored = localStorage.getItem("eprx_session");
         const { token } = stored ? JSON.parse(stored) : {};
-        const res = await fetch(`${API_URL}/activities/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
+        if (!token) return;
 
-        if (data.recent) {
-          setActivityData(
-            data.recent
-              .slice(0, 7)
-              .reverse()
-              .map((act: any) => ({
-                day: new Date(act.createdAt)
-                  .toLocaleDateString("en-US", { weekday: "short" })
-                  .toUpperCase(),
-                distance: Number(act.distance) || 0,
-              })),
-          );
-        }
-        setStats({
-          avgPace: data.summary?.avgPace || "0.00",
-          totalKm: data.summary?.totalDistance || "0.0",
+        // 🎯 TARGETING THE NATIVE STATS ENDPOINT: Handles prefix mapping safely
+        const baseUrl = API_URL?.endsWith("/api") ? API_URL : `${API_URL}/api`;
+        const statsUrl = `${baseUrl}/activities/stats`;
+
+        const response = await fetch(statsUrl, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
-      } catch (e) {
-        console.error("METRIC_SYNC_FAILURE", e);
+
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+        const rawText = await response.text();
+        if (!rawText) throw new Error("Empty response payload.");
+
+        const resData = JSON.parse(rawText);
+
+        // 🧩 TRANSFORMING THE INCOMING NATIVE PAYLOAD SHAPE
+        // Your backend returns: { recent: [...], summary: { totalDistance, totalHours } }
+        if (resData && resData.summary) {
+          // Map recent activities array to chart format (DAY + DISTANCE)
+          const mappedChartData = (resData.recent || [])
+            .map((act: any) => {
+              const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+              return {
+                day: days[new Date(act.createdAt).getDay()],
+                distance: Number(act.distance || 0),
+              };
+            })
+            .reverse(); // Keep chronological left-to-right sorting
+
+          setActivityData(mappedChartData);
+
+          // Update your aggregate cards directly from the summary stats engine
+          setStats({
+            totalKm: (Number(resData.summary.totalDistance) || 0).toFixed(1),
+            avgPace: "0.00", // Keeps placeholder baseline secure
+          });
+        }
+      } catch (error) {
+        console.error("❌ METRIC_SYNC_FAILURE:", error);
       }
     };
+
     fetchMetrics();
   }, [user]);
 

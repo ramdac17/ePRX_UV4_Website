@@ -45,7 +45,7 @@ export default function ActivityLog({ activities }: { activities: any[] }) {
               {act.title?.toUpperCase() || "RUNNER_LOG"}
             </h4>
             <div style={styles.statLine}>
-              <span style={styles.statItem}>{act.distance}KM</span>
+              <span style={styles.statItem}>{act.distance}KM/S</span>
               <span style={styles.statItem}>{act.pace}</span>
               <span style={styles.statItem}>
                 {Math.floor(act.duration / 60)}M

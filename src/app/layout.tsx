@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   description:
     "High-performance lifestyle brand for the modern athlete. Engineered for speed, efficiency, and minimalist precision.",
   icons: {
-    icon: "/favicon.ico", // Note: Usually starts with / in Next.js
+    icon: "/PRXCircleV3.png?v=2", // 🎯 Added '?v=1' to smash the browser cache!
   },
 };
 

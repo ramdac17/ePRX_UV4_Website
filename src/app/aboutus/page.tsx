@@ -104,7 +104,7 @@ export default function AboutPage() {
           >
             <div className="relative border border-[#1a1a1a] p-1 bg-[#080808]">
               <img
-                src="/assets/images/cyber-punk-prx-logo.png"
+                src="/assets/images/cyber-punk-prx-logo-design-V3.png"
                 alt="PRX Operational Interface"
                 className="w-full h-auto max-h-100 object-cover block filter"
               />

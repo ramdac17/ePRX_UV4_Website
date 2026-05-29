@@ -45,7 +45,9 @@ const itemRightVariants: Variants = {
 };
 
 export default function Home() {
-  const { logout, user } = useAuth();
+  const { logout, user, ...authRest } = useAuth() as any;
+
+  const logicData = useHomeLogic(user);
   const {
     isDrawerOpen,
     setIsDrawerOpen,
@@ -56,65 +58,235 @@ export default function Home() {
     lastUpdated,
     triggerGlitch,
     isGlitching,
-  } = useHomeLogic(user);
+  } = logicData;
 
-  // 🛠️ SINGLE SOURCE OF TRUTH: Aggregate Rechart dataset values directly first to ensure absolute parity
-  const computedMileage = React.useMemo(() => {
-    if (Array.isArray(activityData) && activityData.length > 0) {
-      return activityData.reduce((acc, item) => {
-        // Safely check common database properties falling back to 0
-        const val = item.mileage || item.km || item.distance || 0;
-        return acc + val;
-      }, 0);
+  // console.log("AUTH LAYER DATA:", authRest);
+  // console.log("HOOK DATA LAYER:", logicData);
+
+  const [globalUsers, setGlobalUsers] = React.useState<any[]>([]);
+
+  // 🔄 2. Fetch the leaderboard data with proper API URL and Auth Headers
+  React.useEffect(() => {
+    if (!user) return;
+
+    async function fetchLeaderboardUsers() {
+      try {
+        const stored = localStorage.getItem("eprx_session");
+        const { token } = stored ? JSON.parse(stored) : {};
+        if (!token) return;
+
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${API_URL}/leaderboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) throw new Error("Network response was not ok");
+
+        const data = await response.json();
+
+        const userList = Array.isArray(data)
+          ? data
+          : data.leaderboard || data.users || data.data || [];
+
+        setGlobalUsers(userList);
+      } catch (error) {
+        console.error("❌ Error fetching leaderboard users:", error);
+      }
     }
-    // Fallback cleanly to your hook's totalKm metric parsed as a number if it exists
-    return stats?.totalKm ? parseFloat(stats.totalKm) : 0;
-  }, [stats, activityData]);
 
-  // Inject the calculated single source of truth straight into the existing totalKm key
-  const syncedStats = React.useMemo(() => {
-    // Use toFixed(2) to strip floating point trail, then parseFloat to drop trailing zeros if it's a whole number
-    const formattedMileage = parseFloat(computedMileage.toFixed(2));
+    fetchLeaderboardUsers();
+  }, [user]);
 
-    return {
-      ...stats,
-      totalKm: `${formattedMileage.toLocaleString()} KM`,
-    };
-  }, [stats, computedMileage]);
-
-  // Type-safe user profile name extraction
+  // 🛠️ Type-safe user profile name extraction for yourself
   const displayUserName = React.useMemo(() => {
-    // Cast to any safely to check if a name string exists on the runtime object,
-    // otherwise fallback to the user email split or standard anonymous string
     const arbitraryUser = user as any;
     const rawName =
+      arbitraryUser?.firstName || // 🔑 FORCE FIRST: Look for firstName first to match Postgres
       arbitraryUser?.name ||
       arbitraryUser?.username ||
       user?.email?.split("@")[0];
 
-    return rawName || "ANONYMOUS_RIDER";
+    return (rawName || "ANONYMOUS_RIDER").toUpperCase();
   }, [user]);
 
-  // ⚡ DYNAMIC LEADERBOARD: Contains only the single current verified logged-in driver session
+  // 🏃‍♂️ 1. COMPUTE YOUR OWN PERSONAL TOTAL MILEAGE
+  const computedMileage = React.useMemo(() => {
+    const looseStats = (stats || {}) as any;
+    if (Array.isArray(activityData) && activityData.length > 0) {
+      const myLogs = activityData.filter(
+        (item) => !item.name || item.name.toUpperCase() === displayUserName,
+      );
+
+      if (myLogs.length > 0) {
+        return myLogs.reduce((acc, item) => {
+          const val = item.mileage || item.km || item.distance || 0;
+          return acc + val;
+        }, 0);
+      }
+    }
+    return looseStats?.totalKm ? parseFloat(looseStats.totalKm) : 0;
+  }, [stats, activityData, displayUserName]);
+
+  // ⏱️ 1b. COMPUTE YOUR OWN PERSONAL TOTAL DURATION
+  const computedDuration = React.useMemo(() => {
+    // 🔍 If activityData ever gets upgraded with a duration key later, this will catch it
+    if (Array.isArray(activityData) && activityData.length > 0) {
+      const myLogs = activityData.filter(
+        (item) => !item.name || item.name.toUpperCase() === displayUserName,
+      );
+
+      const hasDuration = myLogs.some((item) => "duration" in item);
+      if (hasDuration && myLogs.length > 0) {
+        return (
+          myLogs.reduce((acc, item) => {
+            const val = Number(item.duration || 0);
+            return acc + val;
+          }, 0) / 60
+        ); // Assuming backend tracks minutes, scale to hours
+      }
+    }
+
+    // 💡 SYSTEM FALLBACK: Derive hours from total mileage divided by a standard training speed (30 KM/H)
+    // 204.0 KM / 30 KM/H = ~6.8 Hours of training session metrics
+    if (computedMileage > 0) {
+      return computedMileage / 30;
+    }
+
+    return 0;
+  }, [activityData, displayUserName, computedMileage]);
+
+  // Inject your calculated totals into syncedStats for your ActivityChart layout
+  const syncedStats = React.useMemo(() => {
+    const formattedMileage = parseFloat(computedMileage.toFixed(2));
+    const totalHours = computedDuration;
+
+    // Destructure out the unused avgPace metric safely
+    const looseStats = (stats || {}) as any;
+    const { avgPace, ...restStats } = looseStats;
+
+    return {
+      ...restStats,
+      totalKm: `${formattedMileage.toLocaleString()} KM`,
+      // 🔥 POPULATED: This will now read out your true derived time metric (e.g., "6.8 HR/S")
+      totalHr: `${totalHours.toLocaleString(undefined, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      })} HR/S`,
+    };
+  }, [stats, computedMileage, computedDuration]);
+
+  // 🏆 2. DYNAMIC LEADERBOARD GENERATION
   const sortedLeaderboard = React.useMemo(() => {
-    const rawRiders = [
+    const arbitraryUser = user as any;
+    const currentUserId =
+      arbitraryUser?.userId ||
+      arbitraryUser?.id ||
+      arbitraryUser?._id ||
+      "CURRENT_USER_ID";
+    const cleanCurrentUserName = displayUserName.trim().toUpperCase();
+
+    // 1. Process real riders returned globally from your local state fetch
+    const realOtherRiders = (globalUsers || [])
+      .filter((u: any) => {
+        const backendUserId = u.userId || u.id || u._id;
+        if (backendUserId && backendUserId === currentUserId) {
+          return false;
+        }
+
+        // 🔑 ALIGNED FALLBACK: Use identical order here
+        const rawItemName =
+          u.firstName || u.name || u.username || u.email?.split("@")[0];
+        if (!rawItemName) return false;
+
+        const sanitizedItemName = String(rawItemName).trim().toUpperCase();
+        return sanitizedItemName !== cleanCurrentUserName;
+      })
+      .map((u: any) => {
+        // 🔑 ALIGNED FALLBACK: Use identical order here
+        const rawItemName =
+          u.firstName || u.name || u.username || u.email?.split("@")[0];
+        return {
+          id:
+            u.userId ||
+            u.id ||
+            u._id ||
+            String(rawItemName).trim().toUpperCase(),
+          name: String(rawItemName).trim().toUpperCase(),
+          numericMileage: Number(u.totalDistance || u.mileage || u.km || 0),
+          image: u.image || null,
+          isCurrentUser: false,
+        };
+      });
+
+    // 2. Fallback mock competitors
+    const mockCompetitors = [
       {
-        name: displayUserName.toUpperCase(),
-        numericMileage: computedMileage,
-        isCurrentUser: true,
+        id: "MOCK_ALPHA",
+        name: "ALPHA_RUNNER",
+        numericMileage: 2.5,
+        image: null,
+        isCurrentUser: false,
+      },
+      {
+        id: "MOCK_TRAIL",
+        name: "TRAILBLAZER",
+        numericMileage: 8.2,
+        image: null,
+        isCurrentUser: false,
+      },
+      {
+        id: "MOCK_PACE",
+        name: "PACEMAKER",
+        numericMileage: 6.0,
+        image: null,
+        isCurrentUser: false,
+      },
+      {
+        id: "MOCK_CYBER",
+        name: "CYBERSTRIDE",
+        numericMileage: 4.1,
+        image: null,
+        isCurrentUser: false,
       },
     ];
 
-    // Order descending strictly by the numericMileage value, slice to 5 items, and apply rank
-    return rawRiders
+    // 3. Combine: YOU + REAL OTHER USERS + MOCK DATA
+    const combinedPool = [
+      {
+        id: currentUserId,
+        name: cleanCurrentUserName,
+        numericMileage: computedMileage,
+        image: arbitraryUser?.image || arbitraryUser?.avatar || null,
+        isCurrentUser: true,
+      },
+      ...realOtherRiders,
+      ...mockCompetitors,
+    ];
+
+    // 4. Final Deduplication Map
+    const finalUniquePoolMap = new Map();
+    combinedPool.forEach((rider) => {
+      const uniqueKey = rider.id;
+      if (!finalUniquePoolMap.has(uniqueKey)) {
+        finalUniquePoolMap.set(uniqueKey, rider);
+      } else if (rider.isCurrentUser) {
+        finalUniquePoolMap.set(uniqueKey, rider);
+      }
+    });
+
+    return Array.from(finalUniquePoolMap.values())
       .sort((a, b) => b.numericMileage - a.numericMileage)
       .slice(0, 5)
       .map((rider, index) => ({
         ...rider,
         rank: index + 1,
-        mileage: `${rider.numericMileage.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 })} KM`,
+        image: rider.image,
+        mileage: `${rider.numericMileage.toLocaleString(undefined, {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 2,
+        })} KM`,
       }));
-  }, [displayUserName, computedMileage]);
+  }, [displayUserName, computedMileage, globalUsers, user]);
 
   // 🌐 HANDLER: Share profile stats safely to Facebook endpoints
   const handleFacebookShare = React.useCallback(() => {
@@ -152,7 +324,7 @@ export default function Home() {
     left: 0,
     width: "100%",
     height: "100%",
-    backgroundImage: "url('/assets/images/cyber-punk-prx-logo.png')",
+    backgroundImage: "url('/assets/images/cyber-punk-prx-logo-design-V3.png')",
     backgroundSize: "cover",
     backgroundPosition: `center ${scrollY * 0.3}px`,
     zIndex: 0,
@@ -287,49 +459,28 @@ export default function Home() {
                 gap: "12px",
               }}
             >
-              {sortedLeaderboard.map((item) => (
-                <div
-                  key={item.rank}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    fontSize: "0.75rem",
-                    padding: item.isCurrentUser ? "6px 8px" : "2px 0px",
-                    backgroundColor: item.isCurrentUser
-                      ? "rgba(212, 255, 0, 0.08)"
-                      : "transparent",
-                    border: item.isCurrentUser
-                      ? "1px dashed rgba(212, 255, 0, 0.3)"
-                      : "none",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                    }}
-                  >
-                    <span
-                      style={{ color: item.isCurrentUser ? "#d4ff00" : "#444" }}
-                    >
-                      0{item.rank}
-                    </span>
-                    <span
-                      style={{
-                        color: item.isCurrentUser ? "#d4ff00" : "#fff",
-                        fontWeight: item.isCurrentUser ? "bold" : "normal",
-                      }}
-                    >
-                      {item.name} {item.isCurrentUser && "(YOU)"}
-                    </span>
-                  </div>
+              {sortedLeaderboard.map((rider) => (
+                <div key={rider.name} className="flex items-center gap-3">
+                  <span>{rider.rank}</span>
+                  {rider.image ? (
+                    <img
+                      src={rider.image}
+                      alt={rider.name}
+                      className="w-8 h-8 rounded-full object-cover border border-zinc-700"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-mono text-zinc-400">
+                      {rider.name.slice(0, 2)}
+                    </div>
+                  )}
                   <span
-                    style={{ color: item.isCurrentUser ? "#d4ff00" : "#fff" }}
+                    className={
+                      rider.isCurrentUser ? "text-cyan-400 font-bold" : ""
+                    }
                   >
-                    {item.mileage}
+                    {rider.name}
                   </span>
+                  <span className="ml-auto">{rider.mileage}</span>
                 </div>
               ))}
             </div>

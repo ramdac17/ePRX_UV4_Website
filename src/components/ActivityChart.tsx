@@ -119,8 +119,15 @@ export default function ActivityChart({
 
       {/* --- METRIC DATA FOOTER --- */}
       <div style={styles.metricRow}>
-        <MetricItem label="AVG PACE" value={user ? stats.avgPace : "0.00"} />
-        <MetricItem label="TOTAL KM" value={user ? stats.totalKm : "0.0"} />
+        {/* 🔥 UPDATED: Changed from AVG PACE to TOTAL HR tracking */}
+        <MetricItem
+          label="TOTAL HR"
+          value={user ? stats.totalHr : "0.0 HR/S"}
+        />
+        <MetricItem
+          label="TOTAL KM"
+          value={user ? stats.totalKm : "0.0 KM/S"}
+        />
         <MetricItem
           label="UPDATED"
           value={user ? lastUpdated : "XX-XX-XXXX"}

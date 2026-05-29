@@ -75,7 +75,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     return pathname.startsWith(path);
   };
 
-  // Determine avatar src securely
   const getAvatarSrc = () => {
     if (!authUser?.image) return null;
     return authUser.image.startsWith("http")
@@ -102,11 +101,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             <motion.button
               style={styles.hamburger}
               onClick={(e) => {
-                // 1. Prevent click from bleeding upward or firing multiple touch device triggers
                 e.preventDefault();
                 e.stopPropagation();
 
-                // 2. Safely manage state sequence
                 if (onMenuClick) {
                   onMenuClick();
                 } else {
@@ -137,7 +134,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <div style={styles.centerSection}>
           {isMobile ? (
             <Link href="/" style={styles.mobileBrand}>
-              ePRX <span style={{ color: "#d4ff00" }}>UV</span>
+              ePRX <span style={{ color: "#d4ff00" }}>UV1</span>
             </Link>
           ) : (
             navItems.map((item) => {
@@ -244,7 +241,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               )}
             </div>
           ) : (
-            <Link href="/login" style={styles.authBtn}>
+            <Link href="/login" style={styles.loginBtn}>
               LOGIN
             </Link>
           )}
@@ -327,10 +324,11 @@ const styles: { [key: string]: React.CSSProperties } = {
   profileArea: { display: "flex", alignItems: "center", gap: "15px" },
   userName: {
     fontFamily: "monospace",
-    fontSize: "0.65rem",
-    color: "#555",
+    fontSize: "0.75rem",
+    color: "#d4ff00", // 🌟 NEON LIME MIX
+    fontWeight: "bold",
     textTransform: "uppercase",
-    letterSpacing: "1px",
+    letterSpacing: "1.5px",
   },
   avatarLink: { textDecoration: "none" },
   avatarCircle: {
@@ -357,6 +355,21 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: "pointer",
     transition: "all 0.2s ease",
     textDecoration: "none",
+  },
+  loginBtn: {
+    fontFamily: "var(--font-bebas)",
+    fontSize: "0.8rem", // 🚀 INCREASED SCALE
+    letterSpacing: "3px",
+    color: "#050505",
+    backgroundColor: "#d4ff00", // High contrast neon background
+    border: "1px solid #d4ff00",
+    padding: "8px 20px", // Expanded padding footprint
+    fontWeight: "bold",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    textDecoration: "none",
+    display: "inline-block",
+    textAlign: "center",
   },
   hamburger: {
     background: "none",

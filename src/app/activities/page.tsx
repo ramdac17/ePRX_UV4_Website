@@ -23,7 +23,7 @@ export default function CentralArchivePage() {
         });
         setActivities(res.data);
       } catch (err) {
-        console.error("ARCHIVE_ACCESS_DENIED", err);
+        console.error("ARCHIVE ACCESS DENIED", err);
       } finally {
         setLoading(false);
       }
@@ -32,7 +32,7 @@ export default function CentralArchivePage() {
   }, [user?.id, token, authLoading]);
 
   if (loading)
-    return <div style={styles.loader}>INITIALIZING_ARCHIVE_DATA...</div>;
+    return <div style={styles.loader}>INITIALIZING ARCHIVE DATA...</div>;
 
   return (
     <AuthGuard>

@@ -51,7 +51,7 @@ export default function Toast({
             fontSize: "0.75rem",
           }}
         >
-          {type === "success" ? ">> " : "!! "} {displayMessage.toUpperCase()}
+          {type === "success" ? "" : "!! "} {displayMessage.toUpperCase()}
         </motion.div>
       )}
     </AnimatePresence>

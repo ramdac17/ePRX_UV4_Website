@@ -47,7 +47,7 @@ const PillarsPage = () => {
             }}
           >
             <img
-              src="/assets/images/cyber-punk-prx-logo.png"
+              src="/assets/images/cyber-punk-prx-logo-design-V3.png"
               alt="Cyberpunk PRX Logo"
               style={{
                 height: "auto",

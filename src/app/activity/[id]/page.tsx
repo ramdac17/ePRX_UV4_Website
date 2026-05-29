@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!res.ok) throw new Error();
     const activity = await res.json();
 
-    const statsSummary = `${activity.distance}KM | ${activity.pace} | ${Math.floor(activity.duration / 60)}M`;
+    const statsSummary = `${activity.distance}KM/S | ${activity.pace} | ${Math.floor(activity.duration / 60)}M`;
 
     return {
       title: `ePRX MISSION: ${activity.title}`,
@@ -110,7 +110,7 @@ export default async function ActivityPage({ params }: Props) {
               </p>
               <p className="text-lg font-mono text-white leading-none">
                 {activity.distance}
-                <span className="text-[9px] text-zinc-500 ml-0.5">KM</span>
+                <span className="text-[9px] text-zinc-500 ml-0.5">KM/S</span>
               </p>
             </div>
             <div className="text-center border-x border-zinc-800/30">
