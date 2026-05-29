@@ -165,7 +165,7 @@ const MobileEcosystem = () => {
               style={{ display: "block" }}
             >
               <img
-                src="/assets/images/PRXQRV3.jpg"
+                src="/assets/images/PRXQRV4.jpg"
                 alt="Download ePRX Beta QR Code"
                 style={{
                   width: "140px",
