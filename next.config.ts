@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname, "../../"),
   },
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**", // Allows any path under res.cloudinary.com
+      },
+    ],
+  },
+
   experimental: {
     // 🎯 FIX 1: Move aliases into their proper type-safe experimental engine nest
     turbo: {
