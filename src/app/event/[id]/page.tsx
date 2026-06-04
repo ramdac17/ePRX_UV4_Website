@@ -1,9 +1,11 @@
 import { Metadata } from "next";
 import EventDetailClient from "./EventDetailClient";
 
-// --- Types & Interfaces ---
+// 1. FIXED: Next.js expects Page/Metadata props to have an optional 'searchParams' property
+// and dynamic params keys are typically typed as string | string[] | undefined internally.
 interface RouteProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 interface EventApiPayload {
@@ -12,22 +14,9 @@ interface EventApiPayload {
   image?: string;
 }
 
-// --- Configuration Constants ---
 const BACKEND_API =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 const PRODUCTION_URL = "https://www.prxph.com";
-
-// --- Helper Utilities ---
-/**
- * Resolves full asset URLs for SEO and OpenGraph metadata images.
- * Aligned to match your production NestJS router bindings prefix.
- */
-const resolveMetadataImageUrl = (imagePath: string | undefined): string => {
-  if (!imagePath) return "";
-  return imagePath.startsWith("http")
-    ? imagePath
-    : `${BACKEND_API}/uploads/${imagePath}`;
-};
 
 // --- SEO Metadata Generator ---
 export async function generateMetadata({
@@ -36,53 +25,65 @@ export async function generateMetadata({
   const fallbackTitle = "PRX | LIVE EVENTS";
   const fallbackDesc = "Access live and upcoming ePRX UV1 performance assets.";
 
-  // 1. Safely resolve route parameters
-  let id = "";
-  try {
-    const resolvedParams = await params;
-    id = resolvedParams?.id || "";
-  } catch (e) {
-    console.error("METADATA_PARAM_READ_CRASH:", e);
-  }
+  // 🚨 ADD A DEFAULT BRAND IMAGE URL HERE FOR WHEN FETCHES FAIL
+  const DEFAULT_SHARE_IMAGE = `${PRODUCTION_URL}/images/default-share-banner.jpg`;
+
+  const resolvedParams = await params;
+  const id = resolvedParams?.id || "";
 
   if (!id) {
-    return { title: fallbackTitle, description: fallbackDesc };
+    return {
+      title: fallbackTitle,
+      description: fallbackDesc,
+      openGraph: { images: [{ url: DEFAULT_SHARE_IMAGE }] },
+    };
   }
 
   try {
-    // 2. Fetch event data from backend API
     const res = await fetch(`${BACKEND_API}/article/${id}`, {
       next: { revalidate: 300 },
     });
 
+    // If backend fails, log it clearly but still provide a valid image metadata object
     if (!res.ok) {
-      console.error(`Backend returned status ${res.status} for id: ${id}`);
-      return { title: "EVENT | PRX", description: fallbackDesc };
+      console.error(
+        `CRITICAL: Backend API failed for metadata ID ${id}. Status: ${res.status}`,
+      );
+      return {
+        title: "EVENT | PRX",
+        description: fallbackDesc,
+        openGraph: {
+          title: "EVENT | PRX",
+          description: fallbackDesc,
+          url: `${PRODUCTION_URL}/event/${id}`,
+          images: [{ url: DEFAULT_SHARE_IMAGE }], // Fixes missing preview on failure
+        },
+      };
     }
 
-    const event = await res.json();
+    const event: EventApiPayload = await res.json();
 
-    // 3. Construct dynamic values
     const titleText = event?.title || "LIVE EVENT";
     const descriptionText = event?.description || fallbackDesc;
 
-    const imageUrl = event?.image
-      ? event.image.startsWith("http")
+    // Resolve image path with a safe fallback structure
+    let imageUrl = DEFAULT_SHARE_IMAGE;
+    if (event?.image) {
+      imageUrl = event.image.startsWith("http")
         ? event.image
-        : `${BACKEND_API}/uploads/${event.image}`
-      : null;
+        : `${BACKEND_API}/uploads/${event.image}`;
+    }
 
-    // 4. Return unified Metadata payload
     return {
       title: `${titleText.toUpperCase()} | PRX`,
       description: descriptionText,
       openGraph: {
         title: titleText,
         description: descriptionText,
-        url: `https://www.prxph.com/event/${id}`,
+        url: `${PRODUCTION_URL}/event/${id}`,
         siteName: "PRX",
         type: "article",
-        images: imageUrl ? [{ url: imageUrl }] : [],
+        images: [{ url: imageUrl }], // Will always have a valid string value
       },
     };
   } catch (error) {
@@ -90,6 +91,9 @@ export async function generateMetadata({
     return {
       title: fallbackTitle,
       description: fallbackDesc,
+      openGraph: {
+        images: [{ url: DEFAULT_SHARE_IMAGE }],
+      },
     };
   }
 }
@@ -97,7 +101,5 @@ export async function generateMetadata({
 // --- Main Server Component Router Entry ---
 export default async function Page({ params }: RouteProps) {
   const { id } = await params;
-
-  // Pass the unwrapped ID safely down to the client container
   return <EventDetailClient id={id} />;
 }
