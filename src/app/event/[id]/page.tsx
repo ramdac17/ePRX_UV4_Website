@@ -15,17 +15,18 @@ interface EventApiPayload {
 // --- Configuration Constants ---
 const BACKEND_API =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-const STATIC_BASE_URL = BACKEND_API.replace("/api", "");
+const PRODUCTION_URL = "https://www.prxph.com";
 
 // --- Helper Utilities ---
 /**
  * Resolves full asset URLs for SEO and OpenGraph metadata images.
+ * Aligned to match your production NestJS router bindings prefix.
  */
 const resolveMetadataImageUrl = (imagePath: string | undefined): string => {
   if (!imagePath) return "";
   return imagePath.startsWith("http")
     ? imagePath
-    : `${STATIC_BASE_URL}/uploads/${imagePath}`;
+    : `${BACKEND_API}/uploads/${imagePath}`;
 };
 
 // --- SEO Metadata Generator ---
@@ -51,24 +52,42 @@ export async function generateMetadata({
 
     const imageUrl = resolveMetadataImageUrl(event.image);
     const fallbackDescription =
-      event.description?.substring(0, 160) ||
-      "Explore details about this event.";
+      event.description?.substring(0, 155) ||
+      "Explore performance data and registration details for this ePRX event.";
     const capitalizedTitle = event.title.toUpperCase();
 
     return {
-      title: `${capitalizedTitle} | ARTICLES ARCHIVE`,
+      title: `${capitalizedTitle} | PRX EVENTS`,
       description: fallbackDescription,
       openGraph: {
         title: event.title,
         description: fallbackDescription,
-        images: imageUrl ? [{ url: imageUrl }] : [],
+        url: `${PRODUCTION_URL}/events/${id}`,
+        siteName: "PRX",
+        images: imageUrl
+          ? [
+              {
+                url: imageUrl,
+                width: 1200,
+                height: 630,
+                alt: `Event flyer for ${event.title}`,
+              },
+            ]
+          : [],
         type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: event.title,
+        description: fallbackDescription,
+        images: imageUrl ? [imageUrl] : [],
       },
     };
   } catch (error) {
     console.error("Metadata resolution fallback activated:", error);
     return {
-      title: "PRX | ARTICLES ARCHIVE",
+      title: "PRX | LIVE EVENTS",
+      description: "Access live and upcoming ePRX performance assets.",
     };
   }
 }
@@ -77,7 +96,6 @@ export async function generateMetadata({
 export default async function Page({ params }: RouteProps) {
   const { id } = await params;
 
-  // We pass the id down. To satisfy the prop contract safely without crossing
-  // serialization boundaries, let's make sure Client handles the share implementation.
+  // Pass the unwrapped ID safely down to the client container
   return <EventDetailClient id={id} />;
 }

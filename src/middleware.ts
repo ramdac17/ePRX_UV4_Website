@@ -4,11 +4,12 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
   const { pathname } = request.nextUrl;
+  const userAgent = request.headers.get("user-agent") || "";
 
   // 🎯 GOAL: Make /dashboard the primary landing page.
   // Redirecting the root "/" to "/dashboard" for everyone.
-  if (pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (userAgent.includes("facebookexternalhit")) {
+    return NextResponse.next();
   }
 
   // 🛡️ AUTH CHECK: If a logged-in user tries to go back to Login/Register,

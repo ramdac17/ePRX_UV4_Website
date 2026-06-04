@@ -5,28 +5,33 @@ type Props = {
 };
 
 /**
- * 🌏 THE WAREHOUSE: Railway API
- * Must match the @Controller('activities') prefix in your NestJS backend.
+ * 🌏 THE WAREHOUSE: Production Custom API Domain (Railway)
+ * Points directly to your secure backend API sub-route.
  */
-const RAILWAY_API =
-  "https://eprxuv1-monorepo-production.up.railway.app/api/activities";
+const BACKEND_API = "https://api.prxph.com/api/activities";
 
 /**
- * 🚀 THE BILLBOARD: Vercel Deployment
- * Used for OpenGraph canonical URLs.
+ * 🚀 THE BILLBOARD: Production Custom Domain (Vercel)
+ * Used for OpenGraph canonical URLs to ensure proper social sharing attribution.
  */
-const VERCEL_URL = "https://e-prx-uv-4-website.vercel.app";
+const PRODUCTION_URL = "https://www.prxph.com";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
 
   try {
     // Next.js deduplicates this fetch with the one in the component body
-    const res = await fetch(`${RAILWAY_API}/${id}`);
+    const res = await fetch(`${BACKEND_API}/${id}`);
     if (!res.ok) throw new Error();
     const activity = await res.json();
 
     const statsSummary = `${activity.distance}KM/S | ${activity.pace} | ${Math.floor(activity.duration / 60)}M`;
+
+    // Ensure the image URL is absolute and fallback safely if missing
+    const imageUrl =
+      activity.mapImageUrl ||
+      activity.shareImageUrl ||
+      `${PRODUCTION_URL}/default-share-image.png`;
 
     return {
       title: `ePRX MISSION: ${activity.title}`,
@@ -34,10 +39,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title: `ePRX MISSION LOG: ${activity.title}`,
         description: `View my mission performance data on the ePRX platform.`,
-        url: `${VERCEL_URL}/activity/${id}`,
+        url: `${PRODUCTION_URL}/activity/${id}`,
         images: [
           {
-            url: activity.mapImageUrl || activity.shareImageUrl,
+            url: imageUrl,
             width: 1200,
             height: 630,
             alt: `Mission map for ${activity.title}`,
@@ -45,28 +50,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ],
         type: "website",
       },
+      twitter: {
+        card: "summary_large_image",
+        title: `ePRX MISSION LOG: ${activity.title}`,
+        description: `Mission Stats: ${statsSummary}`,
+        images: [imageUrl],
+      },
     };
   } catch (e) {
-    return { title: "ePRX MISSION ARCHIVE" };
+    return {
+      title: "ePRX MISSION ARCHIVE",
+      description: "Access historical ePRX UV1 performance assets.",
+    };
   }
 }
 
 export default async function ActivityPage({ params }: Props) {
   const { id } = await params;
 
-  // ⚡️ ADDED: Explicit headers and no-store to bypass Vercel/Railway caching issues
-  const res = await fetch(`${RAILWAY_API}/${id}`, {
+  // ⚡️ OPTIMIZATION: Clean, secure production connection to api.prxph.com
+  const res = await fetch(`${BACKEND_API}/${id}`, {
     method: "GET",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    cache: "no-store", // This forces a fresh look at the DB every time
+    cache: "no-store", // Bypasses caches to guarantee immediate DB accuracy
   });
 
   if (!res.ok) {
     // 💡 LOGGING: This will show up in your Vercel Logs (Dashboard > Project > Logs)
-
+    console.error(`Failed to fetch activity sequence data for ID: ${id}`);
     return (
       <div className="min-h-screen bg-black text-zinc-500 p-8 flex flex-col items-center justify-center font-mono text-center">
         <div className="text-cyan-500 text-4xl mb-4 opacity-50">!</div>
@@ -75,7 +89,7 @@ export default async function ActivityPage({ params }: Props) {
           ID: {id}
           <br />
           NODE:{" "}
-          {RAILWAY_API.includes("railway") ? "REMOTE_RAILWAY" : "LOCAL_HOST"}
+          {BACKEND_API.includes("railway") ? "REMOTE_RAILWAY" : "LOCAL_HOST"}
         </p>
       </div>
     );
@@ -145,7 +159,7 @@ export default async function ActivityPage({ params }: Props) {
           {/* Minimalist Footer */}
           <div className="mt-4 flex flex-col items-center opacity-40">
             <p className="text-[6px] text-zinc-600 font-mono tracking-[0.5em] uppercase">
-              E-PRX UV4 // SECURE_NODE
+              E-PRX UV1 // SECURE_NODE
             </p>
           </div>
         </div>

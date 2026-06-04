@@ -24,37 +24,44 @@ export default function ArticleDetailClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const STATIC_URL =
-    BACKEND_API?.replace("/api", "") || "http://localhost:3001";
+  /**
+   * 🌏 FIXED STATIC URL EXTRACTION:
+   * Maps path resolutions to 'https://api.prxph.com/api' instead of dropping the prefix,
+   * matching NestJS's express static bindings configuration.
+   */
+  const STATIC_URL = BACKEND_API || "http://localhost:3001/api";
 
-  // Refactored Share Logic
+  // Dynamic Sharing Logic
   const handleShare = async (e: React.MouseEvent) => {
     if (!article) return;
-    const url = window.location.href;
+    const url = typeof window !== "undefined" ? window.location.href : "";
     const title = article.title;
 
-    // 1. Priority: Use Native Share API for iOS (Chrome/Safari) and Android
+    // 1. Priority: Use Native Share API for mobile agents (iOS / Android)
     if (navigator.share) {
-      e.preventDefault(); // Stop the <a> tag from opening a new tab
+      e.preventDefault();
       try {
         await navigator.share({
           title: title,
           url: url,
         });
+        return; // Execution successful, break out of handler
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
-          console.log("Share aborted by user");
-        } else {
-          // If native share fails for some other reason, allow the fallback
-          window.open(
-            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-            "_blank",
-          );
+          console.log("Share sequence cancelled by user.");
+          return;
         }
+        // Fall through to manual sharer popup if native process crashes
       }
     }
-    // 2. Fallback: If navigator.share is NOT supported (Desktop),
-    // the <a> tag will naturally follow its href.
+
+    // 2. Fallback: Open clean desktop social share window
+    e.preventDefault();
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   useEffect(() => {
@@ -110,6 +117,9 @@ export default function ArticleDetailClient({ id }: { id: string }) {
       : article.author.username
     : "SYSTEM_AUTO";
 
+  const currentShareUrl =
+    typeof window !== "undefined" ? window.location.href : "";
+
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-28 pb-20 px-6 md:px-[10%]">
       <motion.article
@@ -147,7 +157,7 @@ export default function ArticleDetailClient({ id }: { id: string }) {
             </div>
 
             <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentShareUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleShare}

@@ -19,7 +19,13 @@ export default function GearPage() {
 
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-  const STATIC_URL = BACKEND_API.replace("/api", "");
+
+  /**
+   * 🌏 FIXED STATIC URL EXTRACTION:
+   * Keeps the '/api' prefix configuration intact so gear item card assets
+   * pull smoothly from the upload directory endpoints without a 404.
+   */
+  const STATIC_URL = BACKEND_API;
 
   useEffect(() => {
     async function fetchArticles() {

@@ -22,7 +22,13 @@ export default function LiveEventsPage() {
 
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-  const STATIC_URL = BACKEND_API.replace("/api", "");
+
+  /**
+   * 🌏 FIXED STATIC URL EXTRACTION:
+   * Keeps the '/api' prefix configuration intact so event list grid images
+   * pull smoothly from the upload stream endpoints without a 404.
+   */
+  const STATIC_URL = BACKEND_API;
 
   useEffect(() => {
     async function fetchLiveEvents() {
@@ -155,7 +161,7 @@ export default function LiveEventsPage() {
             <p className="font-mono text-[#444] text-xs md:text-sm tracking-widest uppercase">
               {searchTerm
                 ? `NO MISSIONS MATCHING: "${searchTerm}"`
-                : "NO LIVE TRANSMISSIONS DETECTION"}
+                : "NO LIVE TRANSMISSIONS DETECTED"}
             </p>
           </div>
         )}

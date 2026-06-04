@@ -19,7 +19,13 @@ export default function ArticlesArchivePage() {
 
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-  const STATIC_URL = BACKEND_API.replace("/api", "");
+
+  /**
+   * 🌏 FIXED STATIC URL EXTRACTION:
+   * Preserves the '/api' routing prefix so that article grid thumbnails load
+   * seamlessly from your NestJS container uploads folder.
+   */
+  const STATIC_URL = BACKEND_API;
 
   useEffect(() => {
     async function fetchArticles() {

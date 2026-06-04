@@ -19,7 +19,13 @@ export default function MindPage() {
 
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-  const STATIC_URL = BACKEND_API.replace("/api", "");
+
+  /**
+   * 🌏 FIXED STATIC URL EXTRACTION:
+   * Retains the full '/api' namespace base path so that card media thumbnails
+   * resolve flawlessly through your reverse proxy configurations.
+   */
+  const STATIC_URL = BACKEND_API;
 
   useEffect(() => {
     async function fetchArticles() {

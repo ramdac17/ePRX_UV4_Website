@@ -13,7 +13,13 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
 
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-  const STATIC_URL = BACKEND_API.replace("/api", "");
+
+  /**
+   * 🌏 FIXED STATIC URL EXTRACTION:
+   * Retains the '/api' prefix layout so assets are fetched through your
+   * secure custom domain routing chain: https://api.prxph.com/api/uploads/...
+   */
+  const STATIC_URL = BACKEND_API;
 
   useEffect(() => {
     async function fetchEvent() {
@@ -37,7 +43,7 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
    */
   const handleShare = async (e: React.MouseEvent) => {
     if (!event) return;
-    const url = window.location.href;
+    const url = typeof window !== "undefined" ? window.location.href : "";
     const title = event.title;
 
     // Priority 1: Use Native Share API for mobile devices (iOS / Android)
@@ -48,20 +54,23 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
           title: title,
           url: url,
         });
+        return; // Execution successful, break out of handler
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
           console.log("Share uplink execution aborted by client view");
-        } else {
-          // If native share breaks or drops out, trigger explicit desktop popup fallback channel
-          window.open(
-            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-            "_blank",
-          );
+          return;
         }
+        // Fall through to manual sharer popup if native process fails
       }
     }
-    // Priority 2: Native fallback. If navigator.share doesn't exist (Desktop Browsers),
-    // the <a> tag's default behavior takes over and follows the target web url link safely.
+
+    // Priority 2: Manual desktop popout share sequence
+    e.preventDefault();
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   if (loading) {

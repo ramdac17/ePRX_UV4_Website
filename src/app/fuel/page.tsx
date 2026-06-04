@@ -19,7 +19,13 @@ export default function FuelPage() {
 
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-  const STATIC_URL = BACKEND_API.replace("/api", "");
+
+  /**
+   * 🌏 FIXED STATIC URL EXTRACTION:
+   * Keeps the '/api' prefix configuration intact so fuel data card assets
+   * pull smoothly from the upload directory endpoints without a 404.
+   */
+  const STATIC_URL = BACKEND_API;
 
   useEffect(() => {
     async function fetchArticles() {
@@ -39,18 +45,6 @@ export default function FuelPage() {
     }
     fetchArticles();
   }, [BACKEND_API]);
-
-  const shareToFacebook = (
-    e: React.MouseEvent,
-    articleId: string,
-    title: string,
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const articleUrl = `${window.location.origin}/article/${articleId}`;
-    const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}&t=${encodeURIComponent(title)}`;
-    window.open(fbShareUrl, "_blank", "width=600,height=400");
-  };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-16 px-6 md:px-[8%]">
@@ -136,7 +130,7 @@ export default function FuelPage() {
         ) : (
           <div className="text-center py-24">
             <p className="font-mono text-[#444] text-xs md:text-sm tracking-widest uppercase">
-              NO FUEL DATA
+              NO FUEL DATA AVAILABLE
             </p>
           </div>
         )}

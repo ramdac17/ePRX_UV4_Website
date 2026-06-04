@@ -21,7 +21,7 @@ interface EventData {
 
 export interface EventPageProps {
   event: EventData;
-  shareToFacebook: (e: React.MouseEvent) => void; // Expects the mouse event now
+  shareToFacebook: (e: React.MouseEvent) => void;
   STATIC_URL: string;
 }
 
@@ -114,7 +114,7 @@ const EventDetailView: React.FC<EventPageProps> = ({
               <MetaItem label="ORGANIZER" value={event.organizer} />
             </div>
 
-            {/* Share Anchor Link - Reverted to layout logic */}
+            {/* Share Anchor Link */}
             <div className="md:pb-0.5">
               <a
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentHref)}`}
@@ -199,7 +199,7 @@ const EventDetailView: React.FC<EventPageProps> = ({
 
         <footer className="mt-24 text-center border-t border-[#222] pt-8">
           <p className="text-[#444] font-mono text-[0.6rem] tracking-[4px] uppercase">
-            PRX ARTICLES
+            PRX EVENTS ARCHIVE // {new Date().getFullYear()}
           </p>
         </footer>
       </motion.div>
