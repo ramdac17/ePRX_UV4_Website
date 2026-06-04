@@ -30,9 +30,15 @@ const resolveMetadataImageUrl = (imagePath: string | undefined): string => {
 };
 
 // --- SEO Metadata Generator ---
+import { Metadata } from "next";
+
 export async function generateMetadata({
   params,
 }: RouteProps): Promise<Metadata> {
+  const fallbackTitle = "PRX | LIVE EVENTS";
+  const fallbackDesc = "Access live and upcoming ePRX UV1 performance assets.";
+
+  // 1. Safely resolve route parameters
   let id = "";
   try {
     const resolvedParams = await params;
@@ -41,55 +47,48 @@ export async function generateMetadata({
     console.error("METADATA_PARAM_READ_CRASH:", e);
   }
 
-  const fallbackTitle = "PRX | LIVE EVENTS";
-  const fallbackDesc = "Access live and upcoming ePRX performance assets.";
-
   if (!id) {
     return { title: fallbackTitle, description: fallbackDesc };
   }
 
   try {
-    // 🌐 1. Ensure this points to your exact backend route pluralization
+    // 2. Fetch event data from backend API
     const res = await fetch(`${BACKEND_API}/article/${id}`, {
-      // or /event/${id} depending on backend routing definitions
       next: { revalidate: 300 },
     });
 
     if (!res.ok) {
       console.error(`Backend returned status ${res.status} for id: ${id}`);
-      return {
-        title: `EVENT | PRX`,
-        description: fallbackDesc,
-      };
+      return { title: "EVENT | PRX", description: fallbackDesc };
     }
 
     const event = await res.json();
 
+    // 3. Construct dynamic values
+    const titleText = event?.title || "LIVE EVENT";
+    const descriptionText = event?.description || fallbackDesc;
+
+    const imageUrl = event?.image
+      ? event.image.startsWith("http")
+        ? event.image
+        : `${BACKEND_API}/uploads/${event.image}`
+      : null;
+
+    // 4. Return unified Metadata payload
     return {
-      title: `${event?.title?.toUpperCase() || "LIVE EVENT"} | PRX`,
-      description: event?.description || fallbackDesc,
+      title: `${titleText.toUpperCase()} | PRX`,
+      description: descriptionText,
       openGraph: {
-        title: event?.title || "LIVE EVENT",
-        description: event?.description || fallbackDesc,
-
-        // 🚨 2. FIXED CANONICAL URL MATCHING:
-        // Your current code is appending an 's' making it /events/ instead of /event/
+        title: titleText,
+        description: descriptionText,
         url: `https://www.prxph.com/event/${id}`,
-
         siteName: "PRX",
-        images: event?.image
-          ? [
-              {
-                url: event.image.startsWith("http")
-                  ? event.image
-                  : `${BACKEND_API}/uploads/${event.image}`,
-              },
-            ]
-          : [],
         type: "article",
+        images: imageUrl ? [{ url: imageUrl }] : [],
       },
     };
   } catch (error) {
+    console.error("METADATA_GENERATION_FAILED:", error);
     return {
       title: fallbackTitle,
       description: fallbackDesc,
