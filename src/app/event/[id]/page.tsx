@@ -30,8 +30,6 @@ const resolveMetadataImageUrl = (imagePath: string | undefined): string => {
 };
 
 // --- SEO Metadata Generator ---
-import { Metadata } from "next";
-
 export async function generateMetadata({
   params,
 }: RouteProps): Promise<Metadata> {
