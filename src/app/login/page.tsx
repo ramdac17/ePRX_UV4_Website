@@ -23,7 +23,6 @@ const LoginForm = () => {
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   useEffect(() => {
-    // Check window only after mount to avoid hydration mismatch
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -39,7 +38,17 @@ const LoginForm = () => {
       const token = data.accessToken || data.token;
       if (!token) throw new Error("TOKEN MISSING");
 
+      /**
+       * 🔑 FIX: WRITE SESSION TO COOKIE TABLE FOR MIDDLEWARE READS
+       * We explicitly write to document.cookie with path=/ so that the Next.js
+       * Edge routing layer can intercept this cookie value on /dashboard checks.
+       */
+      const cookieLifetime = 60 * 60 * 24; // 24 Hours in seconds
+      document.cookie = `token=${token}; path=/; max-age=${cookieLifetime}; secure; samesite=lax`;
+
+      // Trigger your contextual memory backup
       login(user, token);
+
       setToastMsg("ACCESS GRANTED: LOADING DASHBOARD...");
       setToastType("success");
       setShowToast(true);
