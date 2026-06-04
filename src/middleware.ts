@@ -19,7 +19,7 @@ export function middleware(request: NextRequest) {
   // 🛡️ 3. AUTH GUARD: Secure layout paths from unauthenticated sessions
   // If a user has NO token and tries to access the dashboard, redirect them to login
   if (!token && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/auth/login", request.url)); // Adjust to your exact login route if different (e.g. /login)
+    return NextResponse.redirect(new URL("/login", request.url)); // Adjust to your exact login route if different (e.g. /login)
   }
 
   // 🚪 4. AUTH REVERSE-GUARD: If a logged-in user tries to visit login/register, push them back to dashboard
