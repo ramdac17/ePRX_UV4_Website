@@ -6,14 +6,23 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const userAgent = request.headers.get("user-agent") || "";
 
-  // 🎯 GOAL: Make /dashboard the primary landing page.
-  // Redirecting the root "/" to "/dashboard" for everyone.
+  // 🤖 1. FACEBOOK SCRAPER BYPASS: Always step out of the way for metadata scrapers
   if (userAgent.includes("facebookexternalhit")) {
     return NextResponse.next();
   }
 
-  // 🛡️ AUTH CHECK: If a logged-in user tries to go back to Login/Register,
-  // push them back to the Dashboard.
+  // 🎯 2. ROOT LANDING REDIRECT: Force the base website url "/" to forward straight to "/dashboard"
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // 🛡️ 3. AUTH GUARD: Secure layout paths from unauthenticated sessions
+  // If a user has NO token and tries to access the dashboard, redirect them to login
+  if (!token && pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/auth/login", request.url)); // Adjust to your exact login route if different (e.g. /login)
+  }
+
+  // 🚪 4. AUTH REVERSE-GUARD: If a logged-in user tries to visit login/register, push them back to dashboard
   if (token && pathname.startsWith("/auth")) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -22,16 +31,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // We exclude /api, /_next, and static files to prevent middleware from running
-  // on every image or internal request (this helps avoid that deprecation warning).
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
+  // Keeps internal assets clean, matches all operational page endpoints
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
