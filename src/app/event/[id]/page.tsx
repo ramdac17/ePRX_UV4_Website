@@ -87,7 +87,7 @@ export async function generateMetadata({
       },
     };
   } catch (error) {
-    console.error("METADATA_GENERATION_FAILED:", error);
+    console.error("METADATA GENERATION FAILED:", error);
     return {
       title: fallbackTitle,
       description: fallbackDesc,

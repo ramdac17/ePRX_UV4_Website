@@ -23,6 +23,7 @@ interface NavItem {
 
 // Guest nav items
 const guestItems: NavItem[] = [
+  { name: "DASHBOARD", path: "/" },
   { name: "LIVE EVENTS", path: "/events" },
   { name: "ARTICLES", path: "/articles" },
   { name: "ABOUT US", path: "/aboutus" },

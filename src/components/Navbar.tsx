@@ -35,10 +35,22 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // 🛠️ REFACTORED TO FORCE ROUTER CACHE FLUSH & CLEAN REDIRECT
   const handleSignOut = () => {
-    logout();
-    setIsMenuOpen(false);
-    router.push("/login");
+    try {
+      logout();
+      setIsMenuOpen(false);
+      setOpenDropdown(null);
+      setImgError(false);
+
+      // Flush the local layout cache state trees
+      router.refresh();
+
+      // Hard redirect forces middleware valuation with fresh headers
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("NAVBAR_SIGNOUT_EXC_HANDSHAKE:", error);
+    }
   };
 
   const coreNavItems: NavItem[] = [
@@ -241,9 +253,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               )}
             </div>
           ) : (
-            <Link href="/login" style={styles.loginBtn}>
+            <a href="/login" style={styles.loginBtn}>
               LOGIN
-            </Link>
+            </a>
           )}
         </div>
       </nav>
@@ -325,7 +337,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   userName: {
     fontFamily: "monospace",
     fontSize: "0.75rem",
-    color: "#d4ff00", // 🌟 NEON LIME MIX
+    color: "#d4ff00",
     fontWeight: "bold",
     textTransform: "uppercase",
     letterSpacing: "1.5px",
@@ -358,12 +370,12 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   loginBtn: {
     fontFamily: "var(--font-bebas)",
-    fontSize: "0.8rem", // 🚀 INCREASED SCALE
+    fontSize: "0.8rem",
     letterSpacing: "3px",
     color: "#050505",
-    backgroundColor: "#d4ff00", // High contrast neon background
+    backgroundColor: "#d4ff00",
     border: "1px solid #d4ff00",
-    padding: "8px 20px", // Expanded padding footprint
+    padding: "8px 20px",
     fontWeight: "bold",
     cursor: "pointer",
     transition: "all 0.2s ease",

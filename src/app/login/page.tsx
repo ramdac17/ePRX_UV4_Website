@@ -38,13 +38,10 @@ const LoginForm = () => {
       const token = data.accessToken || data.token;
       if (!token) throw new Error("TOKEN MISSING");
 
-      /**
-       * 🔑 FIX: WRITE SESSION TO COOKIE TABLE FOR MIDDLEWARE READS
-       * We explicitly write to document.cookie with path=/ so that the Next.js
-       * Edge routing layer can intercept this cookie value on /dashboard checks.
-       */
+      // 🔑 WRITE SESSION TO COOKIE TABLE FOR MIDDLEWARE READS
       const cookieLifetime = 60 * 60 * 24; // 24 Hours in seconds
-      document.cookie = `token=${token}; path=/; max-age=${cookieLifetime}; secure; samesite=lax`;
+      const isProd = window.location.protocol === "https:";
+      document.cookie = `token=${token}; path=/; max-age=${cookieLifetime}; ${isProd ? "secure;" : ""} samesite=lax`;
 
       // Trigger your contextual memory backup
       login(user, token);
@@ -54,8 +51,11 @@ const LoginForm = () => {
       setShowToast(true);
 
       setTimeout(() => {
-        router.push(redirectTo);
+        // Flush the local application layout memory
         router.refresh();
+
+        // 🚀 HARD REDIRECT FORCES NEXT.JS MIDDLEWARE TO RE-VALUATE FRESH COOKIES
+        window.location.href = redirectTo;
       }, 1200);
     } catch (err: any) {
       const rawMessage = err.response?.data?.message || "ERROR LOADING";
