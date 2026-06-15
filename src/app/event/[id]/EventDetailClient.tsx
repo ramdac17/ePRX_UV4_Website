@@ -20,7 +20,7 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
   useEffect(() => {
     async function fetchEvent() {
       try {
-        const res = await fetch(`${BACKEND_API}/events/${id}`);
+        const res = await fetch(`${BACKEND_API}/event/${id}`);
         if (res.ok) {
           const data = await res.json();
           setEvent(data);
@@ -39,7 +39,7 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
     if (!event) return;
     e.preventDefault(); // Intercept default browser redirect triggers
 
-    const currentPath = `/events/${id}`; // Target location for the specific event
+    const currentPath = `/event/${id}`; // Target location for the specific event
     const absoluteUrl =
       typeof window !== "undefined" ? window.location.href : "";
 
