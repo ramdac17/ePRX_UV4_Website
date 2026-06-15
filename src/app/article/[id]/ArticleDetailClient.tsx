@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { shareToFacebook } from "@/lib/share"; // 🚀 IMPORT THE POPUP ENGINE UTILITY
 
 interface Article {
   id: string;
@@ -34,16 +35,18 @@ export default function ArticleDetailClient({ id }: { id: string }) {
   // Dynamic Sharing Logic
   const handleShare = async (e: React.MouseEvent) => {
     if (!article) return;
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const title = article.title;
+    e.preventDefault();
+
+    const currentPath = `/articles/${id}`;
+    const absoluteUrl =
+      typeof window !== "undefined" ? window.location.href : "";
 
     // 1. Priority: Use Native Share API for mobile agents (iOS / Android)
-    if (navigator.share) {
-      e.preventDefault();
+    if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
-          title: title,
-          url: url,
+          title: article.title,
+          url: absoluteUrl,
         });
         return; // Execution successful, break out of handler
       } catch (err) {
@@ -51,17 +54,12 @@ export default function ArticleDetailClient({ id }: { id: string }) {
           console.log("Share sequence cancelled by user.");
           return;
         }
-        // Fall through to manual sharer popup if native process crashes
+        // Fall through to shareToFacebook utility if native process encounters errors
       }
     }
 
-    // 2. Fallback: Open clean desktop social share window
-    e.preventDefault();
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    // 2. Fallback: Fire centralized custom centered popup window sequence
+    shareToFacebook(currentPath);
   };
 
   useEffect(() => {
@@ -74,10 +72,10 @@ export default function ArticleDetailClient({ id }: { id: string }) {
           const data = await response.json();
           setArticle(data);
         } else {
-          setError("RESOURCE_NOT_FOUND");
+          setError("RESOURCE NOT FOUND");
         }
       } catch (err) {
-        setError("PROTOCOL_FAILURE");
+        setError("PROTOCOL FAILURE");
       } finally {
         setLoading(false);
       }
@@ -99,7 +97,7 @@ export default function ArticleDetailClient({ id }: { id: string }) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-[#050505] gap-6">
         <h2 className="font-mono text-red-500 tracking-widest uppercase">
-          || ERROR: {error || "UNKNOWN_EXCEPTION"}
+          || ERROR: {error || "UNKNOWN EXCEPTION"}
         </h2>
         <Link
           href="/"
@@ -156,6 +154,7 @@ export default function ArticleDetailClient({ id }: { id: string }) {
               </span>
             </div>
 
+            {/* 🚀 WIRE WRAPPED SHARER TRIGGER HERE */}
             <a
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentShareUrl)}`}
               target="_blank"

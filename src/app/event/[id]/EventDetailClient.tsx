@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import EventDetailView from "./EventDetailView";
+import { shareToFacebook } from "@/lib/share"; // 🚀 1. IMPORT YOUR CENTRALIZED POPUP ENGINE
 
 interface EventDetailClientProps {
   id: string;
@@ -14,11 +15,6 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
   const BACKEND_API =
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-  /**
-   * 🌏 FIXED STATIC URL EXTRACTION:
-   * Retains the '/api' prefix layout so assets are fetched through your
-   * secure custom domain routing chain: https://api.prxph.com/api/uploads/...
-   */
   const STATIC_URL = BACKEND_API;
 
   useEffect(() => {
@@ -38,39 +34,33 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
     fetchEvent();
   }, [id, BACKEND_API]);
 
-  /**
-   * Refactored Share Handler matching your main PRX Website implementation strategy
-   */
+  // 🚀 2. ALIGNED COMPLIANT SHARE HANDLER
   const handleShare = async (e: React.MouseEvent) => {
     if (!event) return;
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const title = event.title;
+    e.preventDefault(); // Intercept default browser redirect triggers
+
+    const currentPath = `/events/${id}`; // Target location for the specific event
+    const absoluteUrl =
+      typeof window !== "undefined" ? window.location.href : "";
 
     // Priority 1: Use Native Share API for mobile devices (iOS / Android)
-    if (navigator.share) {
-      e.preventDefault(); // Stop anchor from launching default fallback blank window
+    if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
-          title: title,
-          url: url,
+          title: event.title,
+          url: absoluteUrl,
         });
-        return; // Execution successful, break out of handler
+        return;
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
           console.log("Share uplink execution aborted by client view");
           return;
         }
-        // Fall through to manual sharer popup if native process fails
       }
     }
 
-    // Priority 2: Manual desktop popout share sequence
-    e.preventDefault();
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    // Priority 2: Fire your centralized centered desktop popup engine!
+    shareToFacebook(currentPath);
   };
 
   if (loading) {
@@ -92,7 +82,7 @@ export default function EventDetailClient({ id }: EventDetailClientProps) {
   return (
     <EventDetailView
       event={event}
-      shareToFacebook={handleShare}
+      shareToFacebook={handleShare} // 🚀 Passes the newly aligned logic down cleanly
       STATIC_URL={STATIC_URL}
     />
   );

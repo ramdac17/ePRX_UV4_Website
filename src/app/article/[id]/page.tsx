@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch (error) {
     return {
-      title: "PRX | MISSION_ARCHIVE",
+      title: "PRX | MISSION ARCHIVE",
       description: "Access historical ePRX UV1 performance metrics.",
     };
   }
