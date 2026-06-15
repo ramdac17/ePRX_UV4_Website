@@ -37,7 +37,7 @@ export default function ArticleDetailClient({ id }: { id: string }) {
     if (!article) return;
     e.preventDefault();
 
-    const currentPath = `/articles/${id}`;
+    const currentPath = `/article/${id}`;
     const absoluteUrl =
       typeof window !== "undefined" ? window.location.href : "";
 
