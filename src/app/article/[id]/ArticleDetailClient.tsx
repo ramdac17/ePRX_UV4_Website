@@ -67,7 +67,7 @@ export default function ArticleDetailClient({ id }: { id: string }) {
       if (!id || !BACKEND_API) return;
       try {
         setLoading(true);
-        const response = await fetch(`${BACKEND_API}/articles/${id}`);
+        const response = await fetch(`${BACKEND_API}/article/${id}`);
         if (response.ok) {
           const data = await response.json();
           setArticle(data);

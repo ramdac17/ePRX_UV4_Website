@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const PRODUCTION_URL = "https://www.prxph.com";
 
   try {
-    const res = await fetch(`${BACKEND_API}/articles/${id}`, {
+    const res = await fetch(`${BACKEND_API}/article/${id}`, {
       next: { revalidate: 3600 }, // Cache on the edge network for 1 hour to save database bandwidth
     });
 
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title: article.title,
         description: shortDescription,
-        url: `${PRODUCTION_URL}/articles/${id}`, // Double check if your folder structure uses /articles/ or /article/
+        url: `${PRODUCTION_URL}/article/${id}`, // Double check if your folder structure uses /articles/ or /article/
         siteName: "PRX",
         images: [
           {
