@@ -1,8 +1,6 @@
 import { Metadata } from "next";
 import EventDetailClient from "./EventDetailClient";
 
-// 1. FIXED: Next.js expects Page/Metadata props to have an optional 'searchParams' property
-// and dynamic params keys are typically typed as string | string[] | undefined internally.
 interface RouteProps {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -25,11 +23,10 @@ export async function generateMetadata({
   const fallbackTitle = "PRX | LIVE EVENTS";
   const fallbackDesc = "Access live and upcoming ePRX UV1 performance assets.";
 
-  // 🚨 ADD A DEFAULT BRAND IMAGE URL HERE FOR WHEN FETCHES FAIL
+  // A pristine default image path to fall back on if nothing else is available
   const DEFAULT_SHARE_IMAGE = `${PRODUCTION_URL}/images/default-share-banner.jpg`;
 
-  const resolvedParams = await params;
-  const id = resolvedParams?.id || "";
+  const { id } = await params;
 
   if (!id) {
     return {
@@ -40,11 +37,11 @@ export async function generateMetadata({
   }
 
   try {
-    const res = await fetch(`${BACKEND_API}/article/${id}`, {
-      next: { revalidate: 300 },
+    // 🚀 FIXED: Changed route path endpoint from '/article/' to '/event/'
+    const res = await fetch(`${BACKEND_API}/event/${id}`, {
+      next: { revalidate: 300 }, // Keep cache loop optimized at 5 minutes
     });
 
-    // If backend fails, log it clearly but still provide a valid image metadata object
     if (!res.ok) {
       console.error(
         `CRITICAL: Backend API failed for metadata ID ${id}. Status: ${res.status}`,
@@ -56,7 +53,7 @@ export async function generateMetadata({
           title: "EVENT | PRX",
           description: fallbackDesc,
           url: `${PRODUCTION_URL}/event/${id}`,
-          images: [{ url: DEFAULT_SHARE_IMAGE }], // Fixes missing preview on failure
+          images: [{ url: DEFAULT_SHARE_IMAGE }],
         },
       };
     }
@@ -66,7 +63,7 @@ export async function generateMetadata({
     const titleText = event?.title || "LIVE EVENT";
     const descriptionText = event?.description || fallbackDesc;
 
-    // Resolve image path with a safe fallback structure
+    // Resolve structural asset path matching NestJS storage architecture
     let imageUrl = DEFAULT_SHARE_IMAGE;
     if (event?.image) {
       imageUrl = event.image.startsWith("http")
@@ -83,7 +80,7 @@ export async function generateMetadata({
         url: `${PRODUCTION_URL}/event/${id}`,
         siteName: "PRX",
         type: "article",
-        images: [{ url: imageUrl }], // Will always have a valid string value
+        images: [{ url: imageUrl }],
       },
     };
   } catch (error) {
